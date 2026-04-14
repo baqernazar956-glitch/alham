@@ -1,0 +1,7 @@
+{% from "components/macros.html" import render_book_card %}
+
+{% for book in books %}
+{{ render_book_card(book) }}
+{% else %}
+<!-- No books found -->
+{% endfor %}

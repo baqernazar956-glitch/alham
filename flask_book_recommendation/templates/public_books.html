@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{% if q %}Search: {{ q }}{% elif cat %}{{ cat }}{% else %}Library Collective{% endif %} | Elham{% endblock %}
+
+{% block content %}
+<main class="pt-24 pb-20 max-w-full mx-auto px-8" dir="ltr">
+    <!-- Hero Section -->
+    <header class="relative overflow-hidden rounded-[2.5rem] mb-16 min-h-[350px] flex items-center bg-gradient-to-br from-primary to-primary-container p-12 md:p-20 shadow-2xl shadow-primary/20">
+        <div class="relative z-10 max-w-3xl">
+            <h1 class="text-5xl md:text-7xl font-black text-on-primary font-headline mb-8 leading-tight tracking-tighter">
+                {% if q %}Search Results: {{ q }}{% elif cat %}{{ cat }}{% else %}Library Collective{% endif %}
+            </h1>
+            <p class="text-xl md:text-2xl text-on-primary/80 font-medium leading-relaxed max-w-2xl opacity-90">
+                {% if q %}
+                Found {{ total or 0 }} volumes matching your current search criteria in our curated intellectual archive.
+                {% else %}
+                Discover a universe of knowledge through our carefully curated collective. From literary fiction to the depths of structural philosophy, we offer only the most refined selections.
+                {% endif %}
+            </p>
+        </div>
+        <!-- Decorative Elements -->
+        <div class="absolute -right-20 -top-20 w-[600px] h-[600px] bg-white/10 rounded-full blur-[120px]"></div>
+        <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-secondary/30 rounded-full blur-3xl"></div>
+    </header>
+
+    <div class="flex flex-col lg:flex-row gap-16">
+        <!-- Sidebar Filters -->
+        <aside class="w-full lg:w-96 flex-shrink-0 space-y-12 sticky top-32 self-start h-fit max-h-[calc(100vh-10rem)] overflow-y-auto no-scrollbar pb-10 text-left">
+            <section>
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="h-10 w-2 bg-primary rounded-full"></div>
+                    <h3 class="text-2xl font-black font-headline text-on-background uppercase tracking-[0.2em]">Categories</h3>
+                </div>
+                <div class="flex flex-wrap lg:flex-col gap-4">
+                    {% set cat_list = [
+                        'History', 'Fiction', 'Science', 'Philosophy', 'Psychology',
+                        'Art', 'Business', 'Self-Help', 'Travel', 'Religion',
+                        'Security', 'Databases', 'Classic Literature', 'Technology'
+                    ] %}
+                    {% for cat_en in cat_list %}
+                    <a href="{{ url_for('public.list_books', cat=cat_en, q=q) }}" 
+                       class="flex items-center justify-between px-7 py-5 {% if cat == cat_en %}bg-primary text-on-primary shadow-2xl scale-[1.02] ring-8 ring-primary/5{% else %}bg-surface-container-low text-on-surface-variant hover:bg-primary/5 hover:text-primary{% endif %} rounded-[1.5rem] font-bold text-xl transition-all duration-500 group">
+                        <span class="group-hover:translate-x-2 transition-transform">{{ cat_en }}</span>
+                        <span class="material-symbols-outlined text-lg opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all">chevron_right</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="space-y-6">
+                <h3 class="text-lg font-black font-headline text-on-background uppercase tracking-widest opacity-40">Sort By</h3>
+                <form action="{{ url_for('public.list_books') }}" method="GET">
+                    {% if q %}<input type="hidden" name="q" value="{{ q }}"/>{% endif %}
+                    {% if cat %}<input type="hidden" name="cat" value="{{ cat }}"/>{% endif %}
+                    <div class="relative group">
+                        <select name="sort" onchange="this.form.submit()" class="w-full bg-surface-container-high border-none rounded-2xl py-5 px-6 font-bold focus:ring-4 focus:ring-primary/10 text-on-surface-variant cursor-pointer transition-all appearance-none">
+                            <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Most Relevant</option>
+                            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                        </select>
+                        <span class="material-symbols-outlined absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:translate-y-[-40%] transition-all">expand_more</span>
+                    </div>
+                </form>
+            </section>
+
+            <section class="bg-primary/5 p-10 rounded-[2rem] border border-primary/10 relative overflow-hidden group">
+                <h4 class="font-headline font-black text-2xl text-primary mb-4">Neural Discovery?</h4>
+                <p class="text-base font-medium text-on-surface-variant/70 mb-6 leading-relaxed">
+                    Allow our machine learning engines to curate your next read based on your unique intellectual patterns.
+                </p>
+                <a href="{{ url_for('main.home') }}" class="inline-flex items-center gap-3 bg-primary text-white px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:shadow-xl hover:bg-primary-dim transition-all active:scale-95">
+                    Launch AI
+                    <span class="material-symbols-outlined text-sm">bolt</span>
+                </a>
+                <!-- Decorative Layer -->
+                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
+            </section>
+        </aside>
+
+        <!-- Book List Section -->
+        <div class="flex-grow w-full">
+            {% if total > 0 or shown > 0 or deferred_load %}
+            <div id="book-list-container" class="flex flex-col gap-10" data-start="{{ start + (per if not deferred_load else 0) }}" data-per="{{ per }}" data-q="{{ q }}" data-cat="{{ cat }}">
+                {% if deferred_load %}
+                    <!-- Ghost / Loading Skeleton while fetching starts -->
+                    <div id="loading-skeleton" class="space-y-12 opacity-40 animate-pulse">
+                        <div class="h-64 bg-surface-container-high rounded-[2.5rem]"></div>
+                        <div class="h-64 bg-surface-container-high rounded-[2.5rem]"></div>
+                        <div class="h-64 bg-surface-container-high rounded-[2.5rem]"></div>
+                    </div>
+                {% else %}
+                    {% set sources = [('Google', items), ('Gutenberg', gut_items), ('Archive', ia_items), ('OpenLib', ol_items), ('ITBook', it_items)] %}
+                    {% for src_name, source in sources %}
+                        {% include "public_books_items.html" %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Scroll Sentinel -->
+            <div id="infinite-scroll-sentinel" class="h-40 flex flex-col items-center justify-center mt-12 mb-20 text-center">
+                <div id="loading-spinner" class="{% if not deferred_load %}hidden{% endif %} flex flex-col items-center gap-6">
+                    <div class="animate-spin rounded-full h-16 w-16 border-[5px] border-primary border-t-transparent shadow-xl"></div>
+                    <p class="text-sm font-black text-primary uppercase tracking-[0.4em] opacity-40">Syncing more volumes...</p>
+                </div>
+            </div>
+            
+            <script>
+                (function() {
+                    const container = document.getElementById('book-list-container');
+                    const sentinel = document.getElementById('infinite-scroll-sentinel');
+                    const spinner = document.getElementById('loading-spinner');
+                    const skeleton = document.getElementById('loading-skeleton');
+                    
+                    if (!container || !sentinel) return;
+            
+                    let start = parseInt(container.dataset.start);
+                    const per = parseInt(container.dataset.per);
+                    const q = container.dataset.q;
+                    const cat = container.dataset.cat;
+                    const deferred = {% if deferred_load %}true{% else %}false{% endif %};
+                    
+                    let loading = false;
+                    let exhausted = false;
+            
+                    const observer = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting && !loading && !exhausted) {
+                            loadMoreBooks();
+                        }
+                    }, {
+                        rootMargin: '800px'
+                    });
+            
+                    observer.observe(sentinel);
+            
+                    async function loadMoreBooks() {
+                        if (loading || exhausted) return;
+                        
+                        loading = true;
+                        spinner.classList.remove('hidden');
+            
+                        try {
+                            const url = new URL(window.location.origin + "{{ url_for('public.list_books') }}");
+                            if (q) url.searchParams.set('q', q);
+                            if (cat) url.searchParams.set('cat', cat);
+                            url.searchParams.set('start', start);
+                            url.searchParams.set('per', per);
+                            url.searchParams.set('partial', '1');
+                            url.searchParams.set('async_load', '1'); // Ensure backend doesn't return shell
+            
+                            const response = await fetch(url);
+                            if (!response.ok) throw new Error('Fetch failed');
+                            
+                            const html = await response.text();
+                            const trimmedHtml = html.trim();
+                            
+                            // If we were in deferred mode and got results, remove skeleton
+                            if (deferred && skeleton) {
+                                skeleton.remove();
+                            }
+
+                            if (!trimmedHtml || trimmedHtml.length < 100) { 
+                                exhausted = true;
+                                observer.disconnect();
+                                
+                                // Specific check: if no books found at ALL
+                                if (start === 0 && (!trimmedHtml || trimmedHtml.length < 50)) {
+                                    container.innerHTML = `
+                                        <div class="py-40 text-center bg-surface-container-low rounded-[3rem] border-4 border-dashed border-outline-variant/10 flex flex-col justify-center items-center">
+                                            <span class="material-symbols-outlined text-[10rem] text-outline-variant/20 mb-10">auto_stories</span>
+                                            <h3 class="text-4xl font-black text-on-surface mb-6 font-headline tracking-tighter uppercase">No matching results found</h3>
+                                            <p class="text-lg text-on-surface-variant max-w-md mx-auto font-medium opacity-60">
+                                                We couldn't find any matches for your selection in our archive. Please try different keywords.
+                                            </p>
+                                        </div>
+                                    `;
+                                    spinner.classList.add('hidden');
+                                } else {
+                                    spinner.innerHTML = '<div class="h-px bg-outline/10 w-32 mx-auto mb-8"></div><p class="text-outline/30 font-black text-xs uppercase tracking-[0.5em]">Horizon Reached</p>';
+                                    spinner.classList.remove('hidden');
+                                }
+                            } else {
+                                container.insertAdjacentHTML('beforeend', trimmedHtml);
+                                start += per;
+                                spinner.classList.add('hidden');
+                            }
+                        } catch (error) {
+                            console.error('Error loading books:', error);
+                            spinner.classList.add('hidden');
+                        } finally {
+                            loading = false;
+                        }
+                    }
+                })();
+            </script>
+            
+            {% elif not deferred_load %}
+            <!-- Empty State -->
+            <div class="py-40 text-center bg-surface-container-low rounded-[3rem] border-4 border-dashed border-outline-variant/10 flex flex-col justify-center items-center">
+                <span class="material-symbols-outlined text-[10rem] text-outline-variant/20 mb-10">auto_stories</span>
+                <h3 class="text-4xl font-black text-on-surface mb-6 font-headline tracking-tighter uppercase">No matching results found</h3>
+                <p class="text-lg text-on-surface-variant max-w-md mx-auto font-medium opacity-60">
+                    We couldn't find any matches for your selection in our archive. Please try different keywords.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

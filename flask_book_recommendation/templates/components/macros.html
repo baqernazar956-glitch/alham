@@ -1,0 +1,182 @@
+{# ═══════════════════════════════════════════════════════════════════
+   THE DIGITAL CURATOR — Macros Jinja2 (Architectural Minimalism)
+   ═══════════════════════════════════════════════════════════════════ #}
+
+{# ──── AI Score Ring ──────────────────────────────────────────────── #}
+{% macro render_ai_score(score, size='sm') %}
+{% set score_val = score|default(0)|float %}
+{% if score_val > 100 or score_val < 0 %}{% set score_val = 99.0 %}{% endif %}
+<div class="inline-flex items-center justify-center relative bg-surface-container-high shadow-2xl" style="width: 72px; height: 72px;">
+    <svg class="w-16 h-16 transform -rotate-90">
+        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="2" fill="transparent" class="text-on-surface/5" />
+        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="2" fill="transparent"
+                stroke-dasharray="175.9"
+                stroke-dashoffset="{{ 175.9 - (score_val / 100) * 175.9 }}"
+                stroke-linecap="square"
+                class="text-primary transition-all duration-1000" />
+    </svg>
+    <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="font-headline font-black text-xl text-primary leading-none">{{ score_val|int }}</span>
+        <span class="font-label text-[7px] font-black text-on-surface/30 uppercase tracking-widest mt-1">Match</span>
+    </div>
+</div>
+{% endmacro %}
+
+{# ──── Star Rating ──────────────────────────────────────────────── #}
+{% macro render_stars(rating, count=0) %}
+{% set rating_val = rating|default(0)|float %}
+<div class="flex items-center gap-1" dir="ltr">
+    {% for i in range(1, 6) %}
+    <span class="material-symbols-outlined text-[14px] {{ 'text-primary' if i <= rating_val|round else 'text-on-surface/10' }}" style="font-variation-settings: 'FILL' {{ 1 if i <= rating_val|round else 0 }};">star</span>
+    {% endfor %}
+    {% if count and count > 0 %}
+    <span class="font-label text-[10px] font-black text-on-surface/20 ml-2 pt-0.5">({{ count }})</span>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# ──── Book Card ──────────────────────────────────────────────── #}
+{% macro render_book_card(book, card_class='') %}
+{% set book_id = book.id|default('') %}
+{% set google_id = book.google_id|default('') %}
+{% set cover_val = book.cover|default(book.cover_url)|string %}
+{% set title = book.title|default('Untitled Folio') %}
+{% set author = book.author|default('Unidentified Creator') %}
+{% set rating = book.rating|default(book.rating_avg)|default(0)|float %}
+
+<article class="flex-none w-[180px] lg:w-[220px] group {{ card_class }}">
+    <a href="{{ url_for('public.book_detail', gid=google_id or book_id) }}" class="block space-y-6">
+        <div class="aspect-[2/3] overflow-hidden bg-surface-container-highest relative shadow-[0_30px_60px_-15px_rgba(115,92,0,0.1)] group-hover:shadow-[0_50px_100px_-20px_rgba(115,92,0,0.2)] transition-all duration-700">
+            {% if cover_val and cover_val != 'None' and cover_val != '' %}
+            <img src="{{ cover_val }}" alt="{{ title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                 onerror="this.onerror=null; this.src='https://placehold.co/400x600/fbfbe2/a04100?text=Folio';">
+            {% else %}
+            <div class="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-surface-container-high">
+                <span class="material-symbols-outlined text-primary/20 text-5xl mb-4">architecture</span>
+                <span class="font-headline font-black text-on-surface/40 text-xs uppercase tracking-widest line-clamp-3 leading-snug">{{ title }}</span>
+            </div>
+            {% endif %}
+            
+            <!-- Architectural Frame Overlay -->
+            <div class="absolute inset-0 border-[8px] border-white/5 pointer-events-none group-hover:border-white/10 transition-all"></div>
+            
+            <!-- Hover Gradient -->
+            <div class="absolute inset-0 bg-gradient-to-t from-on-surface/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+                <div class="w-full bg-primary text-white py-3 font-headline font-black text-[10px] uppercase tracking-[0.2em] text-center shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                    Analyze
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-y-2">
+            <h3 class="font-headline font-black text-lg text-on-surface truncate group-hover:text-primary transition-colors">{{ title }}</h3>
+            <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate">{{ author }}</p>
+            {% if rating > 0 %}
+                <div class="pt-2">{{ render_stars(rating) }}</div>
+            {% endif %}
+        </div>
+    </a>
+</article>
+{% endmacro %}
+
+{# ──── Carousel Section ──────────────────────────────────────────────── #}
+{% macro render_carousel_section(title, icon='auto_stories', books=[], id_prefix='c', badges=[], view_all_url='#') %}
+{% if books and books|length > 0 %}
+<section class="space-y-12" id="section-{{ id_prefix }}">
+    <header class="flex items-center justify-between pb-8 border-b border-on-surface/10">
+        <div class="flex items-center gap-6">
+            <div class="w-14 h-14 bg-surface-container-high flex items-center justify-center text-primary shadow-2xl">
+                <span class="material-symbols-outlined text-3xl">{{ icon }}</span>
+            </div>
+            <div>
+                <h2 class="font-headline font-black text-4xl tracking-tighter text-on-surface">{{ title }}</h2>
+                <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-[0.4em]">Integrated Discovery Stream</p>
+            </div>
+        </div>
+        
+        {% if view_all_url and view_all_url != '#' %}
+        <a href="{{ view_all_url }}" class="font-headline font-black text-xs uppercase tracking-widest text-primary hover:text-on-surface transition-colors flex items-center gap-4 group">
+            Access Full Catalog
+            <span class="material-symbols-outlined text-sm group-hover:translate-x-2 transition-transform">arrow_forward</span>
+        </a>
+        {% endif %}
+    </header>
+
+    <div class="relative group/carousel">
+        <div class="flex gap-12 overflow-x-auto scroll-smooth no-scrollbar pb-12 pt-4 px-4 snap-x" id="track-{{ id_prefix }}">
+            {% for book in books %}
+                <div class="snap-start">
+                    {{ render_book_card(book) }}
+                </div>
+            {% endfor %}
+            
+            {% if view_all_url and view_all_url != '#' %}
+            <a href="{{ view_all_url }}" class="snap-start shrink-0 w-[180px] lg:w-[220px] aspect-[2/3] bg-surface-container-low border border-dashed border-on-surface/10 flex flex-col items-center justify-center group/more hover:bg-primary/5 transition-all">
+                <div class="w-16 h-16 bg-surface flex items-center justify-center mb-6 group-hover/more:scale-110 transition-transform shadow-2xl">
+                    <span class="material-symbols-outlined text-primary text-4xl">explore</span>
+                </div>
+                <span class="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface/40">Discover more</span>
+            </a>
+            {% endif %}
+        </div>
+        
+        <!-- Architectural Navigation -->
+        <div class="absolute top-1/2 -translate-y-1/2 -left-8 md:-left-12 opacity-0 group-hover/carousel:opacity-100 transition-all">
+            <button onclick="document.getElementById('track-{{ id_prefix }}').scrollBy({left: -400, behavior: 'smooth'})"
+                    class="w-16 h-16 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
+                <span class="material-symbols-outlined text-2xl">chevron_left</span>
+            </button>
+        </div>
+        <div class="absolute top-1/2 -translate-y-1/2 -right-8 md:-right-12 opacity-0 group-hover/carousel:opacity-100 transition-all">
+            <button onclick="document.getElementById('track-{{ id_prefix }}').scrollBy({left: 400, behavior: 'smooth'})"
+                    class="w-16 h-16 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
+                <span class="material-symbols-outlined text-2xl">chevron_right</span>
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endmacro %}
+
+{# ──── Explore Book Card — Digital Curator ──────────────────────────── #}
+{% macro render_explore_card(book) %}
+{% set book_id = book.id|default('') %}
+{% set cover = book.cover|default(book.cover_url)|default('https://placehold.co/400x600/fbfbe2/a04100?text=Folio') %}
+{% set title = book.title|default('Untitled Folio') %}
+{% set author = book.author|default('Unidentified Creator') %}
+{% set rating = book.rating|default(0)|float %}
+{% set score = book.score|default(book.ai_score)|default(0)|float %}
+{% set algo_tag = book.algo_tag|default('Neural Signal') %}
+{% set badges = book.badges|default([]) %}
+
+<article class="bg-surface-container-low p-8 shadow-2xl group hover:bg-surface-container-high transition-all duration-500 relative">
+    <a href="{{ url_for('public.book_detail', gid=book_id) }}" class="block space-y-8">
+        <div class="relative aspect-[3/4] overflow-hidden bg-on-surface/5">
+            <img src="{{ cover }}" alt="{{ title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+            
+            <!-- Status Badges -->
+            <div class="absolute top-4 left-4 flex flex-col gap-2">
+                <span class="font-label text-[8px] uppercase font-black bg-primary text-white px-3 py-1.5 tracking-widest shadow-2xl">{{ algo_tag }}</span>
+                {% if score > 0 %}
+                <span class="font-label text-[8px] uppercase font-black bg-on-surface text-white px-3 py-1.5 tracking-widest shadow-2xl">{{ score|int }}% MATCH</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h5 class="font-headline font-black text-xl text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-tight h-14">
+                {{ title }}
+            </h5>
+            <div class="pt-4 border-t border-on-surface/5 flex justify-between items-center">
+                <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate w-2/3">{{ author }}</p>
+                {% if rating > 0 %}
+                <div class="flex items-center gap-1 text-primary">
+                    <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="font-headline font-black text-xs">{{ rating|round(1) }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </a>
+</article>
+{% endmacro %}

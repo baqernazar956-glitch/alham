@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | {{ current_user.name }}{% endblock %}
+
+{% block content %}
+<main class="pt-24 pb-32 bg-background min-h-screen">
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  HERO BANNER — Gradient header with profile info   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#30007c] via-[#5300c8] to-[#6f26f6]"></div>
+        <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.15\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        
+        <div class="relative max-w-6xl mx-auto px-6 py-16 pb-32">
+            <div class="flex flex-col md:flex-row items-center md:items-end gap-8">
+                
+                <!-- Profile Avatar -->
+                <div class="relative group">
+                    <div class="w-36 h-36 md:w-44 md:h-44 rounded-full border-[6px] border-white/20 shadow-2xl overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center transition-all duration-500 group-hover:border-white/40 group-hover:scale-105">
+                        {% if current_user.profile_picture %}
+                            <img src="{{ current_user.profile_picture }}" alt="{{ current_user.name }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <span class="font-headline font-black text-7xl text-white/60">{{ current_user.name[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Camera overlay for upload -->
+                    <button onclick="document.getElementById('profilePicInput').click()" 
+                            class="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-90 cursor-pointer z-10">
+                        <span class="material-symbols-outlined text-lg">photo_camera</span>
+                    </button>
+                    
+                    {% if current_user.profile_picture %}
+                    <!-- Remove photo button -->
+                    <form method="POST" action="{{ url_for('auth.remove_profile_picture') }}" class="absolute top-1 right-1 z-10">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" onclick="return confirm('Remove your profile picture?')"
+                                class="w-8 h-8 bg-red-500/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center text-white hover:bg-red-600 transition-all active:scale-90 opacity-0 group-hover:opacity-100">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                
+                <!-- User Info -->
+                <div class="flex-1 text-center md:text-left text-white">
+                    <h1 class="text-4xl md:text-5xl font-black font-headline tracking-tight mb-1">{{ current_user.name }}</h1>
+                    <p class="text-white/60 text-lg mb-4">{{ current_user.email }}</p>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-3">
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/10">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+                            Member for {{ stats.days_member }} days
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#fed07f] text-[#4b3400] rounded-full text-sm font-black border border-[#fed07f]/50 shadow-lg">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                            {{ current_user.rank }}
+                        </span>
+                        {% if stats.streak > 1 %}
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-orange-500/20 text-orange-200 rounded-full text-sm font-black border border-orange-500/30">
+                            <span class="material-symbols-outlined text-sm animate-pulse" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                            {{ stats.streak }} Day Streak
+                        </span>
+                        {% endif %}
+                        {% if stats.books_finished > 0 %}
+                        <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/10">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">library_add_check</span>
+                            {{ stats.books_finished }} Books Completed
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if current_user.bio %}
+                    <p class="mt-4 text-white/80 text-base max-w-2xl leading-relaxed italic border-l-2 border-white/20 pl-4">
+                        "{{ current_user.bio }}"
+                    </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="flex gap-3">
+                    <a href="{{ url_for('main.books') }}" class="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">library_books</span>
+                        My Library
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="bg-white/10 backdrop-blur-sm border border-white/20 text-white/70 px-5 py-3 rounded-xl font-bold hover:bg-red-500/20 hover:text-red-200 hover:border-red-400/30 transition-all active:scale-95 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">logout</span>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  STATS CARDS — Overlapping the hero gradient       -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="max-w-6xl mx-auto px-6 -mt-16 relative z-10 mb-10">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div class="w-12 h-12 mx-auto bg-primary/10 rounded-xl flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">library_books</span>
+                </div>
+                <p class="text-3xl font-black text-on-surface font-headline">{{ stats.total_books }}</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">In Library</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div class="w-12 h-12 mx-auto bg-green-500/10 rounded-xl flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined text-green-600 text-2xl" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+                </div>
+                <p class="text-3xl font-black text-on-surface font-headline">{{ stats.books_finished }}</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Completed</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div class="w-12 h-12 mx-auto bg-secondary/10 rounded-xl flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+                </div>
+                <p class="text-3xl font-black text-on-surface font-headline">{{ stats.total_reviews }}</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Reviews</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div class="w-12 h-12 mx-auto bg-blue-500/10 rounded-xl flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined text-blue-600 text-2xl" style="font-variation-settings: 'FILL' 1;">visibility</span>
+                </div>
+                <p class="text-3xl font-black text-on-surface font-headline">{{ stats.total_views }}</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Books Explored</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  MAIN GRID: Settings + Content                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- ═══ LEFT SIDEBAR: Settings & Account ═══ -->
+            <aside class="lg:col-span-5 space-y-6">
+                
+                <!-- Hidden file input for profile picture -->
+                <form id="pictureForm" method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data" class="hidden">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="file" id="profilePicInput" name="profile_picture" accept="image/*" onchange="document.getElementById('pictureForm').submit()">
+                </form>
+
+                <!-- Account Settings Card -->
+                <div class="bg-white rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50">
+                        <h3 class="text-lg font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">settings</span>
+                            Account Settings
+                        </h3>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data" class="p-8 space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Name -->
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-sm">badge</span>
+                                Display Name
+                            </label>
+                            <input type="text" name="name" value="{{ current_user.name }}" required 
+                                   class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3.5 text-base font-semibold focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-sm">mail</span>
+                                Email Address
+                            </label>
+                            <input type="email" name="email" value="{{ current_user.email }}" required 
+                                   class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3.5 text-base font-semibold focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
+                            <p class="text-xs text-on-surface-variant/60 pl-1">Used for login and notifications.</p>
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-sm">history_edu</span>
+                                About Me / Bio
+                            </label>
+                            <textarea name="bio" rows="3" placeholder="Tell the community about your reading journey..."
+                                      class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base font-medium focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container resize-none">{{ current_user.bio or '' }}</textarea>
+                        </div>
+
+                        <!-- Reading Goal -->
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-sm">flag</span>
+                                Annual Reading Goal
+                            </label>
+                            <div class="flex items-center gap-4">
+                                <input type="number" name="reading_goal" value="{{ current_user.reading_goal or 0 }}" min="0" max="1000"
+                                       class="w-24 bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base font-bold text-center focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
+                                <span class="text-sm font-semibold text-on-surface-variant">books this year</span>
+                            </div>
+                        </div>
+
+                        <!-- Password Section -->
+                        <details class="group">
+                            <summary class="flex items-center gap-2 cursor-pointer text-sm font-bold text-on-surface-variant uppercase tracking-wider py-3 border-t border-outline-variant/10 mt-2 select-none">
+                                <span class="material-symbols-outlined text-sm">lock</span>
+                                Change Password
+                                <span class="material-symbols-outlined text-sm ml-auto transition-transform group-open:rotate-180">expand_more</span>
+                            </summary>
+                            <div class="space-y-4 pt-2 pb-2 animate-fade-in">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-wider">Current Password</label>
+                                    <input type="password" name="current_password" placeholder="Enter current password" autocomplete="current-password"
+                                           class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-wider">New Password</label>
+                                    <input type="password" name="new_password" placeholder="Enter new password" autocomplete="new-password"
+                                           class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
+                                </div>
+                            </div>
+                        </details>
+
+                        <button type="submit" class="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-base hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">save</span>
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Reading Breakdown Card -->
+                <div class="bg-white rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50 flex items-center justify-between">
+                        <h3 class="text-lg font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-secondary">pie_chart</span>
+                            Library Breakdown
+                        </h3>
+                        {% if current_user.reading_goal > 0 %}
+                        <div class="text-right">
+                            <span class="text-[10px] font-black uppercase tracking-tighter text-on-surface-variant/40 block">Goal Progress</span>
+                            <span class="text-sm font-black text-primary">{{ stats.books_finished }}/{{ current_user.reading_goal }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-8 space-y-4">
+                        {% if current_user.reading_goal > 0 %}
+                        <div class="mb-6 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-xs font-bold text-primary uppercase">2024 Reading Goal</span>
+                                <span class="text-xs font-black text-primary">{{ ((stats.books_finished / current_user.reading_goal * 100)|round|int) if current_user.reading_goal > 0 else 0 }}%</span>
+                            </div>
+                            <div class="h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-primary to-primary-dim rounded-full shadow-[0_0_8px_rgba(111,38,246,0.3)] transition-all duration-1000 ease-out" 
+                                     style="width: {{ ((stats.books_finished / current_user.reading_goal * 100)) if current_user.reading_goal > 0 else 0 }}%"></div>
+                            </div>
+                            <p class="text-[10px] text-on-surface-variant/60 mt-2 italic text-center">
+                                {% set rem = current_user.reading_goal - stats.books_finished %}
+                                {% if rem > 0 %}
+                                Only {{ rem }} more books to reach your goal! Keep it up.
+                                {% else %}
+                                🏆 Goal Achieved! You're a reading champion.
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        {% set max_val = [stats.books_reading, stats.books_finished, stats.books_later, stats.books_favorite]|max or 1 %}
+                        
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-blue-500" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm font-semibold mb-1">
+                                    <span>Currently Reading</span>
+                                    <span class="text-blue-600">{{ stats.books_reading }}</span>
+                                </div>
+                                <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500 rounded-full transition-all duration-700" style="width: {{ (stats.books_reading / max_val * 100) if max_val > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-green-500" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm font-semibold mb-1">
+                                    <span>Completed</span>
+                                    <span class="text-green-600">{{ stats.books_finished }}</span>
+                                </div>
+                                <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                    <div class="h-full bg-green-500 rounded-full transition-all duration-700" style="width: {{ (stats.books_finished / max_val * 100) if max_val > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-amber-500" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm font-semibold mb-1">
+                                    <span>Want to Read</span>
+                                    <span class="text-amber-600">{{ stats.books_later }}</span>
+                                </div>
+                                <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                    <div class="h-full bg-amber-500 rounded-full transition-all duration-700" style="width: {{ (stats.books_later / max_val * 100) if max_val > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-red-400" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm font-semibold mb-1">
+                                    <span>Favorites</span>
+                                    <span class="text-red-500">{{ stats.books_favorite }}</span>
+                                </div>
+                                <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-400 rounded-full transition-all duration-700" style="width: {{ (stats.books_favorite / max_val * 100) if max_val > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Info Card -->
+                <div class="bg-white rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50">
+                        <h3 class="text-lg font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-on-surface-variant">info</span>
+                            Account Information
+                        </h3>
+                    </div>
+                    <div class="p-8 space-y-5">
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-on-surface-variant font-medium">Member Since</span>
+                            <span class="text-sm font-bold text-on-surface">{{ stats.member_since.strftime('%B %d, %Y') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-t border-outline-variant/10">
+                            <span class="text-sm text-on-surface-variant font-medium">Account Status</span>
+                            <span class="inline-flex items-center gap-1 text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Active
+                            </span>
+                        </div>
+                        {% if stats.avg_rating %}
+                        <div class="flex items-center justify-between py-2 border-t border-outline-variant/10">
+                            <span class="text-sm text-on-surface-variant font-medium">Average Rating Given</span>
+                            <span class="flex items-center gap-1 text-sm font-bold text-on-surface">
+                                {{ stats.avg_rating }}
+                                <span class="material-symbols-outlined text-amber-500 text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        <div class="flex items-center justify-between py-2 border-t border-outline-variant/10">
+                            <span class="text-sm text-on-surface-variant font-medium">Email Verified</span>
+                            <span class="inline-flex items-center gap-1 text-sm font-bold text-primary">
+                                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Verified
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- ═══ RIGHT CONTENT: Reviews & Activity ═══ -->
+            <div class="lg:col-span-7 space-y-8">
+
+                <!-- Recently Viewed Books -->
+                {% if recent_views %}
+                <div class="bg-white rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50 flex items-center justify-between">
+                        <h3 class="text-lg font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-blue-500">history</span>
+                            Recently Viewed
+                        </h3>
+                        <span class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider">Last {{ recent_views|length }} books</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-4 md:grid-cols-8 gap-3">
+                            {% for view, book in recent_views %}
+                            <a href="{{ url_for('public.book_detail', gid=view.google_id) }}" 
+                               class="group relative">
+                                <div class="aspect-[2/3] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl group-hover:-translate-y-1 transition-all duration-300 bg-surface-container">
+                                    {% if book and book.cover_url %}
+                                    <img src="{{ book.cover_url }}" alt="{{ book.title if book else '' }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+                                        <span class="material-symbols-outlined text-primary/30 text-2xl">book</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if view.view_count > 1 %}
+                                <span class="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-md">{{ view.view_count }}</span>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- My Reviews -->
+                <div class="bg-white rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50 flex items-center justify-between">
+                        <h3 class="text-lg font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-secondary">reviews</span>
+                            My Reviews
+                        </h3>
+                        <span class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider">{{ stats.total_reviews }} total</span>
+                    </div>
+                    
+                    <div class="p-6">
+                        {% if user_reviews %}
+                        <div class="space-y-4">
+                            {% for review in user_reviews %}
+                            <div class="flex gap-5 p-4 rounded-xl hover:bg-surface-container-low/50 transition-all group">
+                                {% set br = review.book %}
+                                <div class="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0 shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 bg-surface-container">
+                                    {% if br and br.cover_url %}
+                                        <img alt="{{ br.title }}" class="w-full h-full object-cover" src="{{ br.cover_url }}">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center bg-surface-container-highest text-on-surface/20">
+                                            <span class="material-symbols-outlined">book</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex flex-col justify-center flex-1 min-w-0">
+                                    <h4 class="font-bold text-sm mb-1 truncate text-on-surface">{{ br.title if br else 'Unknown Book' }}</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <div class="flex text-amber-500">
+                                            {% for i in range(5) %}
+                                            <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' {{ 1 if review.rating > i else 0 }};">star</span>
+                                            {% endfor %}
+                                        </div>
+                                        <span class="text-xs text-on-surface-variant/50">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+                                    </div>
+                                    {% if review.review_text %}
+                                    <p class="text-xs text-on-surface-variant leading-relaxed line-clamp-2 italic">"{{ review.review_text|truncate(120) }}"</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if stats.total_reviews > 6 %}
+                        <div class="pt-4 mt-4 border-t border-outline-variant/10 text-center">
+                            <button class="text-primary font-bold text-sm hover:underline flex items-center gap-1 mx-auto">
+                                View All {{ stats.total_reviews }} Reviews
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                        
+                        {% else %}
+                        <div class="py-16 text-center">
+                            <div class="w-20 h-20 mx-auto bg-surface-container rounded-full flex items-center justify-center mb-4">
+                                <span class="material-symbols-outlined text-on-surface-variant/30 text-4xl">edit_note</span>
+                            </div>
+                            <p class="font-bold text-on-surface-variant/40 text-sm mb-2">No reviews yet</p>
+                            <p class="text-xs text-on-surface-variant/30">Start reviewing books to share your thoughts with the community.</p>
+                            <a href="{{ url_for('public.list_books') }}" class="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-primary/10 text-primary rounded-full text-sm font-bold hover:bg-primary/20 transition-all">
+                                <span class="material-symbols-outlined text-sm">explore</span>
+                                Explore Books
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Reading Activity Heatmap Style -->
+                <div class="bg-white rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50">
+                        <h3 class="text-lg font-bold flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-500">insights</span>
+                            Reading Journey
+                        </h3>
+                    </div>
+                    <div class="p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Milestone 1 -->
+                            <div class="relative p-6 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/10 text-center group hover:from-primary/10 hover:to-primary/15 transition-all">
+                                <div class="w-14 h-14 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+                                </div>
+                                <p class="text-2xl font-black text-on-surface font-headline">{{ stats.total_books }}</p>
+                                <p class="text-xs font-semibold text-on-surface-variant mt-1">Books in Library</p>
+                                {% if stats.total_books >= 10 %}
+                                <span class="absolute -top-2 -right-2 bg-primary text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">🏆 Collector</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Milestone 2 -->
+                            <div class="relative p-6 rounded-xl bg-gradient-to-br from-secondary/5 to-secondary/10 border border-secondary/10 text-center group hover:from-secondary/10 hover:to-secondary/15 transition-all">
+                                <div class="w-14 h-14 mx-auto bg-secondary/10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                                </div>
+                                <p class="text-2xl font-black text-on-surface font-headline">{{ stats.avg_rating or '—' }}</p>
+                                <p class="text-xs font-semibold text-on-surface-variant mt-1">Avg Rating Given</p>
+                                {% if stats.total_reviews >= 5 %}
+                                <span class="absolute -top-2 -right-2 bg-secondary text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">✍️ Critic</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Milestone 3 -->
+                            <div class="relative p-6 rounded-xl bg-gradient-to-br from-blue-500/5 to-blue-500/10 border border-blue-500/10 text-center group hover:from-blue-500/10 hover:to-blue-500/15 transition-all">
+                                <div class="w-14 h-14 mx-auto bg-blue-500/10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-blue-500 text-2xl" style="font-variation-settings: 'FILL' 1;">explore</span>
+                                </div>
+                                <p class="text-2xl font-black text-on-surface font-headline">{{ stats.total_views }}</p>
+                                <p class="text-xs font-semibold text-on-surface-variant mt-1">Books Explored</p>
+                                {% if stats.total_views >= 20 %}
+                                <span class="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">🧭 Explorer</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="{{ url_for('main.books') }}" class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 flex items-center gap-5 group hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                        <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all">
+                            <span class="material-symbols-outlined text-primary group-hover:text-white text-2xl" style="font-variation-settings: 'FILL' 1;">library_books</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">My Library</h4>
+                            <p class="text-xs text-on-surface-variant">Manage your book collection</p>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant/30 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                    </a>
+                    
+                    <a href="{{ url_for('public.list_books') }}" class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 flex items-center gap-5 group hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                        <div class="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center group-hover:bg-secondary group-hover:scale-110 transition-all">
+                            <span class="material-symbols-outlined text-secondary group-hover:text-white text-2xl" style="font-variation-settings: 'FILL' 1;">explore</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-on-surface group-hover:text-secondary transition-colors">Discover Books</h4>
+                            <p class="text-xs text-on-surface-variant">Explore millions of books</p>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant/30 ml-auto group-hover:text-secondary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Animate stat counters on page load
+    document.querySelectorAll('.font-headline').forEach(el => {
+        const target = parseInt(el.textContent);
+        if (isNaN(target) || target === 0) return;
+        
+        let current = 0;
+        const duration = 800;
+        const increment = target / (duration / 16);
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                el.textContent = target;
+                clearInterval(timer);
+            } else {
+                el.textContent = Math.floor(current);
+            }
+        }, 16);
+    });
+
+    // Animate progress bars on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.width = entry.target.dataset.width || entry.target.style.width;
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    
+    document.querySelectorAll('.rounded-full [style*="width"]').forEach(bar => {
+        observer.observe(bar);
+    });
+</script>
+{% endblock %}

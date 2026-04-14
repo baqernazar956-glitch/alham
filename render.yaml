@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: book-recommendation-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "flask_book_recommendation.app:create_app()"
+    envVars:
+      - key: FLASK_APP
+        value: flask_book_recommendation.app:create_app
+      - key: PYTHON_VERSION
+        value: 3.10.0

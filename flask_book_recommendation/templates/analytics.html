@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}System Analytics | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen bg-surface pt-32 lg:pt-48 pb-48 px-8 lg:px-24">
+    <div class="max-w-screen-2xl mx-auto space-y-16">
+        
+        <header class="space-y-4 text-center md:text-right">
+            <span class="font-label text-xs uppercase tracking-[0.6em] text-primary font-black">Data Intelligence</span>
+            <h1 class="font-headline text-5xl lg:text-7xl font-black text-on-surface tracking-tighter">Acquisition Analytics</h1>
+            <p class="font-body text-xl text-on-surface-variant italic">A real-time deconstruction of your intellectual footprint.</p>
+        </header>
+
+        <div class="bg-surface-container-high p-1 lg:p-12 shadow-[0_100px_200px_-50px_rgba(0,0,0,0.15)] relative overflow-hidden">
+            <div class="absolute inset-0 border-[40px] border-on-surface/[0.01] pointer-events-none"></div>
+            <div class="relative z-10">
+                {% include 'reading_analytics.html' ignore missing %}
+            </div>
+        </div>
+        
+    </div>
+</main>
+{% endblock %}

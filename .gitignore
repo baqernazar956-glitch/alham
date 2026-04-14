@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+
+# Environment Variables
+.env
+.flaskenv
+
+# IDEs
+.vscode/
+.idea/
+
+# Database
+*.sqlite3
+instance/
+*.db
+
+# Logs
+*.log
+*.jsonl
+logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# AI Tool directories
+.kilo/
+.qwen/
+
+# Temporary files
+tmp/
+response.txt
+response_fallback.txt
+all_templates.txt
+
+# AI Models (large files)
+*.pt
+ai_models/
+
+# Stitch design assets
+new_stitch/
+stitch_assets/
+
+# Debug/test scripts in root
+test*.py
+check_*.py
+debug_*.py
+fix_db_covers.py
+preview_*.py
+split.py
+training_monitor_api.py
+update_css.py
+update_db_schema.py
+
+# Images (generated/temp)
+*.png

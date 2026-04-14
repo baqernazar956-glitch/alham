@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Network Metrics | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 bg-surface">
+    <div class="max-w-screen-2xl mx-auto px-8 lg:px-24 pb-24 space-y-24">
+        
+        <!-- Metrics Header -->
+        <header class="space-y-8">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('admin.dashboard') }}" class="group inline-flex items-center gap-4 text-on-surface/40 hover:text-primary transition-all font-label text-xs uppercase tracking-widest font-black">
+                    <span class="material-symbols-outlined text-sm group-hover:-translate-x-2 transition-transform">arrow_back</span>
+                    Administrative Portal
+                </a>
+            </div>
+            
+            <div class="space-y-4">
+                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Performance Index</span>
+                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none">Vitals</h1>
+                <p class="font-body text-on-surface-variant max-w-2xl text-xl">Comprehensive analysis of network load, user interaction density, and historical curation patterns across the digital archives.</p>
+            </div>
+        </header>
+
+        <!-- KPI Grid -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-on-surface/5 border border-on-surface/5">
+            {% set metrics_data = [
+                ('Active Nodes', stats.total_users if stats else 0, 'group', 'text-primary'),
+                ('Cataloged Folios', stats.total_books if stats else 0, 'library_books', 'text-secondary'),
+                ('Annotations', stats.total_reviews if stats else 0, 'rate_review', 'text-on-surface/40'),
+                ('Live Sessions', stats.active_users if stats else 0, 'person_pin', 'text-primary')
+            ] %}
+            {% for label, val, icon, text_color in metrics_data %}
+            <div class="bg-surface p-12 space-y-8 group hover:bg-surface-container-low transition-all">
+                <div class="{{ text_color }} flex justify-between items-start">
+                    <span class="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">{{ icon }}</span>
+                    <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40">{{ label }}</span>
+                </div>
+                <h3 class="font-headline text-5xl font-black text-on-surface">{{ val }}</h3>
+            </div>
+            {% endfor %}
+        </section>
+
+        <!-- Architectural Analysis (Charts) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-px bg-on-surface/5 border border-on-surface/5">
+            <!-- Signal Flow Chart -->
+            <div class="bg-surface p-16 space-y-12">
+                <div class="flex justify-between items-end border-b border-on-surface/10 pb-8">
+                    <div class="space-y-4">
+                        <h3 class="font-headline font-black text-3xl">Signal Flow</h3>
+                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">Network Activity Velocity</p>
+                    </div>
+                    <span class="material-symbols-outlined text-primary text-4xl">monitoring</span>
+                </div>
+                
+                <div class="h-80 relative">
+                    <svg class="w-full h-full" viewBox="0 0 400 150" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="signalGrad" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#a04100" stop-opacity="0.1"/>
+                                <stop offset="100%" stop-color="#a04100" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M0,130 Q50,120 100,70 T200,90 T300,40 T400,20 L400,150 L0,150 Z" fill="url(#signalGrad)"/>
+                        <path d="M0,130 Q50,120 100,70 T200,90 T300,40 T400,20" fill="none" stroke="#a04100" stroke-width="4" stroke-linecap="round"/>
+                        
+                        <!-- Anchor points -->
+                        <circle cx="100" cy="70" r="4" fill="#a04100" />
+                        <circle cx="200" cy="90" r="4" fill="#a04100" />
+                        <circle cx="300" cy="40" r="4" fill="#a04100" />
+                        <circle cx="400" cy="20" r="4" fill="#a04100" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Taxonomy Breakdown -->
+            <div class="bg-surface p-16 space-y-12">
+                <div class="flex justify-between items-end border-b border-on-surface/10 pb-8">
+                    <div class="space-y-4">
+                        <h3 class="font-headline font-black text-3xl">Taxonomy</h3>
+                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">Category Distribution</p>
+                    </div>
+                    <span class="material-symbols-outlined text-secondary text-4xl">category</span>
+                </div>
+
+                <div class="space-y-10">
+                    {% if category_stats %}
+                        {% for cat, count in category_stats[:5] %}
+                        <div class="space-y-4 group">
+                            <div class="flex justify-between items-end">
+                                <span class="font-headline font-black text-lg group-hover:text-primary transition-colors">{{ cat }}</span>
+                                <span class="font-label text-xs font-black text-on-surface/20 uppercase tracking-widest">{{ count }} Volumes</span>
+                            </div>
+                            <div class="h-1 bg-surface-container-highest w-full relative">
+                                <div class="h-full bg-primary transition-all duration-1000" style="--ui-p: {{ [count * 5, 100]|min }}%; width: var(--ui-p);"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="py-24 text-center space-y-6 border border-dashed border-on-surface/10 bg-surface-container-low">
+                            <span class="material-symbols-outlined text-4xl text-on-surface/10">donut_large</span>
+                            <p class="font-body italic text-on-surface/30">Taxonomy data currently being processed.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Personnel Registry (Table) -->
+        <section class="space-y-12">
+            <div class="flex items-center justify-between pb-8 border-b border-on-surface/10">
+                <h2 class="font-headline text-4xl font-black tracking-tight text-on-surface">Personnel Registry</h2>
+                <span class="font-label text-[10px] uppercase font-bold text-on-surface/30">Node Credentials Verification</span>
+            </div>
+            
+            <div class="bg-surface border border-on-surface/5 overflow-hidden shadow-2xl">
+                <table class="w-full text-left font-body">
+                    <thead>
+                        <tr class="bg-surface-container-high border-b border-on-surface/10">
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface">Identification</th>
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface">Digital Coordinate</th>
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-center">Load</th>
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-right">Clearance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-on-surface/5">
+                        {% if recent_users %}
+                        {% for user in recent_users[:10] %}
+                        <tr class="hover:bg-surface-container-low transition-colors group">
+                            <td class="px-12 py-8">
+                                <div class="flex items-center gap-6">
+                                    <div class="w-12 h-12 bg-surface-container-highest flex items-center justify-center font-headline font-black text-xl text-primary border border-on-surface/5 group-hover:bg-primary group-hover:text-white transition-all">
+                                        {{ user.name[0]|upper }}
+                                    </div>
+                                    <span class="font-headline font-black text-on-surface">{{ user.name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-12 py-8 text-on-surface/60 font-body text-sm lowercase">{{ user.email }}</td>
+                            <td class="px-12 py-8 text-center">
+                                <span class="inline-flex items-center justify-center bg-on-surface/5 w-12 h-12 font-headline font-black text-primary">
+                                    {{ user.books.count() if user.books else 0 }}
+                                </span>
+                            </td>
+                            <td class="px-12 py-8 text-right">
+                                {% if user.is_admin %}
+                                <span class="px-4 py-2 bg-secondary text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Administrator</span>
+                                {% else %}
+                                <span class="px-4 py-2 bg-on-surface/5 text-on-surface/40 text-[10px] font-black uppercase tracking-widest">Standard Curator</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="px-12 py-32 text-center text-on-surface/20">
+                                <p class="font-headline font-bold text-xl">No identity nodes detected in current epoch.</p>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

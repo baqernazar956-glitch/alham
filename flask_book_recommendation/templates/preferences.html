@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Preferences | Elham{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 flex items-center justify-center bg-surface px-8 pb-24">
+    <div class="w-full max-w-5xl space-y-16">
+        
+        <!-- Preferences Header -->
+        <div class="text-center space-y-4">
+            <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Personalize Your Experience</span>
+            <h1 class="font-headline text-7xl font-black tracking-tighter">Your Interests</h1>
+            <p class="font-body text-on-surface-variant max-w-xl mx-auto">Select the genres you enjoy reading. We'll use these to recommend books you will love.</p>
+        </div>
+
+        <!-- Configuration Card -->
+        <div class="bg-surface-container-low p-12 lg:p-16 shadow-2xl relative overflow-hidden">
+            <!-- Decorative watermark -->
+            <div class="absolute -top-12 -right-12 font-headline text-9xl font-black text-on-surface/[0.03] select-none pointer-events-none">TUNE</div>
+            
+            <form method="POST" action="{{ url_for('prefs.form') }}" class="relative z-10 space-y-16">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                    {% set genres_map = [
+                        ('Fiction', 'Fiction', 'auto_fix_high'), 
+                        ('Science Fiction', 'Sci-Fi', 'rocket_launch'), 
+                        ('Mystery', 'Mystery', 'search'), 
+                        ('Thriller', 'Thriller', 'bolt'), 
+                        ('Romance', 'Romance', 'favorite'), 
+                        ('Non-Fiction', 'Non-Fiction', 'menu_book'), 
+                        ('Biography', 'Biography', 'person_book'), 
+                        ('History', 'History', 'castle'), 
+                        ('Science', 'Science', 'science'), 
+                        ('Technology', 'Technology', 'devices'), 
+                        ('Philosophy', 'Philosophy', 'psychology'), 
+                        ('Art', 'Art', 'palette'), 
+                        ('Business', 'Business', 'trending_up'), 
+                        ('Self-Help', 'Self-Help', 'self_improvement'), 
+                        ('Travel', 'Travel', 'flight'), 
+                        ('Horror', 'Horror', 'sentiment_very_dissatisfied'), 
+                        ('Poetry', 'Poetry', 'edit_document'), 
+                        ('Children', 'Children', 'child_care')
+                    ] %}
+                    
+                    {% for val, label, icon in genres_map %}
+                    <label class="group relative cursor-pointer">
+                        <input type="checkbox" name="interests" value="{{ val }}" class="hidden peer"
+                            {% if current_user.is_authenticated and val in (current_user.interests or []) %}checked{% endif %}>
+                        
+                        <div class="h-full flex flex-col items-center justify-center p-8 bg-surface border-2 border-on-surface-variant/5 group-hover:bg-surface-container-high group-hover:border-primary/20 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all duration-500 shadow-sm peer-checked:shadow-xl active:scale-95">
+                            <span class="material-symbols-outlined text-4xl mb-4 group-hover:scale-110 transition-transform">{{ icon }}</span>
+                            <span class="font-headline font-bold text-xs uppercase tracking-widest text-center">{{ label }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-8 justify-center pt-8 border-t border-on-surface/5">
+                    <a href="{{ url_for('main.home') }}" class="font-headline font-black text-on-surface/40 hover:text-primary transition-all px-12 py-6 text-sm uppercase tracking-widest">
+                        Skip for now
+                    </a>
+                    <button type="submit" class="bg-primary hover:bg-on-surface text-white font-headline font-black px-12 py-6 text-xl transition-all active:scale-[0.98] shadow-2xl flex items-center justify-center gap-3">
+                        <span class="material-symbols-outlined">save</span>
+                        Save Preferences
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Expanse | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 bg-surface">
+    <div class="max-w-screen-2xl mx-auto px-8 lg:px-24 pb-24 space-y-32">
+        
+        <!-- Architectural Hero -->
+        <section class="relative bg-on-surface p-16 lg:p-24 overflow-hidden group">
+            <!-- Decorative Patterns -->
+            <div class="absolute -right-32 -top-32 w-96 h-96 bg-primary opacity-10 rounded-full blur-3xl group-hover:bg-secondary transition-colors duration-1000"></div>
+            <div class="absolute left-0 bottom-0 w-full h-full border-[32px] border-white/5 pointer-events-none"></div>
+            
+            <div class="relative z-10 space-y-12 max-w-3xl">
+                <div class="space-y-6">
+                    <span class="font-label text-xs uppercase tracking-[0.8em] text-primary">Algorithmic Discovery</span>
+                    <h1 class="font-headline text-8xl font-black text-white tracking-tighter leading-none">Expanse</h1>
+                    <p class="font-body text-2xl text-white/60 leading-relaxed font-light">Navigating complex intellectual landscapes through multi-layered neural curation.</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-8">
+                    <a href="{{ url_for('public.list_books') }}" class="bg-primary text-white font-headline font-black px-12 py-6 text-sm uppercase tracking-widest hover:bg-white hover:text-primary transition-all shadow-2xl">Scale Search</a>
+                    <div class="flex items-center gap-4 text-white/30 font-label text-[10px] uppercase font-black">
+                        <span class="w-2 h-2 bg-primary rounded-full"></span>
+                        Deep Scan Active
+                    </div>
+                </div>
+            </div>
+
+            <!-- Absolute Iconography -->
+            <div class="absolute right-24 bottom-24 opacity-5 hidden lg:block">
+                <span class="material-symbols-outlined text-[300px] text-white select-none">architecture</span>
+            </div>
+        </section>
+
+        <!-- Locus: Local Archives -->
+        {% if locals and locals|length %}
+        <section class="space-y-12">
+            <div class="flex items-center justify-between border-b border-on-surface/10 pb-8">
+                <div class="space-y-2">
+                    <h2 class="font-headline text-5xl font-black tracking-tight">Locus</h2>
+                    <p class="font-label text-xs font-bold text-on-surface/30 uppercase tracking-[0.4em]">Integrated Archive Entries</p>
+                </div>
+            </div>
+            
+            <div class="flex overflow-x-auto gap-12 pb-16 no-scrollbar snap-x">
+                {% for b in locals %}
+                <div class="snap-start shrink-0 w-48 sm:w-64 space-y-6 group cursor-pointer" onclick="window.location.href='{{ url_for('main.book_detail', book_id=b.id) }}';">
+                    <div class="aspect-[2/3] bg-surface-container-highest relative shadow-xl group-hover:shadow-2xl transition-all duration-700 overflow-hidden">
+                        <img src="{{ b.cover_url or 'https://placehold.co/400x600/fbfbe2/a04100?text=Folio' }}" 
+                             alt="{{ b.title }}" loading="lazy" decoding="async"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                        
+                        <!-- Actions Overlay -->
+                        <div class="absolute inset-x-0 bottom-0 p-6 flex flex-col gap-3 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-gradient-to-t from-on-surface to-transparent backdrop-blur-sm">
+                            <a href="{{ url_for('main.book_read', book_id=b.id) }}" class="w-full bg-primary text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest text-center hover:bg-secondary">Navigate Text</a>
+                            <a href="{{ url_for('main.book_detail', book_id=b.id) }}" class="w-full bg-white/10 text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest text-center hover:bg-white/20 border border-white/10">Analyze</a>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="font-headline font-black text-xl text-on-surface group-hover:text-primary transition-colors truncate" title="{{ b.title }}">{{ b.title }}</h4>
+                        <div class="flex justify-between items-center">
+                            <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate max-w-[70%]">{{ b.author or "Unidentified" }}</p>
+                            <div class="flex items-center gap-1 text-primary">
+                                <span class="font-headline font-black text-xs">4.8</span>
+                                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Cosmos: Global Repository -->
+        <section class="space-y-12">
+            <div class="flex items-center justify-between border-b border-on-surface/10 pb-8">
+                <div class="space-y-2">
+                    <h2 class="font-headline text-5xl font-black tracking-tight">Cosmos</h2>
+                    <p class="font-label text-xs font-bold text-on-surface/30 uppercase tracking-[0.4em]">Universal Network Metadata</p>
+                </div>
+            </div>
+            
+            {% if gbooks and gbooks|length %}
+            <div class="flex overflow-x-auto gap-12 pb-16 no-scrollbar snap-x">
+                {% for g in gbooks %}
+                <div class="snap-start shrink-0 w-48 sm:w-64 space-y-6 group">
+                    <div class="aspect-[2/3] bg-surface-container-highest relative shadow-xl group-hover:shadow-2xl transition-all duration-700 overflow-hidden">
+                        <img src="{{ g.cover_url or 'https://placehold.co/400x600/fbfbe2/a04100?text= Folio' }}" 
+                             alt="{{ g.title }}" loading="lazy" decoding="async"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 grayscale group-hover:grayscale-0">
+                        
+                        <!-- Discovery Overlay -->
+                        <div class="absolute inset-x-0 bottom-0 p-6 flex flex-col gap-3 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-gradient-to-t from-on-surface to-transparent backdrop-blur-sm">
+                            <form method="post" action="{{ url_for('main.create_book') }}" class="w-full m-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="title" value="{{ g.title }}">
+                                <input type="hidden" name="author" value="{{ g.author or '' }}">
+                                <input type="hidden" name="description" value="{{ g.description or '' }}">
+                                <input type="hidden" name="cover_url" value="{{ g.cover_url or '' }}">
+                                <button class="w-full bg-primary text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-primary transition-all">Integrate</button>
+                            </form>
+                            {% if g.google_id %}
+                            <a href="{{ url_for('rec.view_google', google_id=g.google_id, title=g.title) }}" class="w-full bg-white/10 text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest text-center border border-white/10 hover:bg-white/20">Preview</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="font-headline font-black text-xl text-on-surface group-hover:text-primary transition-colors truncate" title="{{ g.title }}">{{ g.title }}</h4>
+                        <div class="flex justify-between items-center">
+                            <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate max-w-[70%]">{{ g.author or "Unidentified" }}</p>
+                            <div class="flex items-center gap-1 text-on-surface/20">
+                                <span class="font-headline font-black text-xs">SCAN</span>
+                                <span class="material-symbols-outlined text-[14px]">sensors</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Structural Placeholder -->
+            <div class="py-32 text-center bg-surface-container-low border border-dashed border-on-surface/10 space-y-8 flex flex-col items-center">
+                <div class="w-24 h-24 bg-surface flex items-center justify-center border border-on-surface/5">
+                    <span class="material-symbols-outlined text-4xl text-on-surface/10">language</span>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="font-headline font-black text-3xl">Cosmos Connection Required</h3>
+                    <p class="font-body text-on-surface-variant max-w-sm mx-auto">Initiate a global search to bridge the data gap and uncover universal folio entries.</p>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+{% endblock %}

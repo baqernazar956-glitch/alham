@@ -1,0 +1,330 @@
+<script>
+    {% if book %}
+    const bookId = "{{ book.id }}";
+    const bookTitle = "{{ book.title | replace('\"', '\\\"') }}";
+    {% endif %}
+    let chatHistory = [];
+
+    const overlay = document.getElementById('modalOverlay');
+    const container = document.getElementById('modalContainer');
+
+    function openModal(content) {
+        container.innerHTML = content;
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.remove('opacity-0');
+            container.classList.remove('scale-95');
+        }, 50);
+    }
+    
+    function closeModal() {
+        overlay.classList.add('opacity-0');
+        container.classList.add('scale-95');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 700);
+    }
+    
+    overlay.onclick = (e) => { if(e.target === overlay) closeModal(); };
+
+    function openChatModal() {
+        openModal(`
+            <div class="flex flex-col h-full bg-surface">
+                <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
+                    <div class="space-y-2">
+                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">AI Chat Connected</span>
+                        <h3 class="font-headline font-black text-2xl text-on-surface tracking-tighter uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[400px]">Chat: ${bookTitle}</h3>
+                    </div>
+                    <button onclick="closeModal()" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                
+                <div id="chatMessages" class="flex-grow overflow-y-auto p-12 space-y-8 bg-surface no-scrollbar">
+                    <div class="flex justify-start">
+                        <div class="bg-surface-container-high p-8 max-w-[85%] border-r-4 border-primary">
+                            <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4">Elham AI</p>
+                            <p class="font-body text-lg text-on-surface/70 leading-relaxed italic">Hi! I'm ready to answer any questions you have about "${bookTitle}". What would you like to know?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 bg-surface-container-high border-t border-on-surface/5">
+                    <div class="relative flex items-center gap-6">
+                        <input type="text" id="chatInput" placeholder="Ask a question..." 
+                            class="flex-grow bg-surface border-none p-6 font-headline font-black text-xs uppercase tracking-widest focus:ring-2 focus:ring-primary outline-none shadow-inner"/>
+                        <button onclick="sendChatMessage()" class="w-16 h-16 bg-on-surface text-white flex items-center justify-center transition-all shadow-2xl hover:bg-primary">
+                            <span class="material-symbols-outlined transform -scale-x-100">keyboard_arrow_left</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `);
+        document.getElementById('chatInput').onkeypress = (e) => { if(e.key === 'Enter') sendChatMessage(); };
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if(!msg) return;
+        const chatBox = document.getElementById('chatMessages');
+        
+        chatBox.innerHTML += `
+            <div class="flex justify-end">
+                <div class="bg-on-surface text-white p-8 max-w-[85%] shadow-2xl relative">
+                    <div class="absolute right-0 top-0 w-1 h-full bg-primary/40"></div>
+                    <p class="font-body text-lg italic leading-relaxed">${msg}</p>
+                </div>
+            </div>`;
+        
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        const typingId = 'typing-' + Date.now();
+        chatBox.innerHTML += `
+            <div id="${typingId}" class="flex justify-start">
+                <div class="bg-surface-container-low p-8 flex items-center gap-4 border border-on-surface/5">
+                    <span class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
+                    <span class="font-label text-[8px] uppercase tracking-widest text-on-surface/30">Thinking...</span>
+                </div>
+            </div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const res = await fetch(`/public/books/${bookId}/chat`, { 
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                }, 
+                body: JSON.stringify({message:msg, history:chatHistory}) 
+            });
+            const data = await res.json();
+            document.getElementById(typingId).remove();
+            
+            chatBox.innerHTML += `
+                <div class="flex justify-start">
+                    <div class="bg-surface-container-high p-8 max-w-[85%] border-r-4 border-primary">
+                        <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4">Elham AI</p>
+                        <p class="font-body text-lg text-on-surface/70 leading-relaxed italic">${data.reply.replace(/\n/g, '<br>')}</p>
+                    </div>
+                </div>`;
+            
+            chatHistory.push({role:'user',content:msg},{role:'assistant',content:data.reply});
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch(e) { 
+            document.getElementById(typingId).remove();
+            chatBox.innerHTML += `<div class="p-6 bg-primary/10 text-primary font-headline font-black text-[9px] uppercase tracking-widest text-center">Error: Please try again.</div>`;
+        }
+    }
+
+    async function generateSummary() {
+        openModal(`
+            <div class="p-24 text-center space-y-12">
+                <div class="relative w-24 h-24 mx-auto">
+                    <div class="absolute inset-0 bg-primary/10 rounded-full animate-ping"></div>
+                    <div class="relative w-24 h-24 border-[12px] border-on-surface/5 border-t-primary rounded-full animate-spin"></div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase font-black">Generating Summary</h3>
+                    <p class="font-label text-[10px] text-on-surface/30 uppercase tracking-[0.5em] font-black">Reading Book Contents...</p>
+                </div>
+            </div>
+        `);
+        try {
+            const res = await fetch(`/public/books/${bookId}/ai-summary`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                }
+            });
+            const data = await res.json();
+            
+            const summaryBody = data.success && data.summary 
+                ? `<p class="font-body text-xl text-on-surface/80 leading-relaxed">${data.summary.replace(/\n/g, '<br>')}</p>`
+                : `<div class="p-12 bg-primary/5 text-center">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-4">error</span>
+                    <p class="font-headline font-black text-xs uppercase tracking-widest text-primary mb-2">Error</p>
+                    <p class="font-body text-on-surface/60">${data.error || 'Failed to generate summary. Please try again later.'}</p>
+                   </div>`;
+
+            openModal(`
+                <div class="flex flex-col h-full bg-surface">
+                    <div class="p-12 border-b border-on-surface/5 flex justify-between items-center">
+                        <div>
+                            <p class="font-headline font-black text-[10px] uppercase tracking-[0.2em] text-primary/60 mb-2">Exclusive AI Insight</p>
+                            <h2 class="font-headline font-black text-3xl text-on-surface">Book Deep-Dive</h2>
+                        </div>
+                        <button onclick="closeModal()" class="w-12 h-12 bg-on-surface/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto p-12 scrollbar-premium">
+                        <div class="max-w-3xl mx-auto">
+                            ${summaryBody}
+                        </div>
+                    </div>
+                </div>
+            `);
+        } catch(e) { 
+            closeModal();
+            alert('Error generating summary.'); 
+        }
+    }
+
+    function openCoachModal() {
+        openModal(`
+            <div class="p-16 space-y-16">
+                <div class="flex justify-between items-center">
+                    <div class="space-y-2">
+                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Reading Coach Setup</span>
+                        <h3 class="font-headline font-black text-4xl text-on-surface tracking-tighter uppercase">Choose Your Pace</h3>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-8">
+                    ${[{d:7,l:'Rapid'}, {d:14,l:'Standard'}, {d:30,l:'Measured'}].map(p=>`
+                    <button onclick="generateReadingPlan(${p.d})" class="group bg-surface-container-high border-2 border-transparent p-10 transition-all hover:bg-on-surface hover:text-white flex flex-col items-center gap-2 shadow-2xl">
+                        <span class="font-headline font-black text-4xl group-hover:text-primary transition-colors">${p.d}</span>
+                        <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40 group-hover:opacity-100">${p.l} Pace</span>
+                    </button>`).join('')}
+                </div>
+                
+                <div class="pt-12 border-t border-on-surface/5 space-y-8">
+                    <span class="font-label text-[9px] font-black text-on-surface/20 uppercase tracking-[0.4em]">Custom Number of Days:</span>
+                    <div class="flex gap-6">
+                        <input type="number" id="customDays" placeholder="7" class="w-32 bg-surface-container-high border-none p-6 font-headline font-black text-lg text-center outline-none focus:ring-2 focus:ring-primary shadow-inner"/>
+                        <button onclick="generateReadingPlan(document.getElementById('customDays').value)" class="flex-grow bg-on-surface text-white py-6 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">Create Schedule</button>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+
+    async function generateReadingPlan(days) {
+        if(!days||days<1) return;
+        openModal(`
+            <div class="p-24 text-center space-y-12">
+                <div class="w-16 h-16 border-[8px] border-on-surface/5 border-t-primary rounded-full animate-spin mx-auto"></div>
+                <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">Creating Schedule</h3>
+            </div>
+        `);
+        try {
+            const res = await fetch('/public/api/coach/plan', {
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json',
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                },
+                body:JSON.stringify({
+                    title:bookTitle,
+                    pages:parseInt("{{ book.pageCount or 320 }}"),
+                    days:parseInt(days)
+                })
+            });
+            const data = await res.json();
+            
+            let milestonesHTML = '';
+            if(data.schedule && data.schedule.length > 0) {
+                milestonesHTML = data.schedule.map(m=>`
+                    <div class="flex items-start gap-8 p-8 bg-surface-container-low border border-on-surface/5 group hover:bg-surface-container-high transition-all">
+                        <div class="w-16 h-16 bg-surface-container-high font-headline font-black text-xs flex items-center justify-center text-primary border border-on-surface/5 group-hover:bg-primary group-hover:text-white transition-all">DAY ${m.day}</div>
+                        <div class="flex-1 pt-2">
+                             <p class="font-body text-lg italic text-on-surface/70 leading-relaxed">${m.task}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                milestonesHTML = `<div class="p-12 bg-surface-container-low text-on-surface/40 font-body text-xl italic text-center">Failed to generate a custom schedule.</div>`;
+            }
+            
+            openModal(`
+                <div class="flex flex-col h-full bg-surface">
+                    <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
+                        <div class="space-y-2">
+                            <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Your Reading Schedule</span>
+                            <h3 class="font-headline font-black text-2xl text-on-surface tracking-tighter uppercase">Goal: ${days} Days</h3>
+                        </div>
+                        <button onclick="closeModal()" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-12 space-y-6 bg-surface no-scrollbar">
+                        ${milestonesHTML}
+                    </div>
+                    ${data.advice ? `
+                    <div class="p-12 border-t border-on-surface/5 bg-surface-container-low">
+                        <div class="flex items-start gap-6">
+                            <span class="material-symbols-outlined text-primary text-3xl">light_mode</span>
+                            <p class="font-body text-lg text-on-surface/60 italic leading-relaxed">${data.advice}</p>
+                        </div>
+                    </div>` : ''}
+                </div>
+            `);
+        } catch(e) { closeModal(); alert('Failed to create schedule.'); }
+    }
+
+    async function updateShelf(btn, status) {
+        const isAuth = {{ 'true' if current_user.is_authenticated else 'false' }};
+        if(!isAuth) return window.location.href = "{{ url_for('auth.login') }}";
+        
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-4">sync</span> Saving...';
+        
+        try {
+            const res = await fetch(`{{ url_for('public.add_to_shelf', gid=book.id if book else '', status='') }}${status}`, {
+                method:'POST',
+                headers: {
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                }
+            });
+            const data = await res.json();
+            if(data.success) {
+                window.location.reload();
+            } else { 
+                alert('Failed to update library.'); 
+                btn.disabled=false; 
+                btn.innerHTML = originalHTML;
+            }
+        } catch(e) { 
+            alert('Error updating library.'); 
+            btn.disabled=false; 
+            btn.innerHTML = originalHTML;
+        }
+    }
+
+    function toggleReviewForm() {
+        const container = document.getElementById('review-form-container');
+        container.classList.toggle('hidden');
+        if (!container.classList.contains('hidden')) {
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.parentElement.onmouseenter = () => {
+            const r = parseInt(star.dataset.rating);
+            document.querySelectorAll('.rating-star').forEach(s => {
+                if (parseInt(s.dataset.rating) <= r) {
+                    s.style.fontVariationSettings = "'FILL' 1";
+                    s.style.color = "#ea580c";
+                }
+            });
+        };
+        star.parentElement.onmouseleave = () => {
+            const checked = document.querySelector('.rating-input:checked');
+            const r = checked ? parseInt(checked.value) : 0;
+            document.querySelectorAll('.rating-star').forEach(s => {
+                if (parseInt(s.dataset.rating) <= r) {
+                    s.style.fontVariationSettings = "'FILL' 1";
+                    s.style.color = "#ea580c";
+                } else {
+                    s.style.fontVariationSettings = "'FILL' 0";
+                    s.style.color = "";
+                }
+            });
+        };
+    });
+</script>

@@ -1,0 +1,287 @@
+<main class="pt-24 bg-background min-h-screen">
+    <!-- Hero Section -->
+    <section class="relative min-h-[819px] flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-[#30007c] to-[#6f26f6] text-white py-20 px-8">
+        <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwgkC_cgKneCJu3L5F51pdugw_Kh-tpsSnvxSO6DiMRKAs0JIBdY2IJG9sKXmG3LtFd5s9daKUe9hO83VJftIB5gj_oiMWvRZyt0J3fAUmTzefj8Sd8LvQg4-nlEjqA8MmnT1H6Bq-Hf5GsBSSz-yFHv-xCCZDIlZ53BXD9sHuYu9kSTfR5A6Wbm-tgqQhhFXLRYuChQyteziY17Q1BCuDmLS_KY38_yDBeTMaCKiZVKziJ4UmDaKhmjHFVMABycHlc-7LooTZ9yI');"></div>
+        <div class="max-w-[1440px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center relative z-10">
+            <!-- Left: Book Cover -->
+            <div class="lg:col-span-5 relative group">
+                <div class="absolute -inset-4 bg-primary/20 blur-3xl rounded-full"></div>
+                <div class="relative transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+                    {% if book.cover %}
+                    <img alt="{{ book.title }}" class="rounded-lg shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] w-full max-w-md mx-auto aspect-[2/3] object-cover border-4 border-white/10" src="{{ book.cover }}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://placehold.co/400x600/f8fafc/ea580c?text=Book';">
+                    {% else %}
+                    <img alt="{{ book.title }}" class="rounded-lg shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] w-full max-w-md mx-auto aspect-[2/3] object-cover border-4 border-white/10" src="https://placehold.co/400x600/f8fafc/ea580c?text=Book">
+                    {% endif %}
+                    <div class="absolute bottom-6 right-[-20px] bg-secondary px-6 py-3 rounded-xl shadow-xl animate-bounce">
+                        <p class="text-xs font-bold uppercase tracking-widest text-on-secondary">Digital Edition</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Right: Content -->
+            <div class="lg:col-span-7 space-y-8">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        {% if book.categories %}
+                        {% set cats = book.categories if book.categories is iterable and book.categories is not string else [book.categories] %}
+                        <span class="px-4 py-1 bg-white/10 backdrop-blur-md rounded-full text-sm font-medium border border-white/20">{{ cats[0] }}</span>
+                        {% endif %}
+                        <div class="flex items-center text-tertiary-fixed">
+                            {% set display_rating = avg_rating if reviews else (book.rating or 4.5)|float %}
+                            {% for i in range(5) %}
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ 1 if display_rating > i else 0 }};">star</span>
+                            {% endfor %}
+                            <span class="ml-2 text-white/80 text-sm">({{ display_rating }} Rating)</span>
+                        </div>
+                    </div>
+                    <h1 class="text-6xl md:text-8xl font-black tracking-tighter leading-none">{{ book.title }}</h1>
+                    <p class="text-2xl text-primary-fixed font-medium">by {{ book.author or 'Unidentified' }}</p>
+                </div>
+                <div class="text-xl text-slate-300 max-w-2xl leading-relaxed line-clamp-3">
+                    {{ book.desc|striptags|truncate(250) if book.desc else 'A curated volume from the Digital Archive.' }}
+                </div>
+                <div class="flex items-center gap-8 py-4">
+                    <div>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Volume</p>
+                        <p class="text-4xl font-black">{{ book.pageCount or book.page_count or 'N/A' }} <span class="text-lg opacity-50">Pgs</span></p>
+                    </div>
+                    <div class="h-12 w-[1px] bg-white/20"></div>
+                    <div>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Release</p>
+                        <p class="text-4xl font-black text-primary-fixed">{{ (book.publishedDate or book.published_date or 'N/A')[:4] }}</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    {% if book.preview or book.file_url %}
+                    <a href="{{ book.preview or book.file_url }}" target="_blank" class="bg-primary text-on-primary px-10 py-5 rounded-xl text-lg font-bold hover:shadow-[0_20px_40px_rgba(111,38,246,0.3)] transition-all active:scale-95 flex items-center gap-3">
+                        <span class="material-symbols-outlined">auto_stories</span>
+                        Read Book
+                    </a>
+                    {% else %}
+                    <button onclick="updateShelf(this, 'reading')" class="bg-primary text-on-primary px-10 py-5 rounded-xl text-lg font-bold hover:shadow-[0_20px_40px_rgba(111,38,246,0.3)] transition-all active:scale-95 flex items-center gap-3">
+                        <span class="material-symbols-outlined">auto_stories</span>
+                        Start Reading
+                    </button>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated %}
+                    <button onclick="updateShelf(this, 'later')" id="btn-later" class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-xl text-lg font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-3">
+                        <span class="material-symbols-outlined">{{ 'check_circle' if current_status == 'later' else 'library_add' }}</span>
+                        {{ 'In Library' if current_status == 'later' else 'Add to Library' }}
+                    </button>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-xl text-lg font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-3">
+                        <span class="material-symbols-outlined">login</span>
+                        Log in to Save
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="max-w-[1440px] mx-auto px-8 -mt-16 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Description Card -->
+            <div class="lg:col-span-2 bg-white rounded-xl p-12 shadow-xl border border-outline-variant/10">
+                <h2 class="text-3xl font-bold mb-8 flex items-center gap-4">
+                    <span class="w-12 h-1 bg-primary rounded-full"></span>
+                    About this Book
+                </h2>
+                <div class="prose prose-lg text-on-surface-variant space-y-6 leading-relaxed selection:bg-primary/10">
+                    {{ book.desc|safe if book.desc else 'No description available for this book yet.' }}
+                </div>
+                
+                <!-- AI HUB Interface -->
+                <div class="mt-16 pt-16 border-t border-slate-100">
+                    <h3 class="text-xl font-bold mb-8 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">psychology</span>
+                        Interactive Features
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="openChatModal()" class="flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high rounded-xl transition-all group">
+                            <div class="text-left">
+                                <p class="font-bold text-on-surface">Chat with Book</p>
+                                <p class="text-xs text-on-surface-variant">Ask questions about this book</p>
+                            </div>
+                            <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">chat_bubble</span>
+                        </button>
+                        <button onclick="generateSummary()" class="flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high rounded-xl transition-all group">
+                            <div class="text-left">
+                                <p class="font-bold text-on-surface">Book Summary</p>
+                                <p class="text-xs text-on-surface-variant">Read a quick AI-generated summary</p>
+                            </div>
+                            <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">summarize</span>
+                        </button>
+                        <button onclick="openCoachModal()" class="md:col-span-2 flex items-center justify-between p-6 bg-primary/5 hover:bg-primary/10 rounded-xl transition-all group border border-primary/10">
+                            <div class="text-left">
+                                <p class="font-bold text-primary">Reading Coach</p>
+                                <p class="text-xs text-primary/60">Create a personalized reading schedule</p>
+                            </div>
+                            <span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">auto_graph</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meta Info Side Column -->
+            <div class="space-y-8">
+                <!-- Stats Grid -->
+                <div class="bg-primary text-on-primary rounded-xl p-8 shadow-lg">
+                    <h3 class="text-xl font-bold mb-6">Details</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Category</p>
+                            <p class="text-xl font-bold">Book</p>
+                        </div>
+                        <div>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Language</p>
+                            <p class="text-xl font-bold">English</p>
+                        </div>
+                        <div>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Source</p>
+                            <p class="text-lg font-bold leading-tight uppercase">{{ book.source or 'Google' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Status</p>
+                            <p class="text-lg font-bold leading-tight">Available</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Author Spotlight -->
+                <div class="bg-white rounded-xl p-8 border border-outline-variant/10 shadow-lg">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary border border-primary/10">
+                            <span class="material-symbols-outlined text-3xl">person</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">{{ book.author or 'Unknown author' }}</h4>
+                            <p class="text-sm text-slate-500">Author</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-on-surface-variant leading-relaxed mb-4">
+                        Part of the Elham digital library collection.
+                    </p>
+                    <a class="text-primary font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all" href="#">
+                        View Author Page
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                </div>
+
+                <!-- Feedback / Reviews -->
+                <div class="bg-surface-container-low rounded-xl p-8 border border-outline-variant/5">
+                    <h3 class="font-bold text-on-surface mb-6 flex items-center justify-between">
+                        Reviews
+                        {% if reviews %}
+                        <span class="text-xs font-normal text-on-surface-variant bg-surface-container px-2 py-1 rounded">{{ reviews|length }} Reviews</span>
+                        {% endif %}
+                    </h3>
+                    
+                    <div class="space-y-8 max-h-[400px] overflow-y-auto no-scrollbar pr-2">
+                        {% if reviews %}
+                            {% for review in reviews %}
+                            <div class="space-y-2 border-b border-on-surface/5 pb-6 last:border-0">
+                                <div class="flex text-secondary scale-75 origin-left mb-1">
+                                    {% for i in range(5) %}
+                                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {{ 1 if review.rating > i else 0 }};">star</span>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-sm italic text-on-surface-variant leading-relaxed">"{{ review.review_text }}"</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                        {{ review.user.name[0]|upper if review.user.name else '?' }}
+                                    </div>
+                                    <p class="text-[10px] font-bold text-slate-400">— {{ review.user.name }}</p>
+                                    <span class="text-[8px] text-slate-300 uppercase ml-auto">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-12 opacity-40">
+                                <span class="material-symbols-outlined text-4xl mb-2">rate_review</span>
+                                <p class="text-xs italic">No reviews yet. Be the first to share your thoughts.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Review Button -->
+                    <div class="mt-8 pt-8 border-t border-on-surface/10 text-center">
+                        {% if current_user.is_authenticated %}
+                            <button onclick="toggleReviewForm()" class="w-full py-4 bg-on-surface text-surface rounded-xl font-bold text-sm hover:bg-primary transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">edit_note</span>
+                                {{ 'Edit Your Review' if user_review else 'Write a Review' }}
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="text-primary text-xs font-bold hover:underline">Log in to write a review</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Review Form -->
+                <div id="review-form-container" class="hidden bg-white rounded-xl p-8 border-2 border-primary/20 shadow-2xl animate-fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-black text-on-surface uppercase tracking-widest text-xs">Your Review</h4>
+                        <button onclick="toggleReviewForm()" class="text-slate-400 hover:text-on-surface"><span class="material-symbols-outlined text-sm">close</span></button>
+                    </div>
+                    <form action="{{ url_for('public.submit_review', gid=book.id) }}" method="POST" class="space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="flex items-center justify-center gap-4 py-4 bg-surface-container-low rounded-xl">
+                            {% for i in range(1, 6) %}
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="rating" value="{{ i }}" class="hidden rating-input" {{ 'checked' if user_review and user_review.rating == i else '' }} required>
+                                <span class="material-symbols-outlined text-3xl text-slate-300 group-hover:text-secondary transition-colors rating-star" data-rating="{{ i }}" style="font-variation-settings: 'FILL' {{ 1 if user_review and user_review.rating >= i else 0 }}; {{ 'color: #ea580c !important;' if user_review and user_review.rating >= i else '' }}">star</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <textarea name="review_text" rows="4" class="w-full bg-surface-container border-none p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-primary outline-none" placeholder="Share your thoughts about this book..." required>{{ user_review.review_text if user_review else '' }}</textarea>
+                        <button type="submit" class="w-full py-5 bg-primary text-on-primary rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Books Section -->
+    {% if similar %}
+    <section class="max-w-[1440px] mx-auto px-8 py-24">
+        <div class="flex items-center justify-between mb-12">
+            <div>
+                <h2 class="text-4xl font-black tracking-tight">Similar Books</h2>
+                <p class="text-slate-500">You might also like these</p>
+            </div>
+            <div class="flex gap-4">
+                <button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-white transition-all shadow-sm">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-white transition-all shadow-sm">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+            {% for b in similar[:5] %}
+            <a href="{{ url_for('public.book_detail', gid=b.id) }}" class="group cursor-pointer">
+                <div class="aspect-[2/3] overflow-hidden rounded-lg mb-4 shadow-md group-hover:shadow-2xl transition-all group-hover:-translate-y-2 duration-300 relative bg-surface-container">
+                    <img alt="{{ b.title }}" class="w-full h-full object-cover" src="{{ b.cover or b.cover_url or 'https://placehold.co/300x450/fbfbe2/a04100?text=Node' }}">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <h4 class="font-bold group-hover:text-primary transition-colors truncate text-sm">{{ b.title }}</h4>
+                <p class="text-xs text-slate-500 truncate">{{ b.author or 'Unknown' }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Unified Modal Container -->
+    <div id="modalOverlay" class="fixed inset-0 bg-on-surface/90 backdrop-blur-3xl z-[100] hidden flex items-center justify-center p-8 transition-all duration-700 opacity-0 overflow-hidden">
+        <div id="modalContainer" class="bg-surface w-full max-w-3xl shadow-[0_100px_200px_rgba(0,0,0,0.5)] transform scale-95 transition-all duration-700 relative h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col">
+            <!-- Content Injected Here -->
+        </div>
+    </div>
+</main>
+
+{% include "public_book_detail_scripts.html" %}

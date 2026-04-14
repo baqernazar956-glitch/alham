@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{% block title %}Elham - Inspired Reading{% endblock %}</title>
+
+    <!-- Performance: Preconnect to critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://books.google.com" crossorigin>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography,aspect-ratio"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    <!-- Performance: Reduced font weights (removed 500/600 unused), added display=swap -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet" />
+    <!-- Performance: Lazy-load Material Symbols (heavy ~300KB font) -->
+    <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        onload="this.rel='stylesheet'">
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet">
+    </noscript>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#fed07f",
+                        "surface-tint": "#6f26f6",
+                        "on-tertiary-container": "#634500",
+                        "tertiary-dim": "#6d4d05",
+                        "surface-dim": "#e0d9ca",
+                        "surface-variant": "#e9e2d4",
+                        "error": "#ac3149",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#68001f",
+                        "on-tertiary-fixed": "#4b3400",
+                        "primary-container": "#cab6ff",
+                        "tertiary": "#7b5913",
+                        "on-primary-fixed-variant": "#5300c8",
+                        "secondary-container": "#ffdbcb",
+                        "on-primary-fixed": "#30007c",
+                        "on-error": "#fff7f7",
+                        "tertiary-container": "#fed07f",
+                        "tertiary-fixed-dim": "#efc373",
+                        "on-secondary-fixed": "#6e2b00",
+                        "on-secondary-fixed-variant": "#9b3f00",
+                        "on-tertiary-fixed-variant": "#6e4f07",
+                        "primary-fixed-dim": "#bea5ff",
+                        "secondary-fixed": "#ffdbcb",
+                        "primary-dim": "#6302ea",
+                        "inverse-surface": "#100e09",
+                        "on-surface": "#353229",
+                        "on-primary-container": "#4800b1",
+                        "primary-fixed": "#cab6ff",
+                        "surface-container": "#f4ede2",
+                        "surface-container-high": "#eee7db",
+                        "on-background": "#353229",
+                        "on-tertiary": "#fff8f1",
+                        "on-secondary-container": "#8b3800",
+                        "on-primary": "#fdf7ff",
+                        "on-surface-variant": "#635f54",
+                        "secondary": "#a14200",
+                        "outline": "#7f7a6f",
+                        "inverse-on-surface": "#a19c95",
+                        "secondary-fixed-dim": "#ffc9b0",
+                        "inverse-primary": "#9e79ff",
+                        "error-container": "#f76a80",
+                        "surface-container-low": "#f9f3e9",
+                        "primary": "#6f26f6",
+                        "outline-variant": "#b7b1a4",
+                        "background": "#fff9f0",
+                        "surface-bright": "#fff9f0",
+                        "surface": "#fff9f0",
+                        "secondary-dim": "#8d3900",
+                        "surface-container-highest": "#e9e2d4",
+                        "on-secondary": "#fff7f5",
+                        "error-dim": "#770326"
+                    },
+                    fontFamily: {
+                        "headline": ["Be Vietnam Pro", "sans-serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        html {
+            font-size: 125% !important;
+        }
+
+        /* Increased base font size (20px) */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Instant Loading SPA Progress Bar */
+        #global-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 0%;
+            background: linear-gradient(90deg, #6f26f6, #9e79ff);
+            z-index: 99999;
+            opacity: 0;
+            transition: width 300ms ease-out, opacity 100ms ease-out;
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(111, 38, 246, 0.5);
+        }
+
+        .htmx-request #global-loader {
+            opacity: 1;
+            width: 80%;
+            transition: width 2s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 100ms ease-in;
+        }
+
+        /* Mobile Menu Styles */
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #mobile-menu.open {
+            transform: translateX(0);
+        }
+
+        #mobile-menu-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #mobile-menu-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+
+<body hx-boost="true"
+    class="bg-background font-body text-on-background selection:bg-primary-container selection:text-on-primary-container antialiased">
+    <!-- Global SPA Loading Indicator -->
+    <div id="global-loader"></div>
+
+    <!-- Full Page Loading Overlay for Redirects -->
+    <div id="page-loading-overlay"
+        style="display:none; position:fixed; inset:0; background:rgba(255,249,240,0.95); z-index:999999; backdrop-filter:blur(10px);"
+        class="flex flex-col items-center justify-center gap-6">
+        <!-- Spinning Loader -->
+        <div
+            style="width:60px; height:60px; border:5px solid #e9e2d4; border-top:5px solid #6f26f6; border-radius:50%; animation:spin 0.8s linear infinite;">
+        </div>
+        <!-- Loading Text -->
+        <p style="font-family:'Be Vietnam Pro',sans-serif; font-size:1.25rem; font-weight:900; color:#6f26f6; letter-spacing:-0.02em;"
+            id="loading-text">Loading...</p>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-[9998] md:hidden" onclick="toggleMobileMenu()">
+    </div>
+
+    <!-- Mobile Menu Slide-out -->
+    <div id="mobile-menu"
+        class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-surface-container-lowest shadow-2xl z-[9999] md:hidden flex flex-col">
+        <!-- Menu Header -->
+        <div class="flex justify-between items-center p-6 border-b border-surface-container">
+            <span class="text-2xl font-black text-primary font-headline italic">Elham</span>
+            <button onclick="toggleMobileMenu()" class="p-2 hover:bg-surface-container rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface">close</span>
+            </button>
+        </div>
+
+        <!-- Menu Links -->
+        <div class="flex flex-col gap-2 p-4 flex-1 overflow-y-auto">
+            <a href="{{ url_for('main.home') }}" onclick="toggleMobileMenu()"
+                class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'main.home' else 'text-on-surface hover:bg-surface-container' }}">
+                <span class="material-symbols-outlined">explore</span>
+                Discover
+            </a>
+            <a href="{{ url_for('public.list_books') }}" onclick="toggleMobileMenu()"
+                class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'public.list_books' else 'text-on-surface hover:bg-surface-container' }}">
+                <span class="material-symbols-outlined">public</span>
+                Public Library
+            </a>
+            <a href="{{ url_for('main.books') }}" onclick="toggleMobileMenu()"
+                class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'main.books' else 'text-on-surface hover:bg-surface-container' }}">
+                <span class="material-symbols-outlined">menu_book</span>
+                My Book
+            </a>
+
+            {% if current_user.is_authenticated %}
+            <div class="border-t border-surface-container my-2"></div>
+            <a href="{{ url_for('auth.profile') }}" onclick="toggleMobileMenu()"
+                class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all text-on-surface hover:bg-surface-container">
+                <span class="material-symbols-outlined">person</span>
+                Profile
+            </a>
+            {% else %}
+            <div class="border-t border-surface-container my-2"></div>
+            <a href="{{ url_for('auth.login') }}" onclick="toggleMobileMenu()"
+                class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all text-on-surface hover:bg-surface-container">
+                <span class="material-symbols-outlined">login</span>
+                Login
+            </a>
+            <a href="{{ url_for('auth.register') }}" onclick="toggleMobileMenu()"
+                class="flex items-center justify-center gap-3 px-4 py-4 mx-4 mt-2 bg-primary text-white rounded-xl text-lg font-bold shadow-lg">
+                <span class="material-symbols-outlined">person_add</span>
+                Register
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Flash Messages Container -->
+    <div class="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4 pointer-events-none">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div
+            class="bg-surface-container-lowest/90 backdrop-blur-xl border-l-4 {{ 'border-primary' if category == 'success' else 'border-error' if category == 'error' else 'border-secondary' }} p-4 shadow-2xl mb-2 pointer-events-auto flex justify-between items-center rounded-xl">
+            <span class="text-xs font-bold font-label uppercase tracking-wider text-on-surface">{{ message }}</span>
+            <button onclick="this.parentElement.remove()"
+                class="material-symbols-outlined text-sm opacity-60 hover:opacity-100">close</button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- TopNavBar -->
+    <nav class="fixed top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-surface-container-highest">
+        <div class="flex justify-between items-center w-full px-8 py-4 max-w-full mx-auto">
+            <div class="flex items-center gap-10">
+                <a href="{{ url_for('main.home') }}"
+                    class="flex items-center gap-3 text-3xl font-black tracking-tighter text-[#4800b1] font-headline italic">
+                    <span class="material-symbols-outlined text-4xl"
+                        style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+                    Elham
+                </a>
+                <div class="hidden md:flex items-center gap-4">
+                    <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'main.home' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
+                        href="{{ url_for('main.home') }}">Discover</a>
+                    <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'public.list_books' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
+                        href="{{ url_for('public.list_books') }}">Public Library</a>
+                    <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'main.books' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
+                        href="{{ url_for('main.books') }}">My Book</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-5">
+                <!-- Mobile Menu Button (Hamburger) -->
+                <button onclick="toggleMobileMenu()"
+                    class="md:hidden p-2.5 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-2xl">menu</span>
+                </button>
+                <form action="{{ url_for('public.list_books') }}" method="GET" class="relative hidden lg:block">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl"
+                        data-icon="search">search</span>
+                    <input name="q"
+                        class="bg-surface-container border-none rounded-full pl-10 pr-4 py-2 w-72 focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm font-medium"
+                        placeholder="Search for your next soul-read..." type="text" />
+                </form>
+                <div class="flex items-center gap-1">
+                    {% if current_user.is_authenticated %}
+                    <button
+                        class="p-2.5 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors hidden sm:block">
+                        <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                    </button>
+                    <a href="{{ url_for('auth.profile') }}"
+                        class="w-10 h-10 rounded-full overflow-hidden ml-3 ring-2 ring-surface-container hover:ring-primary transition-all">
+                        <img alt="User Profile"
+                            src="{{ current_user.profile_picture or 'https://api.dicebear.com/7.x/initials/svg?seed=' + current_user.name }}" />
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}"
+                        class="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors mx-2">Login</a>
+                    <a href="{{ url_for('auth.register') }}"
+                        class="ml-2 px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all">
+                        Register
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-surface-container-highest pt-20 pb-12">
+        <div class="max-w-[1800px] mx-auto px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-16 mb-16">
+                <div class="lg:col-span-2">
+                    <span class="text-2xl font-black text-primary mb-8 block font-headline italic">Elham</span>
+                    <p class="text-on-surface-variant text-sm font-medium leading-relaxed max-w-sm">
+                        Connecting curious minds with transformative stories. Your next inspiration starts with a single
+                        page. Join our community of readers today.
+                    </p>
+                    <div class="flex gap-4 mt-8">
+                        <a class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-primary hover:text-white transition-all"
+                            href="#"><span class="material-symbols-outlined text-xl">public</span></a>
+                        <a class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-primary hover:text-white transition-all"
+                            href="#"><span class="material-symbols-outlined text-xl">language</span></a>
+                        <a class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-primary hover:text-white transition-all"
+                            href="#"><span class="material-symbols-outlined text-xl">mail</span></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">Explore
+                    </h4>
+                    <ul class="space-y-4 text-sm font-semibold">
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Browse
+                                Genres</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Gift
+                                Cards</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Book
+                                Clubs</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Authors
+                                Portal</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">Company
+                    </h4>
+                    <ul class="space-y-4 text-sm font-semibold">
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">About
+                                Us</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contact
+                                Support</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Careers</a>
+                        </li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Press
+                                Kit</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">Legal
+                    </h4>
+                    <ul class="space-y-4 text-sm font-semibold">
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of
+                                Service</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy
+                                Policy</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Cookie
+                                Settings</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div
+                class="pt-10 border-t border-surface-container flex flex-col md:flex-row justify-between items-center gap-6">
+                <p class="text-on-surface-variant text-[13px] font-medium">
+                    © 2024 Elham. Crafted with intention for the inspired reader.
+                </p>
+                <div class="flex items-center gap-2 text-on-surface-variant text-[13px] font-medium">
+                    <span>Designed with</span>
+                    <span class="material-symbols-outlined text-secondary text-sm" data-icon="favorite"
+                        style="font-variation-settings: 'FILL' 1;">favorite</span>
+                    <span>for book lovers worldwide.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global JavaScript for Mobile Menu and HTMX Handling -->
+    <script>
+        // Show full-page loading overlay for form submissions/redirects
+        function showPageLoading(text = 'Loading...') {
+            const overlay = document.getElementById('page-loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            if (overlay) {
+                loadingText.textContent = text;
+                overlay.style.display = 'flex';
+            }
+        }
+
+        // Hide full-page loading overlay
+        function hidePageLoading() {
+            const overlay = document.getElementById('page-loading-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Intercept all form submissions to show loading overlay
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (form && form.method && form.method.toLowerCase() === 'post') {
+                // Disable submit button to prevent double submissions
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.6';
+                    submitBtn.style.cursor = 'not-allowed';
+                }
+                // Show loading overlay
+                showPageLoading('Processing...');
+            }
+        });
+
+        // Prevent HTMX from boosting POST forms - let them do full page reload
+        document.body.addEventListener('htmx:configRequest', function (evt) {
+            const form = evt.target;
+            if (form && form.method && form.method.toLowerCase() === 'post') {
+                // Cancel HTMX boost for POST forms
+                evt.preventDefault();
+                evt.detail.elt.submit();
+            }
+        });
+
+        // Hide loading overlay when page finishes loading
+        window.addEventListener('load', function () {
+            hidePageLoading();
+        });
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('open');
+
+            // Prevent body scroll when menu is open
+            if (menu.classList.contains('open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close mobile menu on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const menu = document.getElementById('mobile-menu');
+                if (menu.classList.contains('open')) {
+                    toggleMobileMenu();
+                }
+            }
+        });
+
+        // HTMX Error Handling and Timeout Recovery
+        // Only handle errors for HTMX requests, not regular form submissions
+        document.body.addEventListener('htmx:timeout', function (evt) {
+            // Only show timeout error if it's NOT a form submission with loading overlay
+            const form = evt.target.closest('form');
+            if (!form || form.method.toLowerCase() !== 'post') {
+                hidePageLoading();
+                showFlashMessage('Connection timeout. Please try again.', 'error');
+            }
+        });
+
+        document.body.addEventListener('htmx:error', function (evt) {
+            // Only show error if it's NOT a form submission with loading overlay
+            const form = evt.target.closest('form');
+            if (!form || form.method.toLowerCase() !== 'post') {
+                hidePageLoading();
+                showFlashMessage('An error occurred. Please try again.', 'error');
+            }
+        });
+
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            // Hide loading overlay after HTMX request completes
+            hidePageLoading();
+            // Reset body overflow if it was stuck
+            if (document.body.style.overflow === 'hidden') {
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Flash message helper for JS errors
+        function showFlashMessage(message, type = 'info') {
+            const container = document.querySelector('.fixed.top-24');
+            if (!container) return;
+
+            // Limit to max 3 flash messages
+            const existingMessages = container.querySelectorAll('div');
+            if (existingMessages.length >= 3) {
+                // Remove oldest message
+                existingMessages[0].remove();
+            }
+
+            const div = document.createElement('div');
+            div.className = `bg-surface-container-lowest/90 backdrop-blur-xl border-l-4 ${type === 'error' ? 'border-error' : 'border-primary'} p-4 shadow-2xl mb-2 pointer-events-auto flex justify-between items-center rounded-xl`;
+            div.innerHTML = `
+                <span class="text-xs font-bold font-label uppercase tracking-wider text-on-surface">${message}</span>
+                <button onclick="this.parentElement.remove()" class="material-symbols-outlined text-sm opacity-60 hover:opacity-100">close</button>
+            `;
+            container.appendChild(div);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (div.parentElement) {
+                    div.remove();
+                }
+            }, 5000);
+        }
+
+        // Guard against stuck body overflow
+        window.addEventListener('beforeunload', function () {
+            document.body.style.overflow = '';
+        });
+
+        // Periodically check and fix overflow every 30 seconds
+        setInterval(function () {
+            const loader = document.getElementById('global-loader');
+            if (loader && !document.body.classList.contains('htmx-request')) {
+                document.body.style.overflow = '';
+            }
+        }, 30000);
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

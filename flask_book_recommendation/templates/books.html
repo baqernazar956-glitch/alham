@@ -1,0 +1,599 @@
+{% extends "base.html" %}
+
+{% block title %}My Library | Elham - Inspired Reading{% endblock %}
+
+{% block head %}
+<style>
+    .font-headline { font-family: 'Be Vietnam Pro', sans-serif; }
+    .glass-card { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.4); }
+    .custom-quote-shape { border-radius: 1rem 3rem 1rem 3rem; }
+    
+    /* Smooth tab transitions */
+    .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
+    .tab-content.active { display: grid; opacity: 1; }
+    .tab-content.active-list { display: flex; flex-direction: column; opacity: 1; }
+    
+    /* List View Overrides */
+    .book-card-list { display: flex !important; flex-direction: row !important; align-items: stretch !important; }
+    .book-card-list .book-cover-container { width: 120px !important; height: auto !important; aspect-ratio: 2/3; flex-shrink: 0; }
+    .book-card-list .book-info-container { flex: 1; padding: 1.5rem !important; display: flex; flex-direction: column; justify-content: center; }
+    .book-card-list .book-actions-overlay { position: static !important; opacity: 1 !important; visibility: visible !important; background: transparent !important; flex-direction: row !important; padding: 0 !important; gap: 0.5rem !important; margin-top: 1rem; }
+    .book-card-list .book-actions-overlay > * { transform: none !important; }
+    .book-card-list .quick-action-btn { background: var(--color-surface-container) !important; color: var(--color-on-surface) !important; }
+    .book-card-list .quick-action-btn:hover { background: var(--color-primary) !important; color: white !important; }
+
+    /* Animated Counters */
+    @property --num {
+        syntax: "<integer>";
+        initial-value: 0;
+        inherits: false;
+    }
+    
+    /* Gradient Text */
+    .text-gradient { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Progress Ring */
+    .progress-ring__circle {
+        transition: stroke-dashoffset 1.5s ease-in-out;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+    
+    /* Hide scrollbars for horizontal lists */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="mt-8 px-4 md:px-8 max-w-full mx-auto space-y-24 pb-32" dir="ltr">
+    
+    <!-- Reading Statistics Hero Section -->
+    <section class="relative bg-gradient-to-br from-primary to-primary-dim rounded-[2.5rem] p-10 md:p-20 text-on-primary overflow-hidden shadow-2xl">
+        <div class="relative z-10 grid md:grid-cols-2 gap-12 items-center text-left">
+            <div>
+                <h1 class="text-5xl md:text-7xl font-black font-headline tracking-tighter mb-6">My Book</h1>
+                <p class="text-primary-container font-body text-2xl max-w-lg editorial-text opacity-90">"A book is a dream that you hold in your hand." Track your journey between the lines and document your intellectual milestones in your private Elham space.</p>
+            </div>
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Stat Card 1 -->
+                <div class="bg-white/5 backdrop-blur-2xl rounded-3xl p-8 flex flex-col items-center justify-center text-center border border-white/10 group">
+                    <span class="text-5xl font-black font-headline tabular-nums" data-val="{{ reading_stats.total_books }}">0</span>
+                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">Books</span>
+                </div>
+                <!-- Stat Card 2 -->
+                <div class="bg-secondary-container/95 text-on-secondary-container rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-3xl group">
+                    <span class="text-5xl font-black font-headline tabular-nums" data-val="{{ reading_stats.finished_count }}">0</span>
+                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">Finished</span>
+                </div>
+                <!-- Stat Card 3 -->
+                <div class="bg-tertiary-container text-on-tertiary-container rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-3xl group">
+                    <span class="text-5xl font-black font-headline tabular-nums" data-val="{{ reading_stats.total_pages }}">0</span>
+                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">Pages</span>
+                </div>
+            </div>
+        </div>
+        <!-- Decorative Elements -->
+        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/40 rounded-full blur-[120px]"></div>
+        <div class="absolute -top-24 -right-24 w-80 h-80 bg-white/30 rounded-full blur-[100px]"></div>
+    </section>
+
+    <!-- Currently Reading Spotlight (if any) -->
+    {% if reading_books %}
+    <section>
+        <div class="flex items-center gap-4 mb-10 pl-2">
+            <div class="w-2 h-10 bg-secondary rounded-full"></div>
+            <h2 class="text-3xl md:text-4xl font-black font-headline text-on-surface tracking-tight">Active Journeys</h2>
+            <div class="h-px bg-outline-variant/20 flex-1 ml-4 hidden sm:block"></div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
+            {% for book in reading_books[:2] %}
+            <div class="glass-panel p-6 md:p-8 rounded-[2rem] flex flex-col sm:flex-row gap-8 items-center sm:items-stretch shadow-xl hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all group relative overflow-hidden">
+                <!-- Decorative blurred cover bg -->
+                <div class="absolute inset-0 opacity-[0.03] scale-150 blur-2xl z-0" style="background: url('{{ book.cover_url or 'https://placehold.co/400x600/fbfbe2/a04100' }}') center/cover;"></div>
+                
+                <div class="w-40 sm:w-48 shrink-0 relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+                    <img src="{{ book.cover_url or 'https://placehold.co/400x600/fbfbe2/a04100?text=Cover' }}" alt="Cover" class="w-full h-auto aspect-[2/3] object-cover rounded-2xl shadow-2xl">
+                    <div class="absolute -bottom-4 right-4 bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center font-black text-sm shadow-lg border-2 border-white">
+                        {{ book.reading_progress }}%
+                    </div>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-between py-2 z-10 w-full">
+                    <div class="text-center sm:text-left">
+                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary bg-primary/10 px-3 py-1 rounded-full mb-3 inline-block">Reading Now</span>
+                        <h3 class="font-headline font-black text-2xl md:text-3xl text-on-surface leading-tight mb-2 line-clamp-2 hover:text-primary transition-colors cursor-pointer" onclick="window.location.href='{{ url_for('main.book_detail', book_id=book.id) }}'">{{ book.title }}</h3>
+                        <p class="text-on-surface-variant font-medium text-sm mb-6">{{ book.author or 'Unknown Author' }}</p>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <div class="flex justify-between items-end mb-3 text-xs font-bold text-on-surface-variant">
+                            <span>Progress</span>
+                            {% if book.page_count %}
+                                <span>{{ (book.page_count * (1 - book.reading_progress / 100)) | int }} pages left</span>
+                            {% else %}
+                                <span>~{{ book.estimated_read_time or 0 }} min left</span>
+                            {% endif %}
+                        </div>
+                        <div class="h-3 w-full bg-surface-container rounded-full overflow-hidden mb-5 border border-outline-variant/10 shadow-inner">
+                            <div class="h-full bg-gradient-to-r from-primary to-inverse-primary rounded-full transition-all duration-1000 ease-out relative overflow-hidden" style="width: 0%;" data-final-width="{{ book.reading_progress }}%">
+                                <div class="absolute top-0 left-0 w-full h-full bg-white/20" style="animation: shimmer 2s infinite linear;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="flex-1 bg-primary text-on-primary font-bold py-3 px-4 rounded-xl text-center text-sm shadow-[0_10px_20px_-5px_rgba(111,38,246,0.3)] hover:shadow-primary/40 hover:-translate-y-0.5 hover:bg-primary-dim transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                                Resume
+                            </a>
+                            <form action="{{ url_for('main.set_book_status', book_id=book.id, status='finished') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="p-3 bg-surface-container text-primary hover:bg-secondary hover:text-white rounded-xl transition-all shadow-sm group/btn tooltip-container relative">
+                                    <span class="material-symbols-outlined font-bold text-[18px] group-hover/btn:scale-110 transition-transform">done</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Smart Library Toolbar & Shelves -->
+    <section class="space-y-8" id="library-core">
+        
+        <!-- Header & Toolbar -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-surface-container-lowest p-4 md:p-6 rounded-[2rem] shadow-sm border border-outline-variant/10 sticky top-[80px] z-40 backdrop-blur-xl bg-opacity-90">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-2xl">book_4</span>
+                </div>
+                <div>
+                    <h2 class="font-headline font-black text-2xl tracking-tight leading-none">Your Collection</h2>
+                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{{ books|length }} Items</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+                <!-- Search within Library -->
+                <div class="relative flex-1 lg:w-64 min-w-[200px]">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50">search</span>
+                    <input type="text" id="lib-search" placeholder="Search title or author..." class="w-full bg-surface-container hover:bg-surface-container-high focus:bg-white focus:ring-2 focus:ring-primary border-none rounded-full py-3.5 pl-12 pr-4 text-sm font-medium transition-colors shadow-inner">
+                </div>
+                
+                <!-- View Toggle -->
+                <div class="hidden md:flex bg-surface-container p-1.5 rounded-full shadow-inner border border-outline-variant/5">
+                    <button class="view-toggle p-2 rounded-full text-primary bg-white shadow-sm transition-all" data-view="grid" aria-label="Grid View">
+                        <span class="material-symbols-outlined text-[20px] block">grid_view</span>
+                    </button>
+                    <button class="view-toggle p-2 rounded-full text-on-surface-variant hover:text-on-surface transition-all" data-view="list" aria-label="List View">
+                        <span class="material-symbols-outlined text-[20px] block">view_list</span>
+                    </button>
+                </div>
+
+                <!-- Add Button -->
+                <button onclick="document.getElementById('addBookModal').showModal()" class="bg-on-surface text-surface py-3.5 px-6 rounded-full font-bold text-sm shadow-[0_10px_20px_-10px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:shadow-lg transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span class="hidden sm:inline">Add Book</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Shelf Tabs (Filters) -->
+        <div class="flex overflow-x-auto hide-scrollbar gap-2 pb-2 border-b border-outline-variant/10">
+            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-primary border-b-2 border-primary bg-primary/5 whitespace-nowrap" data-target="all">
+                All Books <span class="ml-2 bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[10px]">{{ books|length }}</span>
+            </button>
+            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="reading">
+                Reading <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.reading_count }}</span>
+            </button>
+            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="favorites">
+                Favorites <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.favorite_count }}</span>
+            </button>
+            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="later">
+                Wishlist <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.later_count }}</span>
+            </button>
+            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="finished">
+                Finished <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.finished_count }}</span>
+            </button>
+            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="on_hold">
+                On Hold <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.on_hold_count }}</span>
+            </button>
+        </div>
+
+        <!-- Book Display Area -->
+        <div id="library-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-6 tab-content active min-h-[400px]">
+            
+            {% for book in books %}
+            <div class="book-card group relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-outline-variant/5 flex flex-col items-center p-3 text-center h-full" 
+                 data-title="{{ book.title | lower }}" 
+                 data-author="{{ book.author | lower if book.author else '' }}"
+                 data-status="{{ book.status or 'none' }}">
+                
+                <!-- Status Badge -->
+                {% if book.status %}
+                <div class="absolute top-4 left-4 z-20 shadow-md">
+                    {% if book.status == 'favorite' %}
+                        <div class="bg-error text-white w-8 h-8 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">favorite</span></div>
+                    {% elif book.status == 'reading' %}
+                        <div class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">menu_book</span></div>
+                    {% elif book.status == 'finished' %}
+                        <div class="bg-secondary text-white w-8 h-8 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">done_all</span></div>
+                    {% elif book.status == 'later' %}
+                        <div class="bg-tertiary text-white w-8 h-8 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">bookmark_add</span></div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Cover Image Container -->
+                <div class="book-cover-container w-full aspect-[2/3] relative rounded-xl overflow-hidden mb-4 shadow-md bg-surface-container">
+                    <img src="{{ book.cover_url or 'https://placehold.co/300x450/fbfbe2/a04100?text='~book.title[:1] }}" alt="{{ book.title }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 group-hover:blur-[2px] transition-all duration-500">
+                    
+                    <!-- Quick Actions Overlay -->
+                    <div class="book-actions-overlay absolute inset-0 bg-inverse-surface/80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 flex flex-col items-center justify-center gap-3 p-4 backdrop-blur-sm">
+                        <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="quick-action-btn w-full py-2.5 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary-dim transition-colors flex items-center justify-center gap-2 transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75">
+                            <span class="material-symbols-outlined text-[16px]">visibility</span> View Details
+                        </a>
+                        
+                        <div class="grid grid-cols-2 gap-2 w-full transform translate-y-4 group-hover:translate-y-0 duration-300 delay-100">
+                            <!-- Favorite Toggle -->
+                            <form action="{{ url_for('main.set_book_status', book_id=book.id, status='favorite') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="quick-action-btn w-full p-2 bg-surface/10 hover:bg-error hover:text-white text-surface rounded-lg transition-colors flex justify-center backdrop-blur-md border border-white/20" title="Toggle Favorite">
+                                    <span class="material-symbols-outlined text-[18px]">favorite</span>
+                                </button>
+                            </form>
+                            <!-- Finish Toggle -->
+                            <form action="{{ url_for('main.set_book_status', book_id=book.id, status='finished') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="quick-action-btn w-full p-2 bg-surface/10 hover:bg-secondary text-surface hover:text-white rounded-lg transition-colors flex justify-center backdrop-blur-md border border-white/20" title="Mark Finished">
+                                    <span class="material-symbols-outlined text-[18px]">done</span>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <form action="{{ url_for('main.delete_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Remove this book from your library permanently?');" class="w-full transform translate-y-4 group-hover:translate-y-0 duration-300 delay-150">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="quick-action-btn w-full p-2 hover:bg-error/90 text-error-container hover:text-white rounded-lg transition-colors flex justify-center items-center gap-2 text-xs font-bold bg-transparent">
+                                <span class="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="book-info-container w-full flex flex-col items-center">
+                    <h4 class="font-headline font-black text-sm text-on-surface line-clamp-2 leading-tight mb-1" title="{{ book.title }}">{{ book.title }}</h4>
+                    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider line-clamp-1 mb-2">{{ book.author or 'Unknown' }}</p>
+                    
+                    <!-- Stars Display -->
+                    <div class="flex text-tertiary gap-0.5 mt-auto">
+                        {% set user_rating = user_ratings.get(book.google_id, 0) %}
+                        {% for i in range(5) %}
+                            <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' {% if i < user_rating|int %}1{% else %}0{% endif %}; opacity: {% if i < user_rating|int %}1{% else %}0.3{% endif %}">star</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="col-span-full py-20 flex flex-col items-center justify-center text-center">
+                <div class="w-32 h-32 bg-surface-container-high rounded-full flex items-center justify-center mb-6">
+                    <span class="material-symbols-outlined text-outline-variant text-5xl">inventory_2</span>
+                </div>
+                <h3 class="text-2xl font-black font-headline text-on-surface mb-2">Your shelf is empty</h3>
+                <p class="text-on-surface-variant max-w-sm mx-auto mb-8">Start your reading journey by adding books from the public library or manually entering them.</p>
+                <div class="flex gap-4">
+                    <a href="{{ url_for('public.list_books') }}" class="bg-primary text-white font-bold py-3 px-6 rounded-full hover:-translate-y-1 transition-all shadow-lg shadow-primary/30">Explore Public Library</a>
+                    <button onclick="document.getElementById('addBookModal').showModal()" class="bg-surface-container-highest text-on-surface font-bold py-3 px-6 rounded-full hover:bg-outline-variant/20 transition-all">Add Manually</button>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- No Results from Search (Hidden initially) -->
+            <div id="no-search-results" class="col-span-full py-20 flex flex-col items-center justify-center text-center hidden">
+                <span class="material-symbols-outlined text-outline-variant text-5xl mb-4 opacity-50">search_off</span>
+                <p class="font-bold text-lg text-on-surface-variant">No matching books found in your library.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Additional Insights Section -->
+    <div class="grid md:grid-cols-2 gap-8 mt-16">
+        <!-- Category Distribution Chart -->
+        {% if category_distribution %}
+        <section class="bg-surface-container-lowest rounded-[2rem] p-8 md:p-10 shadow-sm border border-outline-variant/10">
+            <h3 class="font-headline font-black text-2xl mb-8 flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary">pie_chart</span>
+                Genre Fingerprint
+            </h3>
+            <div class="relative h-64 w-full flex justify-center">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Quotation Section -->
+        <section class="custom-quote-shape bg-secondary border border-secondary-dim text-white p-10 md:p-14 relative overflow-hidden flex flex-col justify-center shadow-2xl">
+            <span class="material-symbols-outlined text-[10rem] absolute -top-10 -right-4 opacity-10 transform -rotate-12">auto_stories</span>
+            <p class="text-2xl md:text-3xl font-headline font-black italic relative z-10 leading-snug tracking-tight mb-6">
+                "A reader lives a thousand lives before he dies. The man who never reads lives only one."
+            </p>
+            <p class="font-bold text-white/70 text-sm uppercase tracking-[0.2em] relative z-10">— George R.R. Martin</p>
+            <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-white/20 rounded-full blur-[80px]"></div>
+        </section>
+    </div>
+
+</div>
+
+
+<!-- Goal Setting Modal -->
+<dialog id="goalModal" class="bg-surface border border-outline-variant/10 p-10 shadow-2xl w-full max-w-md rounded-[2.5rem] backdrop:bg-inverse-surface/60 backdrop:backdrop-blur-sm">
+    <div class="text-center relative">
+        <button onclick="document.getElementById('goalModal').close()" class="absolute -top-4 -right-4 w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-on-surface hover:bg-error hover:text-white transition-all">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-primary text-4xl">flag</span>
+        </div>
+        <h3 class="font-headline text-3xl font-black mb-2">Yearly Reading Goal</h3>
+        <p class="text-on-surface-variant text-sm mb-8">Set how many books you want to conquer in {{ current_year }}.</p>
+        
+        <form action="{{ url_for('main.update_reading_goal') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-8">
+                <label class="block font-black text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-4">Target Books</label>
+                <div class="flex items-center justify-center gap-4">
+                    <button type="button" onclick="document.getElementById('goal-input').stepDown();" class="w-12 h-12 rounded-full border border-outline-variant/30 flex justify-center items-center hover:bg-surface-container transition-all">-</button>
+                    <input type="number" name="reading_goal" id="goal-input" value="{{ reading_stats.reading_goal }}" min="1" max="500" class="w-32 text-center text-4xl font-headline font-black bg-transparent border-none focus:ring-0 p-0">
+                    <button type="button" onclick="document.getElementById('goal-input').stepUp();" class="w-12 h-12 rounded-full border border-outline-variant/30 flex justify-center items-center hover:bg-surface-container transition-all">+</button>
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:shadow-[0_10px_20px_-5px_rgba(111,38,246,0.4)] transition-all">
+                Save Goal
+            </button>
+        </form>
+    </div>
+</dialog>
+
+<!-- Manual Add Book Modal -->
+<dialog id="addBookModal" class="bg-surface border border-outline-variant/10 p-10 md:p-14 shadow-2xl w-full max-w-2xl rounded-[3rem] backdrop:bg-inverse-surface/80 backdrop:backdrop-blur-md">
+    <div class="space-y-10">
+        <div class="flex justify-between items-start">
+            <div>
+                <span class="font-bold text-[10px] uppercase tracking-[0.4em] text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 inline-block">Manual Entry</span>
+                <h3 class="font-headline text-4xl font-black tracking-tight">Add to Collection</h3>
+            </div>
+            <button onclick="document.getElementById('addBookModal').close()" class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-on-surface hover:bg-error hover:text-white transition-all">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <form action="{{ url_for('main.create_book') }}" method="POST" class="space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="space-y-2">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Title <span class="text-error">*</span></label>
+                <input type="text" name="title" required class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. Dune">
+            </div>
+            <div class="space-y-2">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Author</label>
+                <input type="text" name="author" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. Frank Herbert">
+            </div>
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-on-surface text-surface font-headline font-black py-5 text-xl rounded-2xl hover:bg-primary transition-all flex justify-center items-center gap-3 group shadow-xl">
+                    Add Book
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // --- 1. Animated Numbers ---
+        const numberElements = document.querySelectorAll('[data-val]');
+        numberElements.forEach(el => {
+            const target = parseInt(el.getAttribute('data-val'), 10);
+            if (isNaN(target)) return;
+            
+            let current = 0;
+            const step = Math.max(1, Math.ceil(target / 40)); 
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    el.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = current;
+                }
+            }, 30);
+        });
+
+        // --- 2. Progress Bars Animation ---
+        setTimeout(() => {
+            // Bars
+            document.querySelectorAll('[data-final-width]').forEach(el => {
+                el.style.width = el.getAttribute('data-final-width');
+            });
+            
+            // Goal Ring
+            const ring = document.getElementById('goal-ring');
+            if(ring) {
+                const progress = parseFloat(ring.getAttribute('data-progress')) || 0;
+                const circumference = 2 * Math.PI * 40; // r=40
+                const offset = circumference - (progress / 100) * circumference;
+                ring.style.strokeDashoffset = offset;
+            }
+        }, 300);
+
+        // --- 3. View Toggle (Grid/List) ---
+        const viewToggles = document.querySelectorAll('.view-toggle');
+        const gridContainer = document.getElementById('library-grid-container');
+        const bookCards = document.querySelectorAll('.book-card');
+
+        viewToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const view = toggle.getAttribute('data-view');
+                
+                // Update toggle styles
+                viewToggles.forEach(btn => {
+                    btn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
+                    btn.classList.add('text-on-surface-variant');
+                });
+                toggle.classList.remove('text-on-surface-variant');
+                toggle.classList.add('bg-white', 'text-primary', 'shadow-sm');
+                
+                // Update grid layout
+                if(view === 'list') {
+                    gridContainer.classList.remove('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', '2xl:grid-cols-7', '3xl:grid-cols-8');
+                    gridContainer.classList.add('flex', 'flex-col', 'max-w-4xl', 'mx-auto');
+                    bookCards.forEach(c => c.classList.add('book-card-list'));
+                } else {
+                    gridContainer.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', '2xl:grid-cols-7', '3xl:grid-cols-8');
+                    gridContainer.classList.remove('flex', 'flex-col', 'max-w-4xl', 'mx-auto');
+                    bookCards.forEach(c => c.classList.remove('book-card-list'));
+                }
+            });
+        });
+
+        // --- 4. Filtering (Tabs & Search) ---
+        const tabs = document.querySelectorAll('.shelf-tab');
+        const searchInput = document.getElementById('lib-search');
+        const noResults = document.getElementById('no-search-results');
+        
+        // State
+        let currentTabFilter = 'all';
+        let currentSearchQuery = '';
+
+        function applyFilters() {
+            let visibleCount = 0;
+            const query = currentSearchQuery.toLowerCase().trim();
+            
+            bookCards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                const author = card.getAttribute('data-author') || '';
+                const status = card.getAttribute('data-status') || '';
+                
+                const matchesTab = (currentTabFilter === 'all') || (status === currentTabFilter);
+                const matchesSearch = (title.includes(query) || author.includes(query));
+                
+                if (matchesTab && matchesSearch) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0 && bookCards.length > 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        // Tab click
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Style updates
+                tabs.forEach(t => {
+                    t.classList.remove('text-primary', 'border-primary', 'bg-primary/5');
+                    t.classList.add('text-on-surface-variant', 'border-transparent');
+                });
+                tab.classList.remove('text-on-surface-variant', 'border-transparent');
+                tab.classList.add('text-primary', 'border-primary', 'bg-primary/5');
+                
+                currentTabFilter = tab.getAttribute('data-target');
+                applyFilters();
+            });
+        });
+
+        // Search input
+        searchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            applyFilters();
+        });
+
+        // --- 5. Chart.js for Category Distribution ---
+        {% if category_distribution %}
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        
+        // Parse data from jinja
+        const rawData = {{ category_distribution | tojson }};
+        
+        // Sort and get top 6
+        const sortedData = Object.entries(rawData).sort((a,b) => b[1] - a[1]);
+        const topData = sortedData.slice(0, 6);
+        if(sortedData.length > 6) {
+            const othersSum = sortedData.slice(6).reduce((acc, curr) => acc + curr[1], 0);
+            topData.push(['Other', othersSum]);
+        }
+        
+        const labels = topData.map(d => d[0]);
+        const dataVals = topData.map(d => d[1]);
+        
+        // Elham theme colors
+        const colors = [
+            '#6f26f6', // primary
+            '#a14200', // secondary
+            '#7b5913', // tertiary
+            '#cab6ff', // primary-container
+            '#ffdbcb', // secondary-container
+            '#fed07f', // tertiary-container
+            '#e9e2d4'  // surface-variant
+        ];
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataVals,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: 'bold' },
+                            color: '#635f54', // on-surface-variant
+                            padding: 20,
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#353229',
+                        titleFont: { family: "'Plus Jakarta Sans', sans-serif" },
+                        bodyFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+                        padding: 12,
+                        cornerRadius: 12
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+    });
+</script>
+{% endblock %}

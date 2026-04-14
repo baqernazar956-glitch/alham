@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Neural Analysis | {{ book.title }} | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen bg-surface pt-32 lg:pt-48 pb-48 px-8 lg:px-24">
+    <div class="max-w-4xl mx-auto space-y-16">
+        
+        <!-- Analysis Nav -->
+        <nav class="sticky top-12 z-50 bg-surface-container-high/90 backdrop-blur-3xl p-6 lg:p-8 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] flex flex-col md:flex-row items-center justify-between gap-8 group">
+            <div class="absolute left-0 top-0 w-1 h-full bg-primary"></div>
+            
+            <div class="flex items-center gap-8 w-full md:w-auto">
+                <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="w-12 h-12 bg-surface flex items-center justify-center text-on-surface/20 hover:text-primary transition-all shadow-2xl group/back">
+                    <span class="material-symbols-outlined group-hover/back:translate-x-2 transition-transform">arrow_forward</span>
+                </a>
+                <div class="space-y-1 flex-1 min-w-0">
+                    <h1 class="font-headline font-black text-xl text-on-surface truncate tracking-tight">{{ book.title }}</h1>
+                    <p class="font-label text-[9px] uppercase font-bold text-secondary tracking-widest">Creator: {{ book.author or 'Unidentified' }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="flex bg-surface p-1 shadow-inner">
+                    <button onclick="changeSize(-2)" class="w-10 h-10 flex items-center justify-center text-on-surface/40 hover:text-primary transition-all">
+                        <span class="material-symbols-outlined text-lg">remove</span>
+                    </button>
+                    <div class="w-px bg-on-surface/5 my-2"></div>
+                    <button onclick="changeSize(2)" class="w-10 h-10 flex items-center justify-center text-on-surface/40 hover:text-primary transition-all">
+                        <span class="material-symbols-outlined text-lg">add</span>
+                    </button>
+                </div>
+                <button onclick="toggleMode()" id="modeBtn" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
+                    <span class="material-symbols-outlined text-xl">contrast</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- The Manuscript Stage -->
+        <article id="readerStage" class="bg-surface p-12 md:p-24 lg:p-32 shadow-[0_100px_200px_-50px_rgba(0,0,0,0.1)] relative overflow-hidden transition-colors duration-1000">
+            <!-- Architectural Background -->
+            <div class="absolute inset-0 border-[32px] border-on-surface/[0.02] pointer-events-none"></div>
+            
+            <div id="readerContent" class="relative z-10 max-w-2xl mx-auto font-body text-xl text-on-surface leading-[2.4] transition-all duration-500 antialiased selection:bg-primary selection:text-white" style="--fs: 22px; font-size: var(--fs); text-align: justify;">
+                {{ content|safe }}
+            </div>
+            
+            <!-- Terminal Marker -->
+            <footer class="mt-48 pt-24 border-t border-on-surface/5 text-center relative z-10 space-y-12">
+                <div class="w-16 h-16 bg-surface-container-high mx-auto flex items-center justify-center text-on-surface/10 shadow-2xl relative">
+                    <div class="absolute inset-0 border-[6px] border-on-surface opacity-5"></div>
+                    <span class="material-symbols-outlined">architecture</span>
+                </div>
+                <div class="space-y-4">
+                    <p class="font-label text-xs uppercase tracking-[0.5em] font-black text-on-surface/20">Analysis Session Terminated</p>
+                    <div class="flex justify-center pt-8">
+                        <a href="{{ url_for('main.books') }}" class="bg-on-surface text-white px-12 py-5 font-headline font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-2xl">
+                            Return to Archive
+                        </a>
+                    </div>
+                </div>
+            </footer>
+        </article>
+    </div>
+</main>
+
+<style>
+    #readerContent p { margin-bottom: 3rem; }
+    
+    .dark-mode {
+        background-color: #0c0c05 !important;
+    }
+    .dark-mode #readerStage {
+        background-color: #1a1a12 !important;
+        box-shadow: 0 100px 200px -50px rgba(0,0,0,0.5) !important;
+    }
+    .dark-mode #readerContent {
+        color: #fbfbe2 !important;
+        opacity: 0.8;
+    }
+    .dark-mode #modeBtn {
+        background-color: #fbfbe2 !important;
+        color: #0c0c05 !important;
+    }
+    
+    .sepia-mode {
+        background-color: #f4f1ea !important;
+    }
+    .sepia-mode #readerStage {
+        background-color: #fbfbe2 !important;
+    }
+    .sepia-mode #readerContent {
+        color: #433422 !important;
+    }
+    .sepia-mode #modeBtn {
+        background-color: #a04100 !important;
+        color: #fbfbe2 !important;
+    }
+
+    #readerContent {
+        font-family: 'Cairo', sans-serif;
+        font-weight: 300;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let fontSize = 22;
+let readerMode = 'light'; // light, dark, sepia
+
+function changeSize(v) {
+    fontSize += v;
+    if (fontSize < 16) fontSize = 16;
+    if (fontSize > 48) fontSize = 48;
+    document.getElementById("readerContent").style.setProperty("--fs", fontSize + "px");
+}
+
+function toggleMode() {
+    const body = document.body;
+    const stage = document.getElementById("readerStage");
+    const btn = document.getElementById("modeBtn");
+    const main = document.querySelector('main');
+    
+    if (readerMode === 'light') {
+        readerMode = 'dark';
+        main.classList.add("dark-mode");
+        btn.innerHTML = '<span class="material-symbols-outlined text-xl">light_mode</span>';
+    } else if (readerMode === 'dark') {
+        readerMode = 'sepia';
+        main.classList.remove("dark-mode");
+        main.classList.add("sepia-mode");
+        btn.innerHTML = '<span class="material-symbols-outlined text-xl">coffee</span>';
+    } else {
+        readerMode = 'light';
+        main.classList.remove("sepia-mode");
+        btn.innerHTML = '<span class="material-symbols-outlined text-xl">contrast</span>';
+    }
+}
+</script>
+{% endblock %}

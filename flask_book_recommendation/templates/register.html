@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up | Elham{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 flex items-center justify-center bg-surface px-8 pb-24">
+    <div class="w-full max-w-xl space-y-16">
+        
+        <!-- Registration Header -->
+        <div class="text-center space-y-4">
+            <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">New Account</span>
+            <h1 class="font-headline text-7xl font-black tracking-tighter">Sign Up</h1>
+            <p class="font-body text-on-surface-variant">Join our community of readers and discover your next favorite book.</p>
+        </div>
+
+        <!-- Portal Card -->
+        <div class="bg-surface-container-low p-12 lg:p-16 shadow-2xl relative overflow-hidden">
+            <!-- Decorative watermark -->
+            <div class="absolute -top-12 -right-12 font-headline text-9xl font-black text-on-surface/[0.03] select-none pointer-events-none">SIGNUP</div>
+            
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-12 space-y-4">
+                        {% for category, message in messages %}
+                            <div class="font-label text-[10px] uppercase font-bold tracking-widest p-4 border-l-4 {% if category == 'error' or category == 'danger' %}bg-red-50 text-red-600 border-red-600{% else %}bg-primary/5 text-primary border-primary{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-12 relative z-10">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="space-y-10">
+                    <div class="space-y-2">
+                        <label for="name" class="font-label text-sm uppercase font-black text-secondary tracking-widest">Full Name</label>
+                        <input type="text" name="name" id="name" required 
+                               class="w-full bg-transparent border-b-2 border-on-surface/10 py-4 font-headline text-xl focus:border-primary outline-none transition-all placeholder:text-on-surface/10" 
+                               placeholder="Your Full Name">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="email" class="font-label text-sm uppercase font-black text-secondary tracking-widest">Email Address</label>
+                        <input type="email" name="email" id="email" required 
+                               class="w-full bg-transparent border-b-2 border-on-surface/10 py-4 font-headline text-xl focus:border-primary outline-none transition-all placeholder:text-on-surface/10" 
+                               placeholder="your.email@example.com">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="space-y-2">
+                            <label for="password" class="font-label text-sm uppercase font-black text-secondary tracking-widest">Password</label>
+                            <input type="password" name="password" id="password" required 
+                                   class="w-full bg-transparent border-b-2 border-on-surface/10 py-4 font-headline text-xl focus:border-primary outline-none transition-all placeholder:text-on-surface/10" 
+                                   placeholder="••••••••">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="password_confirm" class="font-label text-sm uppercase font-black text-secondary tracking-widest">Confirm Password</label>
+                            <input type="password" name="password_confirm" id="password_confirm" required 
+                                   class="w-full bg-transparent border-b-2 border-on-surface/10 py-4 font-headline text-xl focus:border-primary outline-none transition-all placeholder:text-on-surface/10" 
+                                   placeholder="••••••••">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pt-8">
+                    <button type="submit" class="w-full bg-primary text-white font-headline font-black py-6 text-xl hover:bg-on-surface transition-all active:scale-[0.98] shadow-2xl">
+                        Create Account
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="text-center">
+            <p class="font-body text-sm text-on-surface-variant">
+                Already have an account? 
+                <a href="{{ url_for('auth.login') }}" class="font-headline font-bold text-primary hover:text-on-surface transition-colors ml-2">Sign In</a>
+            </p>
+        </div>
+    </div>
+</main>
+{% endblock %}

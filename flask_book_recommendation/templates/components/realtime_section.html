@@ -1,0 +1,40 @@
+{% from "components/macros.html" import render_carousel_section %}
+
+{# ═══════════════════════════════════════════════════════════════════════
+   LIVE SIGNAL — Adaptive Synchronization
+   ═══════════════════════════════════════════════════════════════════════ #}
+
+{% if realtime_books and realtime_books|length > 0 %}
+<section class="space-y-12">
+    <div id="section-realtime_adaptive">
+        {{ render_carousel_section(
+            title='In Flux',
+            icon='bolt',
+            books=realtime_books,
+            id_prefix='realtime_adaptive',
+            view_all_url='#'
+        ) }}
+    </div>
+
+    <script>
+        (function() {
+            const sec = document.getElementById('section-realtime_adaptive');
+            if (sec) {
+                const header = sec.querySelector('header');
+                if (header) {
+                    const badgeContainer = header.querySelector('.flex.items-center.gap-6');
+                    if (badgeContainer) {
+                        const badgeOuter = document.createElement('div');
+                        badgeOuter.className = 'ml-8 flex items-center gap-3 bg-primary/10 px-4 py-2 border border-primary/20 shadow-2xl';
+                        badgeOuter.innerHTML = `
+                            <span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                            <span class="font-label text-[10px] uppercase font-black text-primary tracking-widest">Live Matrix</span>
+                        `;
+                        badgeContainer.appendChild(badgeOuter);
+                    }
+                }
+            }
+        })();
+    </script>
+</section>
+{% endif %}

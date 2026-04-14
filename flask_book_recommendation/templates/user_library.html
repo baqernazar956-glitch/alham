@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Curatorial Archive: {{ user.username if user else 'Public Node' }} | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 bg-surface">
+    <div class="max-w-screen-2xl mx-auto px-8 lg:px-24 pb-24 space-y-24">
+        
+        <!-- Archive Header -->
+        <header class="flex flex-col md:flex-row justify-between items-end gap-12 pb-12 border-b border-on-surface/10">
+            <div class="flex items-center gap-8 relative">
+                <!-- Architectural Avatar -->
+                <div class="w-32 h-32 bg-surface-container-high flex items-center justify-center text-primary font-headline font-black text-5xl shadow-2xl relative">
+                    <div class="absolute inset-0 border-[12px] border-on-surface opacity-5"></div>
+                    {{ (user.username[0]|upper) if user and user.username else 'C' }}
+                </div>
+                
+                <div class="space-y-4">
+                    <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Folio Archive</span>
+                    <h1 class="font-headline text-6xl font-black text-on-surface tracking-tighter leading-none">
+                        {{ user.username if user else 'Public Node' }}
+                    </h1>
+                    <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">
+                        {{ total_books if total_books is defined else (books|length if books else 0) }} Integrated Volumes
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <div class="bg-surface-container-low px-8 py-4 border border-on-surface/5 flex flex-col items-center">
+                    <span class="font-label text-[8px] uppercase font-black text-on-surface/30">Node Clearance</span>
+                    <span class="font-headline font-black text-sm uppercase tracking-widest text-primary">Public Access</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- The Archive Grid -->
+        {% if books %}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-12 gap-y-24">
+            {% for book in books %}
+            <article class="group space-y-6" onclick="window.location.href='{{ url_for('public.book_detail', gid=book.id) }}';">
+                <div class="aspect-[2/3] overflow-hidden bg-surface-container-highest relative shadow-[0_30px_60px_-15px_rgba(115,92,0,0.1)] group-hover:shadow-[0_50px_100px_-20px_rgba(115,92,0,0.2)] transition-all duration-700 cursor-pointer">
+                    {% if book.cover %}
+                    <img src="{{ book.cover }}" alt="{{ book.title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/400x600/fbfbe2/a04100?text=Folio'"/>
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center bg-surface-container-high p-8">
+                        <span class="material-symbols-outlined text-primary/20 text-4xl">architecture</span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Architectural Frame Overlay -->
+                    <div class="absolute inset-0 border-[8px] border-white/5 pointer-events-none group-hover:border-white/10 transition-all"></div>
+                </div>
+                
+                <div class="space-y-2">
+                    <h3 class="font-headline font-black text-lg text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-tight">{{ book.title }}</h3>
+                    <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate">{{ book.author or 'Unidentified Creator' }}</p>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty Ledger State -->
+        <div class="py-48 text-center space-y-12 bg-surface-container-low border border-dashed border-on-surface/10">
+            <div class="w-32 h-32 bg-surface mx-auto flex items-center justify-center border border-on-surface/5">
+                <span class="material-symbols-outlined text-6xl text-on-surface/10">inventory_2</span>
+            </div>
+            <div class="space-y-4">
+                <h2 class="font-headline font-black text-4xl">Archive Ledger Empty</h2>
+                <p class="font-body text-on-surface-variant max-w-sm mx-auto italic">This curatorial node has not yet integrated any folio volumes into their public archive.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In | Elham{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 flex items-center justify-center bg-surface px-8 pb-24">
+    <div class="w-full max-w-xl space-y-16">
+        
+        <!-- Identity Header -->
+        <div class="text-center space-y-4">
+            <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Secure Access</span>
+            <h1 class="font-headline text-7xl font-black tracking-tighter">Sign In</h1>
+            <p class="font-body text-on-surface-variant">Enter your details below to access your account.</p>
+        </div>
+
+        <!-- Portal Card -->
+        <div class="bg-surface-container-low p-12 lg:p-16 shadow-2xl relative overflow-hidden">
+            <!-- Decorative ID watermark -->
+            <div class="absolute -top-12 -right-12 font-headline text-9xl font-black text-on-surface/[0.03] select-none pointer-events-none">LOGIN</div>
+            
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-12 space-y-4">
+                        {% for category, message in messages %}
+                            <div class="font-label text-[10px] uppercase font-bold tracking-widest p-4 border-l-4 {% if category == 'error' or category == 'danger' %}bg-red-50 text-red-600 border-red-600{% else %}bg-primary/5 text-primary border-primary{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-12 relative z-10">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="space-y-12">
+                    <div class="space-y-2">
+                        <label for="email" class="font-label text-sm uppercase font-black text-secondary tracking-widest">Email Address</label>
+                        <input type="email" name="email" id="email" required 
+                               class="w-full bg-transparent border-b-2 border-on-surface/10 py-4 font-headline text-xl focus:border-primary outline-none transition-all placeholder:text-on-surface/10" 
+                               placeholder="your.email@example.com">
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-end">
+                            <label for="password" class="font-label text-sm uppercase font-black text-secondary tracking-widest">Password</label>
+                            <a href="#" class="font-label text-sm uppercase font-bold text-on-surface/40 hover:text-primary transition-colors">Forgot Password?</a>
+                        </div>
+                        <input type="password" name="password" id="password" required 
+                               class="w-full bg-transparent border-b-2 border-on-surface/10 py-4 font-headline text-xl focus:border-primary outline-none transition-all placeholder:text-on-surface/10" 
+                               placeholder="••••••••">
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <input type="checkbox" name="remember" id="remember" class="w-4 h-4 accent-primary cursor-pointer">
+                    <label for="remember" class="font-label text-sm uppercase font-bold text-on-surface/60 cursor-pointer">Remember Me</label>
+                </div>
+
+                <div class="pt-8">
+                    <button type="submit" class="w-full bg-primary text-white font-headline font-black py-6 text-xl hover:bg-on-surface transition-all active:scale-[0.98] shadow-2xl">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="text-center">
+            <p class="font-body text-sm text-on-surface-variant">
+                Don't have an account? 
+                <a href="{{ url_for('auth.register') }}" class="font-headline font-bold text-primary hover:text-on-surface transition-colors ml-2">Sign Up Now</a>
+            </p>
+        </div>
+    </div>
+</main>
+{% endblock %}

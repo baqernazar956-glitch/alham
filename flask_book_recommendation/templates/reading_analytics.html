@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Curatorial Insights | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen pt-32 bg-surface">
+    <div class="max-w-5xl mx-auto px-8 lg:px-12 pb-24 space-y-24">
+        
+        <!-- Insights Header -->
+        <header class="flex flex-col md:flex-row justify-between items-end gap-8 pb-12 border-b border-on-surface/10">
+            <div class="space-y-4">
+                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Analytical Oversight</span>
+                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none">Insights</h1>
+                <p class="font-body text-on-surface-variant max-w-lg italic">Mathematical mapping of your curatorial journey across the digital archives.</p>
+            </div>
+            <button class="bg-surface-container-high text-on-surface p-5 hover:bg-primary hover:text-white transition-all shadow-2xl group">
+                <span class="material-symbols-outlined group-hover:rotate-45 transition-transform">share</span>
+            </button>
+        </header>
+
+        <!-- KPI Architecture -->
+        <section class="grid grid-cols-2 gap-px bg-on-surface/5 border border-on-surface/5">
+            <div class="bg-surface p-12 space-y-8 group hover:bg-surface-container-low transition-all">
+                <div class="flex justify-between items-start text-primary">
+                    <span class="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">menu_book</span>
+                    <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40">Integrated Folios</span>
+                </div>
+                <h3 class="font-headline text-6xl font-black text-on-surface leading-none">{{ stats.total_books if stats else 0 }}</h3>
+                <p class="font-label text-[10px] uppercase font-bold text-on-surface/20">Total Library Density</p>
+            </div>
+
+            <div class="bg-surface p-12 space-y-8 group hover:bg-surface-container-low transition-all">
+                <div class="flex justify-between items-start text-secondary">
+                    <span class="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">verified</span>
+                    <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40">Committed Volumes</span>
+                </div>
+                <h3 class="font-headline text-6xl font-black text-on-surface leading-none">{{ stats.finished if stats else 0 }}</h3>
+                <p class="font-label text-[10px] uppercase font-bold text-on-surface/20">Consumption Velocity</p>
+            </div>
+        </section>
+
+        <!-- Sequential Activity (Chart) -->
+        <section class="bg-surface-container-low p-16 shadow-2xl space-y-16">
+            <div class="flex justify-between items-end border-b border-on-surface/10 pb-8">
+                <div class="space-y-4">
+                    <h3 class="font-headline font-black text-3xl">Linguistic Flow</h3>
+                    <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">Weekly Sequential Consumption</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <h2 class="font-headline text-5xl font-black text-on-surface">{{ stats.weekly_pages if stats else 0 }}</h2>
+                    <span class="font-label text-xs font-black uppercase text-secondary">Pages</span>
+                </div>
+            </div>
+
+            <div class="h-64 w-full relative">
+                <svg class="w-full h-full" viewBox="0 0 400 150" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="InsightsLineGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+                            <stop offset="0%" stop-color="#a04100" stop-opacity="0.1"/>
+                            <stop offset="100%" stop-color="#a04100" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M0,120 Q40,110 80,40 T160,80 T240,30 T320,90 T400,20 L400,150 L0,150 Z" fill="url(#InsightsLineGrad)"></path>
+                    <path d="M0,120 Q40,110 80,40 T160,80 T240,30 T320,90 T400,20" fill="none" stroke="#a04100" stroke-linecap="round" stroke-width="4"></path>
+                    <circle cx="240" cy="30" r="4" fill="#a04100" class="animate-pulse"></circle>
+                </svg>
+                <div class="flex justify-between mt-8 font-label text-[10px] uppercase font-black text-on-surface/20 tracking-[0.2em]">
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Structural Breakdown -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <!-- Metric Manifest -->
+            <section class="space-y-8">
+                <div class="bg-surface border border-on-surface/5 p-12 flex items-center gap-8 group hover:bg-surface-container-high transition-all">
+                    <div class="w-16 h-16 bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-3xl">local_fire_department</span>
+                    </div>
+                    <div>
+                        <p class="font-label text-[10px] uppercase font-black text-on-surface/30 tracking-widest leading-none mb-2">Network Continuity</p>
+                        <p class="font-headline font-black text-3xl text-on-surface">{{ stats.streak if stats else 0 }} Days</p>
+                    </div>
+                </div>
+                
+                <div class="bg-surface border border-on-surface/5 p-12 flex items-center gap-8 group hover:bg-surface-container-high transition-all">
+                    <div class="w-16 h-16 bg-secondary/10 text-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-3xl">rate_review</span>
+                    </div>
+                    <div>
+                        <p class="font-label text-[10px] uppercase font-black text-on-surface/30 tracking-widest leading-none mb-2">Analytical Logs</p>
+                        <p class="font-headline font-black text-3xl text-on-surface">{{ stats.review_count if stats else 0 }} Annotations</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Taxonomy Chart -->
+            <section class="bg-surface border border-on-surface/5 p-12 space-y-12">
+                <div class="flex items-center gap-4 border-b border-on-surface/10 pb-6">
+                    <span class="material-symbols-outlined text-primary">pie_chart</span>
+                    <h3 class="font-headline font-black text-xl">Taxonomy</h3>
+                </div>
+                
+                {% if genre_data %}
+                <div class="flex flex-col items-center gap-12">
+                    <div class="relative w-40 h-40">
+                        <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
+                            <circle cx="18" cy="18" fill="none" r="16" stroke="#fbfbe2" stroke-width="4"></circle>
+                            <circle cx="18" cy="18" fill="none" r="16" stroke="#a04100" stroke-dasharray="45, 100" stroke-linecap="round" stroke-width="4"></circle>
+                            <circle cx="18" cy="18" fill="none" r="16" stroke="#735c00" stroke-dasharray="30, 100" stroke-dashoffset="-45" stroke-linecap="round" stroke-width="4"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="font-headline font-black text-3xl">{{ genre_data|length }}</span>
+                            <span class="font-label text-[8px] uppercase font-black text-on-surface/30">Modes</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-8 w-full">
+                        {% for genre, count in genre_data[:4] %}
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full {% if loop.index0 == 0 %}bg-primary{% elif loop.index0 == 1 %}bg-secondary{% else %}bg-on-surface/20{% endif %}"></div>
+                            <span class="font-label text-[10px] uppercase font-black text-on-surface truncate tracking-widest w-24">{{ genre }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="py-12 text-center text-on-surface/20 italic font-body">
+                    Taxonomy analysis pending.
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- curatorial Honors -->
+        <section class="space-y-12">
+            <div class="flex items-center justify-between pb-8 border-b border-on-surface/10">
+                <h2 class="font-headline text-4xl font-black tracking-tight text-on-surface">Curatorial Honors</h2>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-on-surface/5 border border-on-surface/5">
+                <!-- Base Achievement -->
+                <div class="bg-surface p-12 flex flex-col items-center text-center space-y-8 group">
+                    <div class="w-20 h-20 bg-surface-container-highest flex items-center justify-center border border-on-surface/5 group-hover:bg-primary group-hover:text-white transition-all shadow-2xl">
+                        <span class="material-symbols-outlined text-4xl">menu_book</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-headline font-black text-lg">Initiate</p>
+                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 border border-on-surface/10 px-4 py-2">Network Active</p>
+                    </div>
+                </div>
+                
+                {% if stats and stats.finished >= 5 %}
+                <div class="bg-surface p-12 flex flex-col items-center text-center space-y-8 group">
+                    <div class="w-20 h-20 bg-secondary flex items-center justify-center text-white border border-on-surface/5 shadow-2xl">
+                        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-headline font-black text-lg">Bibliophile</p>
+                        <p class="font-label text-[10px] uppercase font-bold text-secondary border border-secondary/20 px-4 py-2">5+ Folios Committed</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Locked Hallmarks -->
+                <div class="bg-surface p-12 flex flex-col items-center text-center space-y-8 opacity-20 grayscale">
+                    <div class="w-20 h-20 bg-surface-container-highest flex items-center justify-center border border-dashed border-on-surface/20">
+                        <span class="material-symbols-outlined text-4xl">lock</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-headline font-black text-lg">Archivist</p>
+                        <p class="font-label text-[10px] uppercase font-bold">50+ Folios Pending</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

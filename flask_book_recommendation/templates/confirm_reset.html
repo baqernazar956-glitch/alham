@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Neutralizing Archive | The Digital Curator{% endblock %}
+
+{% block content %}
+<main class="min-h-screen bg-surface flex items-center justify-center px-8 py-24">
+    <div class="w-full max-w-2xl">
+        <div class="bg-surface-container-high p-16 lg:p-24 shadow-2xl relative overflow-hidden group">
+            <!-- Structural Watermark -->
+            <div class="absolute -top-12 -right-12 font-headline text-9xl font-black text-primary/[0.03] select-none pointer-events-none">PURGE</div>
+            
+            <div class="relative z-10 flex flex-col items-center text-center space-y-12">
+                <div class="w-24 h-24 bg-primary/10 flex items-center justify-center text-primary shadow-2xl relative">
+                    <div class="absolute inset-0 border-[8px] border-primary/20 animate-ping"></div>
+                    <span class="material-symbols-outlined text-5xl">warning</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Protocol 00: Neutralization</span>
+                    <h1 class="font-headline text-5xl font-black text-on-surface tracking-tighter">Purge Personal Archive</h1>
+                    <p class="font-body text-on-surface-variant text-lg leading-relaxed max-w-md mx-auto italic">
+                        You are initiating a total neutralization of your curatorial history. This action will permanently decouple all integrated volumes from your profile.
+                        <span class="text-primary block mt-6 font-black uppercase tracking-widest text-xs">Irreversible Operation Detected.</span>
+                    </p>
+                </div>
+                
+                <div class="w-full flex flex-col gap-6">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="w-full bg-on-surface text-white py-6 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">
+                            Execute Archive Purge
+                        </button>
+                    </form>
+                    <a href="{{ url_for('main.books') }}" class="w-full bg-surface py-6 font-headline font-black text-[10px] uppercase tracking-widest text-on-surface/40 hover:text-primary transition-colors border border-on-surface/5">
+                        Abort Protocol
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-12 text-center">
+            <p class="font-label text-[8px] uppercase font-black tracking-[0.4em] text-on-surface/10">Data Integrity Division — Digital Curator 2024</p>
+        </footer>
+    </div>
+</main>
+{% endblock %}

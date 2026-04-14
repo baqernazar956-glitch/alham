@@ -1,0 +1,198 @@
+<!-- Because you searched for Section -->
+{% if dynamic_search_books is defined and dynamic_search_books and dynamic_search_books|length > 0 %}
+<section class="max-w-[1800px] mx-auto px-8 mb-20 feed-section-initially-hidden">
+    <div class="bg-[#fdf2d7] rounded-[40px] p-10 md:p-16 flex flex-col lg:flex-row items-center gap-16 border border-[#f5e1b9]">
+        <!-- Left Side: Content -->
+        <div class="lg:w-2/5">
+            <h2 class="text-5xl md:text-6xl font-black text-[#5e4518] mb-6 leading-tight font-headline">
+                Because you searched for <br>
+                <span class="italic text-[#a86e24]">"{{ last_search_term }}"</span>
+            </h2>
+            <p class="text-[#8b6e3f] text-lg font-medium mb-10 max-w-md leading-relaxed">
+                We noticed you're on a journey of improvement. These hand-picked titles might be the next step in your evolution.
+            </p>
+            <button class="px-10 py-5 bg-[#7b541d] text-white rounded-2xl font-bold text-lg hover:bg-[#634317] transition-all hover:shadow-xl hover:-translate-y-1" onclick="window.location.href='{{ url_for('public.list_books', q=last_search_term) }}';">
+                Discover More
+            </button>
+        </div>
+
+        <!-- Right Side: Grid of Books -->
+        <div class="lg:w-3/5 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            {% for book in dynamic_search_books[:4] %}
+            <div class="bg-white rounded-[32px] p-6 flex items-center gap-6 shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onclick="window.location.href='{{ url_for('public.book_detail', gid=book.google_id or book.id) }}';">
+                <!-- Book Cover Container -->
+                <div class="w-24 h-24 shrink-0 rounded-2xl overflow-hidden bg-[#e2e8f0] relative">
+                    <img src="{{ book.cover_url or book.cover or 'https://placehold.co/200x300/f8fafc/7b541d?text=Growth' }}" alt="{{ book.title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                </div>
+                <!-- Book Info -->
+                <div class="flex flex-col">
+                    <h3 class="text-xl font-bold text-[#1a1a1a] mb-1 line-clamp-1">{{ book.title }}</h3>
+                    <p class="text-[#6b7280] text-sm mb-3 font-medium">{{ book.author or "Author" }}</p>
+                    <span class="inline-flex items-center px-3 py-1 bg-[#f3edff] text-[#7c3aed] text-[10px] font-black uppercase tracking-wider rounded-full self-start">
+                        {{ [98, 94, 88, 82, 79]|random }}% Match
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Binge-Worthy Series / Folio Groups -->
+{% if featured_lists is defined and featured_lists and featured_lists|length > 0 %}
+<section class="max-w-[1800px] mx-auto px-8 py-32 feed-section-initially-hidden" id="curated-collections-section">
+    <div class="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
+        <div class="max-w-2xl">
+            <h2 class="text-5xl font-black text-on-surface tracking-tighter font-headline uppercase leading-none mb-6">Curated Collections</h2>
+            <p class="text-on-surface-variant/70 text-lg font-medium leading-relaxed">Immerse yourself in handpicked worlds that don't end on the last page. Every volume is a doorway to a new dimension.</p>
+        </div>
+        <a href="{{ url_for('public.list_books') }}" class="group flex items-center gap-3 px-8 py-4 bg-surface-container-high rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm">
+            <span>Explore All</span>
+            <span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
+        {% for flist in featured_lists[:6] %}
+        <!-- Premium Series Card -->
+        <div class="group cursor-pointer flex flex-col relative overflow-hidden rounded-[40px] transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 bg-surface" onclick="openCollectionModal('modal-collection-{{ loop.index }}');" style="box-shadow: 0 10px 40px -10px {{ flist.color or '#000000' }}30;">
+             <!-- Top Section: Visuals -->
+             <div class="relative h-[340px] overflow-hidden flex items-center justify-center p-6" style="background: linear-gradient(145deg, {{ flist.color or '#f8fafc' }}40, {{ flist.color or '#f1f5f9' }}10);">
+                
+                <!-- Background Blob -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl" style="background: radial-gradient(circle at center, {{ flist.color or '#cbd5e1' }}60 0%, transparent 70%);"></div>
+
+                <!-- Covers arrangement -->
+                <div class="relative w-full h-full flex items-center justify-center perspective-[1200px]">
+                    {% if flist.covers and flist.covers|length >= 1 %}
+                        {% set c1 = flist.covers[0] %}
+                        {% set c2 = flist.covers[1] if flist.covers|length > 1 else c1 %}
+                        {% set c3 = flist.covers[2] if flist.covers|length > 2 else c2 %}
+                        
+                        <!-- Left Cover -->
+                        <div class="absolute w-32 h-48 rounded-xl overflow-hidden shadow-2xl transform -translate-x-16 rotate-[-15deg] translate-y-4 group-hover:-translate-x-24 group-hover:rotate-[-20deg] group-hover:scale-105 transition-all duration-700 z-10 brightness-[0.7] group-hover:brightness-[0.8] border border-white/20">
+                            <img src="{{ c3 }}" class="w-full h-full object-cover">
+                        </div>
+                        
+                        <!-- Right Cover -->
+                        <div class="absolute w-36 h-52 rounded-xl overflow-hidden shadow-2xl transform translate-x-16 rotate-[10deg] translate-y-2 group-hover:translate-x-24 group-hover:rotate-[15deg] group-hover:scale-105 transition-all duration-700 z-20 brightness-[0.85] group-hover:brightness-[0.95] border border-white/20">
+                            <img src="{{ c2 }}" class="w-full h-full object-cover">
+                        </div>
+
+                        <!-- Center Cover -->
+                        <div class="absolute w-40 h-60 rounded-2xl overflow-hidden shadow-2xl transform z-30 group-hover:scale-110 group-hover:-translate-y-4 transition-all duration-700 border-2 border-white/30">
+                            <img src="{{ c1 }}" class="w-full h-full object-cover">
+                        </div>
+                    {% else %}
+                        <div class="h-64 w-44 bg-surface-variant rounded-2xl shadow-2xl flex items-center justify-center border border-dashed border-on-surface-variant/30">
+                            <span class="material-symbols-outlined text-4xl opacity-20">library_books</span>
+                        </div>
+                    {% endif %}
+                </div>
+             </div>
+             
+             <!-- Bottom Section: Info -->
+             <div class="p-8 relative z-10 bg-surface flex flex-col justify-between flex-grow">
+                 <div>
+                     <div class="flex items-center gap-3 mb-4">
+                        <span class="w-10 h-1 rounded-full transition-all duration-500 group-hover:w-16" style="background-color: {{ flist.color or '#6366f1' }};"></span>
+                        <span class="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant">{{ flist.count }}+ VOLUMES</span>
+                    </div>
+                    <h3 class="text-3xl font-black text-on-surface font-headline leading-tight mb-3 group-hover:text-primary transition-colors uppercase tracking-tight">{{ flist.title }}</h3>
+                    <p class="text-on-surface-variant/70 text-sm font-medium line-clamp-2 leading-relaxed">The ultimate collection of {{ flist.title|lower }}. Start reading today.</p>
+                 </div>
+                 
+                 <div class="mt-8 flex items-center justify-between">
+                     <span class="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                         EXPLORE <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                     </span>
+                 </div>
+             </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if featured_lists|length > 6 %}
+    <div class="mt-24 text-center">
+        <button class="px-12 py-5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all shadow-2xl hover:-translate-y-1 active:scale-95">
+            Load More Series
+        </button>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Modals for Curated Collections -->
+{% if featured_lists is defined and featured_lists and featured_lists|length > 0 %}
+    {% for flist in featured_lists[:6] %}
+    <div id="modal-collection-{{ loop.index }}" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6" style="opacity: 0; transition: opacity 0.3s ease;">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onclick="closeCollectionModal('modal-collection-{{ loop.index }}')"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-surface rounded-[32px] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col transform scale-95 transition-all duration-300" id="modal-content-{{ loop.index }}">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-8 py-6 border-b border-surface-container" style="background-color: {{ flist.color or '#f1f5f9' }}30;">
+                <div>
+                    <span class="text-primary font-black text-[10px] uppercase tracking-[0.3em]">{{ flist.count }}+ VOLUMES</span>
+                    <h2 class="text-3xl font-black text-on-surface font-headline uppercase mt-1">{{ flist.title }}</h2>
+                </div>
+                <button onclick="closeCollectionModal('modal-collection-{{ loop.index }}')" class="w-10 h-10 rounded-full bg-white/50 hover:bg-white flex items-center justify-center transition-colors text-on-surface">
+                    <span class="material-symbols-outlined" data-icon="close">close</span>
+                </button>
+            </div>
+            
+            <!-- Body (Books) -->
+            <div class="p-8 overflow-y-auto" style="max-height: calc(90vh - 120px);">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                    {% if flist.books %}
+                        {% for book in flist.books %}
+                        <div class="group cursor-pointer flex flex-col items-center text-center bg-surface-container-lowest p-4 rounded-2xl hover:shadow-xl transition-all border border-transparent hover:border-primary/20" onclick="window.location.href='{{ url_for('public.book_detail', gid=book.id) }}';">
+                            <div class="w-32 h-48 rounded-xl overflow-hidden shadow-md mb-4 relative bg-surface-container-highest">
+                                <img src="{{ book.cover }}" alt="{{ book.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            </div>
+                            <h4 class="font-bold text-on-surface line-clamp-2 leading-tight group-hover:text-primary transition-colors">{{ book.title }}</h4>
+                            <p class="text-xs text-on-surface-variant font-medium mt-2 line-clamp-1">{{ book.author }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-span-full text-center text-on-surface-variant py-10">
+                            <span class="material-symbols-outlined text-5xl opacity-20 mb-3">auto_stories</span>
+                            <p>Loading collection details...</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-12 text-center">
+                    <a href="{{ flist.url }}" class="inline-block px-8 py-4 bg-primary text-white rounded-full font-bold uppercase tracking-widest text-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                        Explore Full Collection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endif %}
+
+{# Section Removed #}
+
+<style>
+    .feed-section-initially-hidden {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+        pointer-events: none;
+        height: 0;
+        overflow: hidden;
+    }
+    .feed-section-initially-hidden.feed-section-visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        height: auto;
+        overflow: visible;
+    }
+</style>
+

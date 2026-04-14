@@ -1,0 +1,75 @@
+{% if source %}
+    {% for book in source %}
+    <article class="group relative bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col sm:flex-row gap-8 p-6 border border-outline/5 hover:border-primary/20">
+        <!-- Image Section -->
+        <div class="w-full sm:w-56 aspect-[3/4] flex-shrink-0 relative overflow-hidden rounded-lg cursor-pointer shadow-md group-hover:shadow-2xl transition-all duration-500" 
+             onclick="var burl = `{{ url_for('public.book_detail', gid=book.id) }}`; var c= `{{ book.cover or '' }}`; window.location.href = burl + (c ? '?cover=' + encodeURIComponent(c) : '');">
+            <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                 src="{{ book.cover or 'https://placehold.co/400x600/f8fafc/ea580c?text=Book' }}"
+                 alt="{{ book.title }}"
+                 loading="lazy" decoding="async">
+            
+            {% if book.rating %}
+            <div class="absolute top-4 left-4">
+                <span class="bg-secondary text-on-secondary text-[11px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-lg backdrop-blur-md bg-secondary/90">★ {{ book.rating }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Content Section -->
+        <div class="flex flex-col flex-grow py-2">
+            <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                <div class="space-y-3 flex-grow">
+                    <div class="flex items-center gap-3 text-tertiary mb-2">
+                        <span class="text-[10px] font-black uppercase tracking-[0.25em] bg-tertiary/10 text-tertiary px-3 py-1 rounded-sm">{{ src_name }} ARCHIVE</span>
+                    </div>
+                    <h3 class="text-3xl font-black font-headline text-on-background leading-tight group-hover:text-primary transition-colors cursor-pointer line-clamp-2"
+                        onclick="var burl = `{{ url_for('public.book_detail', gid=book.id) }}`; var c= `{{ book.cover or '' }}`; window.location.href = burl + (c ? '?cover=' + encodeURIComponent(c) : '');">
+                        {{ book.title }}
+                    </h3>
+                    <p class="text-on-surface-variant font-body text-lg font-medium">{{ book.author or "Unknown Master" }}</p>
+                    
+                    {% if book.description or book.desc %}
+                    <p class="text-on-surface-variant/70 font-body text-sm line-clamp-3 leading-relaxed max-w-2xl arabic-text">
+                        {{ (book.description or book.desc)|truncate(250) }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-row lg:flex-col items-center lg:items-end gap-4 min-w-[140px]">
+                    <form action="{{ url_for('main.create_book') }}" method="POST" class="m-0">
+                        <input type="hidden" name="title" value="{{ book.title }}">
+                        <input type="hidden" name="author" value="{{ book.author or '' }}">
+                        <input type="hidden" name="description" value="{{ book.desc or book.description or '' }}">
+                        <input type="hidden" name="cover_url" value="{{ book.cover or '' }}">
+                        <input type="hidden" name="google_id" value="{{ book.id }}">
+                        <button type="submit" class="bg-primary text-on-primary w-14 h-14 rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-all duration-300 group/btn active:scale-95">
+                            <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+                        </button>
+                    </form>
+                    <a href="#" onclick="var burl = `{{ url_for('public.book_detail', gid=book.id) }}`; var c= `{{ book.cover or '' }}`; window.location.href = burl + (c ? '?cover=' + encodeURIComponent(c) : ''); return false;" 
+                       class="bg-surface-container-high text-on-surface-variant hover:bg-secondary hover:text-on-secondary px-8 py-3.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 text-center w-full lg:w-auto">
+                        Explore Work
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-outline/5 flex flex-wrap items-center gap-8">
+                <div class="flex items-center gap-3 text-outline/60 group-hover:text-primary/60 transition-colors">
+                    <span class="material-symbols-outlined text-lg">calendar_today</span>
+                    <span class="text-xs font-bold tracking-widest">{{ book.get('publishedDate', 'VINTAGE') }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-outline/60 group-hover:text-primary/60 transition-colors">
+                    <span class="material-symbols-outlined text-lg">language</span>
+                    <span class="text-xs font-bold tracking-widest uppercase">{{ book.get('language', 'MULTILINGUAL') }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-outline/60 group-hover:text-primary/60 transition-colors">
+                    <span class="material-symbols-outlined text-lg">menu_book</span>
+                    <span class="text-xs font-bold tracking-widest">{{ book.get('pageCount', 'COLLECTR') }} PAGES</span>
+                </div>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+{% endif %}

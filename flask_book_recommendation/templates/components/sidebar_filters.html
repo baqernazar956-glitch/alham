@@ -1,0 +1,201 @@
+{# ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR DISCOVERY — Architectural Parameters
+   ═══════════════════════════════════════════════════════════════════════════ #}
+
+{% macro render_sidebar_filters(available_genres, current_filters) %}
+{% set current_genre = current_filters.genre|default('') %}
+{% set current_rating = current_filters.rating_min|default(0)|float %}
+{% set current_query = current_filters.query|default('') %}
+
+<aside class="bg-surface-container-low p-12 shadow-2xl sticky top-32 space-y-16 group" id="filtersSidebar">
+    <!-- Architectural Watermark -->
+    <div class="absolute -top-8 -right-8 font-headline text-8xl font-black text-on-surface/[0.03] select-none pointer-events-none">DISCOVER</div>
+    
+    <header class="relative z-10 flex justify-between items-center pb-8 border-b border-on-surface/10">
+        <div class="space-y-1">
+            <h5 class="font-headline font-black text-xl text-on-surface">Parameters</h5>
+            <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">Filter Matrix</p>
+        </div>
+        <button class="md:hidden text-on-surface/40 hover:text-primary transition-colors" onclick="toggleFilters()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </header>
+
+    <form action="{{ url_for('explore.index') }}" method="get" id="filterForm" class="relative z-10 space-y-16">
+        {% if current_query %}
+        <input type="hidden" name="q" value="{{ current_query }}">
+        {% endif %}
+
+        <!-- Taxonomy Selection -->
+        <div class="space-y-6">
+            <label class="font-label text-[10px] uppercase font-black text-secondary tracking-[0.4em] block">Taxonomy</label>
+            <div class="relative">
+                <select name="genre" class="w-full bg-surface border-none p-6 font-headline font-black text-sm text-on-surface appearance-none focus:ring-2 focus:ring-primary/20 transition-all shadow-2xl" onchange="this.form.submit()">
+                    <option value="">Full Archives</option>
+                    {% for genre in available_genres|default([]) %}
+                    <option value="{{ genre }}" {% if current_genre==genre %}selected{% endif %}>
+                        {{ genre }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <span class="material-symbols-outlined absolute right-6 top-1/2 -translate-y-1/2 text-on-surface/20 pointer-events-none">expand_more</span>
+            </div>
+        </div>
+
+        <!-- Intensity Threshold (Rating) -->
+        <div class="space-y-8">
+            <div class="flex justify-between items-end">
+                <label class="font-label text-[10px] uppercase font-black text-secondary tracking-[0.4em]">Intensity</label>
+                <span id="ratingLabel" class="font-headline font-black text-primary text-xl">
+                    {% if current_rating > 0 %}{{ current_rating }}+{% else %}ANY{% endif %}
+                </span>
+            </div>
+            <div class="px-2">
+                <input type="range" name="rating_min" min="0" max="5" step="0.5" value="{{ current_rating }}"
+                    class="w-full h-px bg-on-surface/10 appearance-none cursor-pointer accent-primary" oninput="updateRatingLabel(this.value)" onchange="this.form.submit()">
+            </div>
+        </div>
+
+        <!-- Synchronization Logic -->
+        <div class="space-y-6">
+            <label class="font-label text-[10px] uppercase font-black text-secondary tracking-[0.4em] block">Logic Threshold</label>
+            <div class="grid grid-cols-1 gap-px bg-on-surface/5 border border-on-surface/5">
+                <label class="cursor-pointer group">
+                    <input type="radio" name="ai_threshold" value="0" checked class="hidden peer">
+                    <div class="bg-surface p-5 text-[10px] font-black uppercase tracking-widest text-on-surface/30 peer-checked:bg-primary peer-checked:text-white transition-all text-center">Unrestricted</div>
+                </label>
+                <label class="cursor-pointer group">
+                    <input type="radio" name="ai_threshold" value="70" class="hidden peer">
+                    <div class="bg-surface p-5 text-[10px] font-black uppercase tracking-widest text-on-surface/30 peer-checked:bg-primary peer-checked:text-white transition-all text-center">High Match (70%+)</div>
+                </label>
+                <label class="cursor-pointer group">
+                    <input type="radio" name="ai_threshold" value="85" class="hidden peer">
+                    <div class="bg-surface p-5 text-[10px] font-black uppercase tracking-widest text-on-surface/30 peer-checked:bg-primary peer-checked:text-white transition-all text-center">Neural Sync (85%+)</div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Reset Signal -->
+        {% if current_genre or current_rating > 0 %}
+        <a href="{{ url_for('explore.index') }}" class="flex items-center justify-center gap-4 w-full bg-on-surface py-6 font-headline font-black text-[10px] uppercase tracking-widest text-white hover:bg-primary transition-all shadow-2xl">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            Reset Signal
+        </a>
+        {% endif %}
+    </form>
+
+    <!-- Neural Info -->
+    <footer class="pt-8 border-t border-on-surface/5 space-y-4">
+        <div class="flex items-center gap-4 text-primary">
+            <span class="material-symbols-outlined text-sm">auto_awesome</span>
+            <span class="font-label text-[10px] uppercase font-black tracking-widest">Neural Insight</span>
+        </div>
+        <p class="font-body text-[11px] text-on-surface-variant leading-relaxed italic">
+            Discovery parameters are processed through the neural engine to ensure each folio matches your current intellectual trajectory.
+        </p>
+    </footer>
+</aside>
+
+<script>
+    function updateRatingLabel(val) {
+        const label = document.getElementById('ratingLabel');
+        label.textContent = val > 0 ? val + '+' : 'ANY';
+    }
+
+    function toggleFilters() {
+        document.getElementById('filtersSidebar').classList.toggle('hidden');
+    }
+</script>
+{% endmacro %}
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   ARCHITECTURAL SORTING
+   ═══════════════════════════════════════════════════════════════════════════ #}
+
+{% macro render_sorting_bar(sort_options, current_filters, pagination) %}
+{% set current_sort = current_filters.sort|default('ai_relevance') %}
+{% set total = pagination.total|default(0) %}
+
+<div class="bg-surface-container-low p-8 flex flex-col md:flex-row justify-between items-center gap-8 shadow-2xl relative overflow-hidden group mb-16">
+    <div class="absolute inset-y-0 left-0 w-2 bg-primary"></div>
+    
+    <div class="flex items-center gap-8 relative z-10">
+        <div class="bg-surface px-6 py-3 border border-on-surface/5 flex flex-col">
+            <span class="font-label text-[8px] uppercase font-black text-on-surface/30 leading-none">Cataloged</span>
+            <span class="font-headline font-black text-2xl text-primary">{{ total }} <span class="text-[10px] font-bold text-on-surface/20 uppercase tracking-widest">Folios</span></span>
+        </div>
+        
+        {% if current_filters.genre %}
+        <div class="flex items-center gap-4 bg-primary/10 px-4 py-2 border border-primary/20">
+            <span class="font-label text-[10px] uppercase font-black text-primary tracking-widest">{{ current_filters.genre }}</span>
+            <a href="{{ url_for('explore.index', sort=current_sort) }}" class="text-primary/40 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="flex items-center gap-8 relative z-10 w-full md:w-auto">
+        <label class="font-label text-[10px] uppercase font-black text-on-surface/30 tracking-widest">Arrangement</label>
+        <div class="relative flex-1 md:flex-none">
+            <select onchange="applySorting(this.value)" class="w-full md:w-64 bg-surface border-none p-4 font-headline font-black text-xs uppercase tracking-widest text-on-surface appearance-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xl">
+                {% for opt in sort_options|default([]) %}
+                <option value="{{ opt.value }}" {% if current_sort==opt.value %}selected{% endif %}>
+                    {{ opt.label }}
+                </option>
+                {% endfor %}
+            </select>
+            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/20 pointer-events-none">expand_more</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function applySorting(sortValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', sortValue);
+        url.searchParams.set('page', '1');
+        window.location.href = url.toString();
+    }
+</script>
+{% endmacro %}
+
+{# ═══════════════════════════════════════════════════════════════════════════
+   SEQUENTIAL PAGINATION
+   ═══════════════════════════════════════════════════════════════════════════ #}
+
+{% macro render_pagination(pagination, current_filters) %}
+{% set page = pagination.page|default(1) %}
+{% set total_pages = pagination.total_pages|default(1) %}
+
+{% if total_pages > 1 %}
+<nav class="flex justify-center items-center gap-4 py-24">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('explore.index', page=page-1, sort=current_filters.sort, genre=current_filters.genre, q=current_filters.query) }}"
+        class="bg-surface-container-high p-5 hover:bg-primary hover:text-white transition-all shadow-2xl group">
+        <span class="material-symbols-outlined group-hover:-translate-x-2 transition-transform">arrow_back</span>
+    </a>
+    {% endif %}
+
+    <div class="flex gap-2">
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="w-14 h-14 bg-on-surface text-white flex items-center justify-center font-headline font-black text-sm shadow-2xl">{{ p }}</span>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="{{ url_for('explore.index', page=p, sort=current_filters.sort, genre=current_filters.genre, q=current_filters.query) }}"
+                class="w-14 h-14 bg-surface border border-on-surface/5 flex items-center justify-center font-headline font-black text-sm text-on-surface/40 hover:text-primary transition-all">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+            <span class="text-on-surface/10 font-black">...</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('explore.index', page=page+1, sort=current_filters.sort, genre=current_filters.genre, q=current_filters.query) }}"
+        class="bg-surface-container-high p-5 hover:bg-primary hover:text-white transition-all shadow-2xl group">
+        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endmacro %}

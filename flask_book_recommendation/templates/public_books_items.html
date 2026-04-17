@@ -37,8 +37,8 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="flex flex-row lg:flex-col items-center lg:items-end gap-4 min-w-[140px]">
-                    <form action="{{ url_for('main.create_book') }}" method="POST" class="m-0">
+                <div class="flex flex-row lg:flex-col items-center lg:items-end gap-4 min-w-[60px]">
+                    <form hx-post="{{ url_for('main.create_book') }}" hx-target="this" hx-swap="outerHTML" class="m-0">
                         <input type="hidden" name="title" value="{{ book.title }}">
                         <input type="hidden" name="author" value="{{ book.author or '' }}">
                         <input type="hidden" name="description" value="{{ book.desc or book.description or '' }}">
@@ -48,27 +48,10 @@
                             <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
                         </button>
                     </form>
-                    <a href="#" onclick="var burl = `{{ url_for('public.book_detail', gid=book.id) }}`; var c= `{{ book.cover or '' }}`; window.location.href = burl + (c ? '?cover=' + encodeURIComponent(c) : ''); return false;" 
-                       class="bg-surface-container-high text-on-surface-variant hover:bg-secondary hover:text-on-secondary px-8 py-3.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 text-center w-full lg:w-auto">
-                        Explore Work
-                    </a>
                 </div>
             </div>
 
-            <div class="mt-auto pt-6 border-t border-outline/5 flex flex-wrap items-center gap-8">
-                <div class="flex items-center gap-3 text-outline/60 group-hover:text-primary/60 transition-colors">
-                    <span class="material-symbols-outlined text-lg">calendar_today</span>
-                    <span class="text-xs font-bold tracking-widest">{{ book.get('publishedDate', 'VINTAGE') }}</span>
-                </div>
-                <div class="flex items-center gap-3 text-outline/60 group-hover:text-primary/60 transition-colors">
-                    <span class="material-symbols-outlined text-lg">language</span>
-                    <span class="text-xs font-bold tracking-widest uppercase">{{ book.get('language', 'MULTILINGUAL') }}</span>
-                </div>
-                <div class="flex items-center gap-3 text-outline/60 group-hover:text-primary/60 transition-colors">
-                    <span class="material-symbols-outlined text-lg">menu_book</span>
-                    <span class="text-xs font-bold tracking-widest">{{ book.get('pageCount', 'COLLECTR') }} PAGES</span>
-                </div>
-            </div>
+            <!-- Removed tags section as per user request -->
         </div>
     </article>
     {% endfor %}

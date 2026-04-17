@@ -95,13 +95,13 @@
                         
                         <!-- Discovery Overlay -->
                         <div class="absolute inset-x-0 bottom-0 p-6 flex flex-col gap-3 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-gradient-to-t from-on-surface to-transparent backdrop-blur-sm">
-                            <form method="post" action="{{ url_for('main.create_book') }}" class="w-full m-0">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <form hx-post="{{ url_for('main.create_book') }}" hx-target="this" hx-swap="outerHTML" class="w-full m-0">
                                 <input type="hidden" name="title" value="{{ g.title }}">
                                 <input type="hidden" name="author" value="{{ g.author or '' }}">
                                 <input type="hidden" name="description" value="{{ g.description or '' }}">
                                 <input type="hidden" name="cover_url" value="{{ g.cover_url or '' }}">
-                                <button class="w-full bg-primary text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-primary transition-all">Integrate</button>
+                                <input type="hidden" name="google_id" value="{{ g.google_id or '' }}">
+                                <button type="submit" class="w-full bg-primary text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest hover:bg-white hover:text-primary transition-all">Integrate</button>
                             </form>
                             {% if g.google_id %}
                             <a href="{{ url_for('rec.view_google', google_id=g.google_id, title=g.title) }}" class="w-full bg-white/10 text-white py-4 font-headline font-black text-[10px] uppercase tracking-widest text-center border border-white/10 hover:bg-white/20">Preview</a>

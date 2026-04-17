@@ -445,11 +445,17 @@
             }
         });
 
-        // Prevent HTMX from boosting POST forms - let them do full page reload
+        // Prevent HTMX from boosting standard POST forms - let them do full page reload
         document.body.addEventListener('htmx:configRequest', function (evt) {
+            const elt = evt.detail.elt;
+            // ⚡ Allow HTMX to handle requests that explicitly use hx-post (Add to Library feature)
+            if (elt && (elt.hasAttribute('hx-post') || elt.closest('[hx-post]'))) {
+                return;
+            }
+
             const form = evt.target;
             if (form && form.method && form.method.toLowerCase() === 'post') {
-                // Cancel HTMX boost for POST forms
+                // Cancel HTMX boost for normal POST forms
                 evt.preventDefault();
                 evt.detail.elt.submit();
             }

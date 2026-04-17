@@ -312,9 +312,16 @@
                             <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;" data-icon="star">star</span>
                             <span class="text-sm font-bold text-on-surface">{{ book.rating or '5.0' }}</span>
                         </div>
-                        <button class="text-primary bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-                            <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
-                        </button>
+                        <form hx-post="{{ url_for('main.create_book') }}" hx-target="this" hx-swap="outerHTML" class="m-0" onclick="event.stopPropagation()">
+                            <input type="hidden" name="title" value="{{ book.title }}">
+                            <input type="hidden" name="author" value="{{ book.author if book.author else (book.authors[0] if book.authors else 'Anonymous') }}">
+                            <input type="hidden" name="description" value="{{ book.description or '' }}">
+                            <input type="hidden" name="cover_url" value="{{ book.cover_url or book.cover or '' }}">
+                            <input type="hidden" name="google_id" value="{{ book.id }}">
+                            <button type="submit" class="text-primary bg-primary/10 w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

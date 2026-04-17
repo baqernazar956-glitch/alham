@@ -1782,13 +1782,28 @@ def rate_book(book_id: int):
 
 @main_bp.post("/books/create")
 @login_required
+@csrf.exempt
 def create_book():
+    google_id = request.form.get("google_id")
+    # Check if user already has this book by google_id
+    if google_id:
+        existing = Book.query.filter_by(owner_id=current_user.id, google_id=google_id).first()
+        if existing:
+            if request.headers.get("HX-Request"):
+                return '<div class="bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: \'FILL\' 1;">check</span></div>'
+            flash("هذا الكتاب موجود بالفعل في مكتبتك", "info")
+            return redirect(url_for("main.books"))
+
     b = Book(
         title=request.form.get("title"), author=request.form.get("author"),
         description=request.form.get("description"), cover_url=request.form.get("cover_url") or None,
-        file_url=request.form.get("file_url") or None, owner_id=current_user.id
+        google_id=google_id, owner_id=current_user.id
     )
     db.session.add(b); db.session.commit()
+    
+    if request.headers.get("HX-Request"):
+        return '<div class="bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg animate-pulse"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: \'FILL\' 1;">check</span></div>'
+        
     flash("تمت إضافة الكتاب", "success")
     return redirect(url_for("main.books"))
 

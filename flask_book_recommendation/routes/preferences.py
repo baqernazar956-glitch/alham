@@ -38,8 +38,13 @@ def form():
             
             # Look up genre by name (case-insensitive)
             genre = all_genres.get(interest_name.lower())
-            if genre:
-                db.session.add(UserGenre(user_id=current_user.id, genre_id=genre.id))
+            if not genre:
+                genre = Genre(name=interest_name)
+                db.session.add(genre)
+                db.session.flush() # get the newly created genre ID
+                all_genres[interest_name.lower()] = genre
+                
+            db.session.add(UserGenre(user_id=current_user.id, genre_id=genre.id))
             
             # Always save as UserPreference with high weight
             db.session.add(UserPreference(

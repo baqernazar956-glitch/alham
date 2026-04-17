@@ -27,7 +27,6 @@ from .routes.public import public_bp
 from .routes.api import api_bp
 from .routes.onboarding import onboarding_bp
 from .routes.admin import admin_bp
-from .routes.debug_api import debug_bp
 from .routes.realtime_api import realtime_bp
 
 
@@ -99,10 +98,6 @@ def create_app():
     app.register_blueprint(onboarding_bp)
     
     app.register_blueprint(admin_bp)
-    
-    # Debug/Verification API for recommendations
-    csrf.exempt(debug_bp)
-    app.register_blueprint(debug_bp)
 
     # Real-time interaction tracking & dynamic feed
     csrf.exempt(realtime_bp)

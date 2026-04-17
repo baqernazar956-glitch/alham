@@ -593,10 +593,12 @@ class UnifiedRecommendationPipeline:
                 _safe_source, "View-Based",
                 _run_in_context, get_view_based_recommendations, user_id, top_n=100, randomize=False
             )
-            # futures["Trending"] = self._executor.submit(
-            #     _safe_source, "Trending",
-            #     _run_in_context, get_trending, limit=80
-            # )
+            # 🧊 [COLD-START] Trending as a low-priority candidate source
+            # Always submit but with lower weight — acts as safety net for new users
+            futures["Trending"] = self._executor.submit(
+                _safe_source, "Trending",
+                _run_in_context, get_trending, limit=80
+            )
             
             # 🔥 New: Direct search-query based retrieval for immediate behavior matching
             from flask_book_recommendation.extensions import db
@@ -636,11 +638,17 @@ class UnifiedRecommendationPipeline:
                     source_name, items = future.result(timeout=30)
                     
                     # 💡 [GATEKEEPER] Source Confidence Gating
-                    # If a source returns very low scores, it's considered "Noise" for a new user
+                    # If a source returns very low scores, it's considered "Noise" for a new user.
+                    # 🧊 [COLD-START FIX] Exempt fallback sources (Trending, Interest:*)
+                    # from gating — they don't produce scored results and serve as
+                    # the safety net for users with zero interactions.
+                    cold_start_sources = {"Trending", "Interest Service"}
+                    is_cold_start_source = source_name in cold_start_sources or source_name.startswith("Interest:")
+                    
                     confidence_threshold = 0.20
                     filtered_items = []
                     for item in items:
-                        if float(item.get("score", 0)) >= confidence_threshold:
+                        if is_cold_start_source or float(item.get("score", 0)) >= confidence_threshold:
                             filtered_items.append(item)
                     
                     if len(filtered_items) < len(items):
@@ -688,7 +696,7 @@ class UnifiedRecommendationPipeline:
             gid = bid_raw
             
         bid = str(gid or bid_raw or f"local_{id(item)}")
-        score = float(item.get("score", 0) or item.get("ai_score", 0) or 0.1)
+        score = float(item.get("score", 0) or item.get("ai_score", 0) or 0.30)
 
         if bid not in candidates_map:
             candidates_map[bid] = {

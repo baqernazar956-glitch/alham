@@ -465,9 +465,15 @@ def get_deep_learning_recommendations(user_id, limit=100, randomize=False):
             search_queries = [s.query for s in searches if s.query]
             
             # --- New: Interest-based signals (Genres) ---
-            from ..models import UserGenre, Genre
+            from ..models import UserGenre, Genre, UserPreference
             user_genres = db.session.query(Genre.name).join(UserGenre).filter(UserGenre.user_id == user_id).all()
             interest_genres = [g[0] for g in user_genres]
+            
+            # Also populate from UserPreference for robustness if UserGenre fails
+            user_prefs = db.session.query(UserPreference.topic).filter(UserPreference.user_id == user_id).all()
+            for p in user_prefs:
+                if p[0] not in interest_genres:
+                    interest_genres.append(p[0])
             if interest_genres:
                 logger.info(f"[DL-Rec] User {user_id} has interest genres: {interest_genres}")
                 # Treat genres as virtual high-intent search queries

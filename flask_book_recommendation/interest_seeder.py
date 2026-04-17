@@ -117,9 +117,24 @@ def _seed_single_interest(interest_name):
             if api_key:
                 params["key"] = api_key
 
-            resp = requests.get(GOOGLE_API_URL, params=params, timeout=15)
-            if not resp.ok:
-                logger.warning(f"[Seeder] Google API error for '{query}': {resp.status_code}")
+            import time
+            max_retries = 3
+            resp = None
+            
+            for attempt in range(max_retries):
+                try:
+                    resp = requests.get(GOOGLE_API_URL, params=params, timeout=15)
+                    if resp.ok:
+                        break
+                    logger.warning(f"[Seeder] Google API error for '{query}': {resp.status_code} (Attempt {attempt+1}/{max_retries})")
+                except requests.exceptions.RequestException as e:
+                    logger.warning(f"[Seeder] Request error for '{query}': {e} (Attempt {attempt+1}/{max_retries})")
+                    
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s
+            
+            if not resp or not resp.ok:
+                logger.error(f"[Seeder] Failed to fetch '{query}' after {max_retries} attempts.")
                 continue
 
             data = resp.json()

@@ -297,13 +297,18 @@
                     class="md:hidden p-2.5 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <form action="{{ url_for('public.list_books') }}" method="GET" class="relative hidden lg:block">
+                <form action="{{ url_for('public.list_books') }}" method="GET" class="relative hidden lg:block group z-50">
                     <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl"
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary text-2xl z-20 pointer-events-none"
                         data-icon="search">search</span>
                     <input name="q"
-                        class="bg-surface-container border-none rounded-full pl-10 pr-4 py-2 w-72 focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm font-medium"
-                        placeholder="Search for your next soul-read..." type="text" />
+                        hx-get="{{ url_for('public.live_search') }}"
+                        hx-trigger="keyup changed delay:150ms, search"
+                        hx-target="#live-search-results"
+                        class="bg-surface-container border-none rounded-full pl-12 pr-6 py-3.5 w-96 text-lg font-black font-headline focus:ring-4 focus:ring-primary/20 focus:bg-white focus:shadow-xl transition-all relative z-10 placeholder:text-base placeholder:font-medium placeholder:font-body"
+                        placeholder="Search for a book..." type="text" autocomplete="off" />
+                    <!-- Live Search Results Container -->
+                    <div id="live-search-results" class="absolute top-full left-0 right-0 mt-3 origin-top transition-all duration-300 empty:hidden opacity-0 group-focus-within:opacity-100 z-50"></div>
                 </form>
                 <div class="flex items-center gap-1">
                     {% if current_user.is_authenticated %}

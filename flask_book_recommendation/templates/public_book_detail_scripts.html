@@ -277,8 +277,13 @@
             const res = await fetch(`{{ url_for('public.add_to_shelf', gid=book.id if book else '', status='') }}${status}`, {
                 method:'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRFToken': "{{ csrf_token() }}"
-                }
+                },
+                body: JSON.stringify({
+                    title: typeof bookTitle !== 'undefined' ? bookTitle : '',
+                    cover: `{{ book.cover | default('') }}`
+                })
             });
             const data = await res.json();
             if(data.success) {

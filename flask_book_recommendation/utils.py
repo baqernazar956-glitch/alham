@@ -134,7 +134,10 @@ def fetch_book_details(book_id, source="google"):
         
     # Default: Google Books
     try:
-        r = requests.get(f"https://www.googleapis.com/books/v1/volumes/{book_id}")
+        api_key = os.environ.get("GOOGLE_BOOKS_API_KEY")
+        url = f"https://www.googleapis.com/books/v1/volumes/{book_id}"
+        params = {"key": api_key} if api_key else {}
+        r = requests.get(url, params=params, timeout=5)
         if r.ok:
             data = r.json()
             vol = data.get("volumeInfo", {})
@@ -160,6 +163,7 @@ def fetch_book_details(book_id, source="google"):
                 "preview": vol.get("previewLink"),
                 "pageCount": vol.get("pageCount"),
                 "rating": rating,
+                "ratings_count": vol.get("ratingsCount"),
                 "publishedDate": vol.get("publishedDate"),
                 "publisher": vol.get("publisher"),
                 "language": vol.get("language"),

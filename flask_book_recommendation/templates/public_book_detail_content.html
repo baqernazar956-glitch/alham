@@ -25,12 +25,24 @@
                         {% set cats = book.categories if book.categories is iterable and book.categories is not string else [book.categories] %}
                         <span class="px-4 py-1 bg-white/10 backdrop-blur-md rounded-full text-sm font-medium border border-white/20">{{ cats[0] }}</span>
                         {% endif %}
-                        <div class="flex items-center text-tertiary-fixed">
-                            {% set display_rating = avg_rating if reviews else (book.rating or 4.5)|float %}
-                            {% for i in range(5) %}
-                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ 1 if display_rating > i else 0 }};">star</span>
-                            {% endfor %}
-                            <span class="ml-2 text-white/80 text-sm">({{ display_rating }} Rating)</span>
+                        <div class="flex items-center gap-4 flex-wrap">
+                            <!-- Source Rating (Google/OpenLibrary) -->
+                            {% set source_rating = (book.rating or 0)|float %}
+                            {% set display_rating = avg_rating if reviews else source_rating if source_rating > 0 else 4.5 %}
+                            <div class="flex items-center text-tertiary-fixed">
+                                {% for i in range(5) %}
+                                <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' {{ 1 if display_rating > i else 0 }};">star</span>
+                                {% endfor %}
+                            </div>
+                            <span class="text-white font-bold text-lg">{{ "%.1f"|format(display_rating|float) }}</span>
+                            {% if reviews %}
+                            <span class="text-white/60 text-sm">({{ reviews|length }} user review{{ 's' if reviews|length > 1 }})</span>
+                            {% elif book.ratings_count %}
+                            <span class="text-white/60 text-sm">({{ book.ratings_count }} ratings)</span>
+                            {% endif %}
+                            {% if source_rating > 0 and reviews %}
+                            <span class="text-white/40 text-xs">· Source: ★ {{ "%.1f"|format(source_rating) }}</span>
+                            {% endif %}
                         </div>
                     </div>
                     <h1 class="text-6xl md:text-8xl font-black tracking-tighter leading-none">{{ book.title }}</h1>
@@ -49,6 +61,13 @@
                         <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Release</p>
                         <p class="text-4xl font-black text-primary-fixed">{{ (book.publishedDate or book.published_date or 'N/A')[:4] }}</p>
                     </div>
+                    {% if display_rating > 0 %}
+                    <div class="h-12 w-[1px] bg-white/20"></div>
+                    <div>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Rating</p>
+                        <p class="text-4xl font-black text-tertiary-fixed">{{ "%.1f"|format(display_rating|float) }} <span class="text-lg opacity-50">/ 5</span></p>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="flex flex-wrap gap-4 pt-4">
                     {% if book.preview or book.file_url %}
@@ -132,19 +151,41 @@
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Category</p>
+                            {% if book.categories %}
+                            {% set cats = book.categories if book.categories is iterable and book.categories is not string else [book.categories] %}
+                            <p class="text-lg font-bold leading-tight">{{ cats[0]|truncate(20) }}</p>
+                            {% else %}
                             <p class="text-xl font-bold">Book</p>
+                            {% endif %}
                         </div>
                         <div>
                             <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Language</p>
-                            <p class="text-xl font-bold">English</p>
+                            <p class="text-xl font-bold">{{ book.language|upper if book.language else 'EN' }}</p>
                         </div>
                         <div>
                             <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Source</p>
                             <p class="text-lg font-bold leading-tight uppercase">{{ book.source or 'Google' }}</p>
                         </div>
                         <div>
-                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Status</p>
-                            <p class="text-lg font-bold leading-tight">Available</p>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Rating</p>
+                            {% set src_rating = (book.rating or 0)|float %}
+                            {% if src_rating > 0 %}
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-tertiary-fixed text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span class="text-xl font-bold">{{ "%.1f"|format(src_rating) }}</span>
+                                {% if book.ratings_count %}
+                                <span class="text-primary-fixed/60 text-[10px]">({{ book.ratings_count }})</span>
+                                {% endif %}
+                            </div>
+                            {% elif avg_rating > 0 %}
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-tertiary-fixed text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span class="text-xl font-bold">{{ "%.1f"|format(avg_rating) }}</span>
+                                <span class="text-primary-fixed/60 text-[10px]">(users)</span>
+                            </div>
+                            {% else %}
+                            <p class="text-lg font-bold leading-tight opacity-60">N/A</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

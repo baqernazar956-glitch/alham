@@ -1,0 +1,18 @@
+{% if items %}
+<div class="py-4 px-2 space-y-1 rounded-2xl border border-surface-container-highest shadow-xl bg-surface-container-lowest">
+    <div class="px-4 pb-2 mb-2 text-xs font-bold text-on-surface-variant uppercase tracking-widest border-b border-surface-container">Live Results</div>
+    {% for item in items %}
+    <a href="{{ url_for('public.book_detail', gid=item.id) }}" class="flex items-center gap-4 p-3 rounded-xl hover:bg-surface-container transition-colors group">
+        <img src="{{ item.cover or 'https://placehold.co/100x150/fbfbe2/a04100?text=Cover' }}" alt="Cover" class="w-12 h-16 object-cover rounded-md shadow-sm group-hover:scale-105 transition-transform">
+        <div class="flex-1 min-w-0">
+            <h4 class="font-headline font-black text-sm text-on-surface truncate">{{ item.title }}</h4>
+            <p class="font-label text-xs font-bold text-on-surface-variant truncate opacity-80">{{ item.author }}</p>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+    </a>
+    {% endfor %}
+    <a href="{{ url_for('public.list_books', q=q) }}" class="block text-center pt-3 pb-1 text-sm font-bold text-primary hover:text-primary-dim transition-colors">
+        View all results for "{{ q }}"
+    </a>
+</div>
+{% endif %}

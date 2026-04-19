@@ -1611,6 +1611,9 @@ def book_read(book_id):
                 target_link = vi.get("previewLink") or vi.get("infoLink")
         except: pass
         
+        if not target_link:
+            target_link = f"https://books.google.com/books?id={book.google_id}"
+        
         return render_template(
             "reader_frame.html", 
             book_title=book.title, 
@@ -1785,10 +1788,26 @@ def rate_book(book_id: int):
 @csrf.exempt
 def create_book():
     google_id = request.form.get("google_id")
+    action = request.form.get("action", "add")
+    
     # Check if user already has this book by google_id
     if google_id:
         existing = Book.query.filter_by(owner_id=current_user.id, google_id=google_id).first()
         if existing:
+            if action == 'favorite':
+                from ..models import BookStatus
+                status = BookStatus.query.filter_by(user_id=current_user.id, book_id=existing.id).first()
+                if not status:
+                    s = BookStatus(user_id=current_user.id, book_id=existing.id, status="favorite")
+                    db.session.add(s)
+                else:
+                    status.status = "favorite"
+                db.session.commit()
+                if request.headers.get("HX-Request"):
+                    return '<div class="bg-rose-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: \'FILL\' 1;">favorite</span></div>'
+                flash("تمت إضافة الكتاب للمفضلة", "success")
+                return redirect(url_for("main.books"))
+
             if request.headers.get("HX-Request"):
                 return '<div class="bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: \'FILL\' 1;">check</span></div>'
             flash("هذا الكتاب موجود بالفعل في مكتبتك", "info")
@@ -1799,8 +1818,19 @@ def create_book():
         description=request.form.get("description"), cover_url=request.form.get("cover_url") or None,
         google_id=google_id, owner_id=current_user.id
     )
-    db.session.add(b); db.session.commit()
+    db.session.add(b)
+    db.session.commit()
     
+    if action == "favorite":
+        from ..models import BookStatus
+        s = BookStatus(user_id=current_user.id, book_id=b.id, status="favorite")
+        db.session.add(s)
+        db.session.commit()
+        if request.headers.get("HX-Request"):
+            return '<div class="bg-rose-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg animate-pulse"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: \'FILL\' 1;">favorite</span></div>'
+        flash("تمت إضافة الكتاب للمفضلة", "success")
+        return redirect(url_for("main.books"))
+        
     if request.headers.get("HX-Request"):
         return '<div class="bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg animate-pulse"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: \'FILL\' 1;">check</span></div>'
         

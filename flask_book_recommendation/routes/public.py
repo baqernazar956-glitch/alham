@@ -147,6 +147,56 @@ def background_record_feedback(app, user_id, books):
         except Exception as e:
             print(f"Background Feedback Error: {e}")
 
+@public_bp.get("/book_rating")
+@cache.cached(timeout=86400, query_string=True)
+def get_book_rating():
+    source = request.args.get("source")
+    bid = request.args.get("bid")
+    
+    if not source or not bid:
+        return f'''<span title="No rating available" class="text-sm font-black text-outline-variant/40 flex items-center gap-1 bg-surface-container/40 px-2 py-1.5 rounded border border-outline/5 transition-all"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">star_border</span>N/A</span>'''
+        
+    try:
+        from ..utils import fetch_book_details
+        details = fetch_book_details(bid, source=source)
+        if details and details.get("rating"):
+            rating = float(details["rating"])
+            count = details.get("ratings_count")
+            html = f'''<span title="Rating from {source.capitalize()}" class="text-sm font-black text-amber-500 flex items-center gap-1 bg-surface-container px-2 py-1.5 rounded border border-amber-500/20 shadow-sm animate-in fade-in zoom-in duration-300">
+                <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                {"%.1f" % rating}
+            </span>'''
+            if count:
+                html += f'''<span class="text-[9px] font-bold text-on-surface-variant/60 uppercase mt-1 animate-in fade-in duration-500">{count} reviews</span>'''
+            return html
+    except Exception as e:
+        pass
+        
+    return f'''<span title="No rating found on {source.capitalize()}" class="text-sm font-black text-outline-variant/40 flex items-center gap-1 bg-surface-container/40 px-2 py-1.5 rounded border border-outline/5 transition-all animate-in fade-in"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">star_border</span>N/A</span>'''
+
+
+@public_bp.get("/live_search", endpoint="live_search")
+@cache.cached(timeout=600, query_string=True)
+def live_search():
+    q = (request.args.get("q") or "").strip()
+    if len(q) < 2:
+        return ""
+    
+    items, _ = fetch_google_books(q, max_results=5)
+    results = []
+    for it in items:
+        vi = it.get("volumeInfo", {}) or {}
+        links = vi.get("imageLinks", {}) or {}
+        cover = links.get("thumbnail") or links.get("smallThumbnail")
+        if cover and cover.startswith("http://"): cover = "https://" + cover[7:]
+        results.append({
+            "id": it.get("id"),
+            "title": vi.get("title") or "Unknown Title",
+            "author": ", ".join(vi.get("authors", [])) if vi.get("authors") else "Unknown Author",
+            "cover": cover,
+        })
+    return render_template("components/live_search_results.html", items=results, q=q)
+
 @public_bp.get("/books", endpoint="list_books")
 @cache.cached(timeout=300, query_string=True, unless=lambda: current_user.is_authenticated)
 def list_books():
@@ -418,10 +468,21 @@ def list_books():
     # display_total = max(raw_total, 100) # ❌ This masked errors
     display_total = max(raw_total, shown)
 
+    user_saved_ids = []
+    user_fav_ids = []
+    if current_user.is_authenticated:
+        from ..models import Book, BookStatus
+        saved_books = Book.query.filter_by(owner_id=current_user.id).all()
+        user_saved_ids = [b.google_id for b in saved_books if b.google_id]
+        
+        fav_statuses = BookStatus.query.filter_by(user_id=current_user.id, status='favorite').all()
+        fav_book_ids = {s.book_id for s in fav_statuses}
+        user_fav_ids = [b.google_id for b in saved_books if b.id in fav_book_ids and b.google_id]
+
     # 🛑 Infinite Scroll: Return partial template if requested
     if request.args.get('partial'):
         all_books = clean_items + gut_items + ia_items + ol_items + it_items
-        return render_template("public_books_items.html", source=all_books, src_name="UNIFIED")
+        return render_template("public_books_items.html", source=all_books, src_name="UNIFIED", user_saved_ids=user_saved_ids, user_fav_ids=user_fav_ids)
 
     return render_template(
         "public_books.html",
@@ -433,6 +494,8 @@ def list_books():
         q=q, cat=cat, sort=sort, per=per, start=start,
         total=display_total, shown=shown, categories=CATEGORIES,
         interests_exhausted=interests_exhausted,
+        user_saved_ids=user_saved_ids, 
+        user_fav_ids=user_fav_ids
     )
 
 
@@ -587,16 +650,32 @@ def book_detail(gid):
                             "pageCount": d.get("pageCount"),
                             "categories": d.get("categories") or [],
                             "rating": d.get("rating"),
+                            "ratings_count": d.get("ratings_count"),
                             "publisher": d.get("publisher"),
                             "language": d.get("language"),
                             "isbn": d.get("isbn"),
                         }
 
-    if not book_data: abort(404)
+    cover_param = request.args.get("cover")
+    
+    if not book_data:
+        if cover_param:
+            book_data = {
+                "id": gid, 
+                "title": "تفاصيل الكتاب غير متوفرة",
+                "author": "غير معروف",
+                "desc": "تعذر جلب تفاصيل إضافية لهذا الكتاب من الخادم الخارجي. قد تتمكن من قراءته، أو إضافته لمكتبتك للمحاولة لاحقاً.", 
+                "cover": cover_param,
+                "preview": None,
+                "source": "unknown",
+                "categories": [],
+            }
+        else:
+            abort(404)
+            
     book_data.setdefault("google_id", gid)
 
     # 🌟 Fallback cover parameter from list view
-    cover_param = request.args.get("cover")
     if cover_param and "placehold.co" not in cover_param:
         book_data["cover"] = cover_param
     elif cover_param and not book_data.get("cover"):
@@ -986,7 +1065,7 @@ def book_detail(gid):
 @csrf.exempt
 def add_to_shelf(gid, status):
     """إضافة كتاب إلى رف معين (قراءة لاحقاً، مفضلة، تم)"""
-    if status not in ['later', 'favorite', 'finished']:
+    if status not in ['later', 'favorite', 'finished', 'reading']:
         return jsonify({"success": False, "error": "Invalid status"}), 400
 
     from ..models import BookStatus
@@ -1006,7 +1085,17 @@ def add_to_shelf(gid, status):
             else: data = fetch_book_details(gid)
 
             if not data:
-                return jsonify({"success": False, "error": "Book not found"}), 404
+                req_data = request.get_json(silent=True) or {}
+                fallback_title = req_data.get("title")
+                if fallback_title:
+                    data = {
+                        "title": fallback_title,
+                        "cover": req_data.get("cover") or "",
+                        "desc": "تم إضافة هذا الكتاب لكن تفاصيله ليست متوفرة بالكامل للاسترجاع.",
+                        "author": "غير معروف"
+                    }
+                else:
+                    return jsonify({"success": False, "error": "Book not found"}), 404
 
             # استخراج البيانات
             title = data.get("title")
@@ -1122,6 +1211,8 @@ def reader(gid):
             vi = d.get("volumeInfo", {})
             target_link = vi.get("previewLink") or vi.get("infoLink")
             title = vi.get("title")
+        if not target_link:
+            target_link = f"https://books.google.com/books?id={gid}"
     return render_template("reader_frame.html", book_title=title, book_id=gid, external_link=target_link)
 
 

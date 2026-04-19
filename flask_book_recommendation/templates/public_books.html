@@ -182,6 +182,9 @@
                                 container.insertAdjacentHTML('beforeend', trimmedHtml);
                                 start += per;
                                 spinner.classList.add('hidden');
+                                if (typeof htmx !== 'undefined') {
+                                    htmx.process(container);
+                                }
                             }
                         } catch (error) {
                             console.error('Error loading books:', error);

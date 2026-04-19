@@ -401,9 +401,7 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        
-        // --- 1. Animated Numbers ---
+    (function() {
         const numberElements = document.querySelectorAll('[data-val]');
         numberElements.forEach(el => {
             const target = parseInt(el.getAttribute('data-val'), 10);
@@ -594,6 +592,6 @@
         });
         {% endif %}
 
-    });
+    })();
 </script>
 {% endblock %}

@@ -37,6 +37,11 @@
                         'Art', 'Business', 'Self-Help', 'Travel', 'Religion',
                         'Security', 'Databases', 'Classic Literature', 'Technology'
                     ] %}
+                    <a href="{{ url_for('public.list_books', q=q) }}"
+                       class="flex items-center justify-between px-7 py-5 {% if not cat %}bg-primary text-on-primary shadow-2xl scale-[1.02] ring-8 ring-primary/5{% else %}bg-surface-container-low text-on-surface-variant hover:bg-primary/5 hover:text-primary{% endif %} rounded-[1.5rem] font-bold text-xl transition-all duration-500 group">
+                        <span class="group-hover:translate-x-2 transition-transform">All Books</span>
+                        <span class="material-symbols-outlined text-lg opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all">chevron_right</span>
+                    </a>
                     {% for cat_en in cat_list %}
                     <a href="{{ url_for('public.list_books', cat=cat_en, q=q) }}" 
                        class="flex items-center justify-between px-7 py-5 {% if cat == cat_en %}bg-primary text-on-primary shadow-2xl scale-[1.02] ring-8 ring-primary/5{% else %}bg-surface-container-low text-on-surface-variant hover:bg-primary/5 hover:text-primary{% endif %} rounded-[1.5rem] font-bold text-xl transition-all duration-500 group">

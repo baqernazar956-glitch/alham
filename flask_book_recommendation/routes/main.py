@@ -249,31 +249,8 @@ def home():
         
     top_rated = get_top_rated(limit=100)
     
-    # Ensure 100 books by merging with trending if needed
-    if len(top_rated) < 100:
-        trending_fallback = get_trending(limit=100)
-        seen_gids = set()
-        for b in top_rated:
-            bid = b.get('id') if isinstance(b, dict) else getattr(b, 'google_id', getattr(b, 'id', None))
-            if bid: seen_gids.add(bid)
-            
-        for b in trending_fallback:
-            if len(top_rated) >= 100: break
-            bid = b.get('id') if isinstance(b, dict) else getattr(b, 'google_id', getattr(b, 'id', None))
-            if bid and bid not in seen_gids:
-                if isinstance(b, dict):
-                    top_rated.append(b)
-                else:
-                    top_rated.append({
-                        "id": bid,
-                        "title": getattr(b, 'title', 'Unknown'),
-                        "author": getattr(b, 'author', 'Unknown'),
-                        "cover": getattr(b, 'cover_url', None),
-                        "source": "Trending",
-                        "rating": 4.5
-                    })
-                seen_gids.add(bid)
-    
+    # Only use real top_rated books from users, no fallback.
+    # We removed the trending fallback loop as per user request.
     most_viewed = get_trending(limit=100)
     
     if not featured or len(featured) < 3:
@@ -925,7 +902,7 @@ def _build_featured_lists():
         current_app.logger.error(f"[FeaturedLists API] Error: {e}")
 
     logger.debug(f"[FeaturedLists] Built {len(lists)} lists")
-    return lists[:6]
+    return lists
 
 
 
@@ -1500,10 +1477,13 @@ def book_detail(book_id):
                 setattr(book, 'global_ratings_count', details.get('ratingsCount'))
         except: pass
 
-    # جلب المراجعات (للكتب المشتركة عبر Google ID)
-    reviews = []
-    if book.google_id:
-        reviews = BookReview.query.filter_by(google_id=book.google_id).order_by(BookReview.created_at.desc()).limit(20).all()
+    # جلب المراجعات (للكتب المشتركة عبر Google ID أو المعرف المحلي)
+    reviews = BookReview.query.filter(
+        db.or_(
+            BookReview.google_id == book.google_id if book.google_id else False,
+            BookReview.google_id == str(book.id)
+        )
+    ).order_by(BookReview.created_at.desc()).limit(20).all()
 
     # جلب اقتباسات المستخدم
     quotes = BookQuote.query.filter_by(user_id=current_user.id, book_id=book.id).order_by(BookQuote.created_at.desc()).all()

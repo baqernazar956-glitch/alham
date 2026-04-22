@@ -209,7 +209,6 @@ def logout():
 def profile():
     if request.method == "POST":
         name = (request.form.get("name") or "").strip()
-        email = (request.form.get("email") or "").strip().lower()
         bio = (request.form.get("bio") or "").strip()
         reading_goal = request.form.get("reading_goal")
         current_password = request.form.get("current_password") or ""
@@ -219,14 +218,6 @@ def profile():
         if name and name != current_user.name:
             current_user.name = name
         
-        # تحديث البريد الإلكتروني
-        if email and email != current_user.email:
-            existing = User.query.filter_by(email=email).first()
-            if existing and existing.id != current_user.id:
-                flash("هذا البريد الإلكتروني مستخدم بالفعل", "error")
-                return redirect(url_for("auth.profile"))
-            current_user.email = email
-            
         # تحديث النبذة الشخصية
         current_user.bio = bio
         

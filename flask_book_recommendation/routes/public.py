@@ -539,6 +539,9 @@ def book_detail(gid):
                 book = Book.query.get(local_id)
                 if book:
                     book_data = _book_to_dict(book)
+                    # إذا كان لديه google_id، إعادة توجيه للمسار الصحيح
+                    if book.google_id:
+                        return redirect(url_for('public.book_detail', gid=book.google_id, cover=request.args.get('cover')))
                     # Supplement missing metadata from API if the book has a google_id
                     if book_data and book.google_id and (not book_data.get("pageCount") and not book_data.get("publishedDate")):
                         d = fetch_book_details(book.google_id)
@@ -578,6 +581,23 @@ def book_detail(gid):
                     "desc": "لم يتم العثور على تفاصيل.", "cover": None,
                     "preview": f"https://itbook.store/search/{gid}", "source": "itbook",
                 }
+        elif gid.isdigit() and len(gid) < 13:
+            # 🔧 دعم المعرفات الرقمية القصيرة كـ Local Book IDs (مثل 215)
+            try:
+                local_id = int(gid)
+                from ..recommender.helpers import _book_to_dict
+                book = Book.query.get(local_id)
+                if book:
+                    book_data = _book_to_dict(book)
+                    # إذا كان لديه google_id، إعادة توجيه للمسار الصحيح
+                    if book.google_id:
+                        return redirect(url_for('public.book_detail', gid=book.google_id))
+                    # إذا لم يكن لديه google_id، نستخدم البيانات المحلية فقط
+                    if not book_data.get("cover") and book.cover_url:
+                        book_data["cover"] = book.cover_url
+                    print(f"[BookDetail] Loaded local book by ID: {gid}")
+            except Exception as e:
+                print(f"[BookDetail] Error loading local book {gid}: {e}")
         else:
             from ..recommender.helpers import _book_to_dict
             book = Book.query.filter_by(google_id=gid).first()
@@ -1021,10 +1041,32 @@ def book_detail(gid):
     # -------------------------------------------------
     #   💬 جلب المراجعات والتقييمات
     # -------------------------------------------------
-    reviews = BookReview.query.filter_by(google_id=gid).order_by(BookReview.created_at.desc()).all()
-    user_review = None
-    if current_user.is_authenticated:
-        user_review = BookReview.query.filter_by(user_id=current_user.id, google_id=gid).first()
+    local_book_for_reviews = Book.query.filter(db.or_(Book.google_id == gid, Book.id == (int(gid) if gid.isdigit() else -1))).first()
+    
+    if local_book_for_reviews:
+        reviews = BookReview.query.filter(
+            db.or_(
+                BookReview.google_id == gid,
+                BookReview.google_id == local_book_for_reviews.google_id if local_book_for_reviews.google_id else False,
+                BookReview.google_id == str(local_book_for_reviews.id)
+            )
+        ).order_by(BookReview.created_at.desc()).all()
+        
+        user_review = None
+        if current_user.is_authenticated:
+            user_review = BookReview.query.filter(
+                BookReview.user_id == current_user.id,
+                db.or_(
+                    BookReview.google_id == gid,
+                    BookReview.google_id == local_book_for_reviews.google_id if local_book_for_reviews.google_id else False,
+                    BookReview.google_id == str(local_book_for_reviews.id)
+                )
+            ).first()
+    else:
+        reviews = BookReview.query.filter_by(google_id=gid).order_by(BookReview.created_at.desc()).all()
+        user_review = None
+        if current_user.is_authenticated:
+            user_review = BookReview.query.filter_by(user_id=current_user.id, google_id=gid).first()
     
     avg_rating = 0
     if reviews:

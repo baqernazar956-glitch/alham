@@ -192,7 +192,7 @@
 
                 <!-- Author Spotlight -->
                 <div class="bg-white rounded-xl p-8 border border-outline-variant/10 shadow-lg">
-                    <div class="flex items-center gap-4 mb-6">
+                    <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary border border-primary/10">
                             <span class="material-symbols-outlined text-3xl">person</span>
                         </div>
@@ -201,25 +201,23 @@
                             <p class="text-sm text-slate-500">Author</p>
                         </div>
                     </div>
-                    <p class="text-sm text-on-surface-variant leading-relaxed mb-4">
-                        Part of the Elham digital library collection.
-                    </p>
-                    <a class="text-primary font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all" href="#">
-                        View Author Page
-                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                    </a>
                 </div>
 
                 <!-- Feedback / Reviews -->
                 <div class="bg-surface-container-low rounded-xl p-8 border border-outline-variant/5">
                     <h3 class="font-bold text-on-surface mb-6 flex items-center justify-between">
-                        Reviews
-                        {% if reviews %}
-                        <span class="text-xs font-normal text-on-surface-variant bg-surface-container px-2 py-1 rounded">{{ reviews|length }} Reviews</span>
+                        <div class="flex items-center gap-2">
+                            Reviews
+                            {% if reviews %}
+                            <span class="text-xs font-normal text-on-surface-variant bg-surface-container px-2 py-1 rounded">{{ reviews|length }}</span>
+                            {% endif %}
+                        </div>
+                        {% if reviews|length > 0 %}
+                        <button onclick="openReviewsModal()" class="text-[10px] uppercase tracking-widest font-black text-primary hover:underline">View All</button>
                         {% endif %}
                     </h3>
                     
-                    <div class="space-y-8 max-h-[400px] overflow-y-auto no-scrollbar pr-2">
+                    <div class="space-y-8 max-h-[400px] overflow-y-auto scrollbar-premium pr-2">
                         {% if reviews %}
                             {% for review in reviews %}
                             <div class="space-y-2 border-b border-on-surface/5 pb-6 last:border-0">
@@ -229,12 +227,25 @@
                                     {% endfor %}
                                 </div>
                                 <p class="text-sm italic text-on-surface-variant leading-relaxed">"{{ review.review_text }}"</p>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                                        {{ review.user.name[0]|upper if review.user.name else '?' }}
+                                <div class="flex items-center justify-between mt-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                            {{ review.user.name[0]|upper if review.user.name else '?' }}
+                                        </div>
+                                        <p class="text-[10px] font-bold text-slate-400">— {{ review.user.name }}</p>
                                     </div>
-                                    <p class="text-[10px] font-bold text-slate-400">— {{ review.user.name }}</p>
-                                    <span class="text-[8px] text-slate-300 uppercase ml-auto">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+                                    <div class="flex items-center gap-4 text-slate-400">
+                                        <button onclick="this.classList.toggle('text-primary'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-primary transition-all group">
+                                            <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_up</span>
+                                            <span class="text-[10px]">12</span>
+                                        </button>
+                                        <button onclick="this.classList.toggle('text-error'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-error transition-all group">
+                                            <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_down</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end">
+                                    <span class="text-[8px] text-slate-300 uppercase">{{ review.created_at.strftime('%b %d, %Y') }}</span>
                                 </div>
                             </div>
                             {% endfor %}
@@ -275,7 +286,7 @@
                             </label>
                             {% endfor %}
                         </div>
-                        <textarea name="review_text" rows="4" class="w-full bg-surface-container border-none p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-primary outline-none" placeholder="Share your thoughts about this book..." required>{{ user_review.review_text if user_review else '' }}</textarea>
+                        <textarea name="review_text" rows="4" class="w-full bg-surface-container border-none p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-primary outline-none" placeholder="Share your thoughts about this book...">{{ user_review.review_text if user_review else '' }}</textarea>
                         <button type="submit" class="w-full py-5 bg-primary text-on-primary rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95">
                             Submit Review
                         </button>
@@ -293,18 +304,10 @@
                 <h2 class="text-4xl font-black tracking-tight">Similar Books</h2>
                 <p class="text-slate-500">You might also like these</p>
             </div>
-            <div class="flex gap-4">
-                <button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-white transition-all shadow-sm">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-white transition-all shadow-sm">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                </button>
-            </div>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-            {% for b in similar[:5] %}
-            <a href="{{ url_for('public.book_detail', gid=b.id) }}" class="group cursor-pointer">
+        <div class="flex overflow-x-auto gap-8 pb-8 scrollbar-premium snap-x snap-mandatory">
+            {% for b in similar[:10] %}
+            <a href="{{ url_for('public.book_detail', gid=b.id) }}" class="group cursor-pointer min-w-[200px] md:min-w-[240px] snap-start">
                 <div class="aspect-[2/3] overflow-hidden rounded-lg mb-4 shadow-md group-hover:shadow-2xl transition-all group-hover:-translate-y-2 duration-300 relative bg-surface-container">
                     <img alt="{{ b.title }}" class="w-full h-full object-cover" src="{{ b.cover or b.cover_url or 'https://placehold.co/300x450/fbfbe2/a04100?text=Node' }}">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -318,8 +321,8 @@
     {% endif %}
 
     <!-- Unified Modal Container -->
-    <div id="modalOverlay" class="fixed inset-0 bg-on-surface/90 backdrop-blur-3xl z-[100] hidden flex items-center justify-center p-8 transition-all duration-700 opacity-0 overflow-hidden">
-        <div id="modalContainer" class="bg-surface w-full max-w-3xl shadow-[0_100px_200px_rgba(0,0,0,0.5)] transform scale-95 transition-all duration-700 relative h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col">
+    <div id="modalOverlay" class="fixed inset-0 bg-on-surface/90 backdrop-blur-3xl z-[100] hidden flex items-center justify-center p-4 md:p-8 transition-all duration-700 opacity-0 overflow-y-auto">
+        <div id="modalContainer" class="bg-surface w-full max-w-3xl shadow-[0_100px_200px_rgba(0,0,0,0.5)] transform scale-95 transition-all duration-700 relative h-auto max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden">
             <!-- Content Injected Here -->
         </div>
     </div>

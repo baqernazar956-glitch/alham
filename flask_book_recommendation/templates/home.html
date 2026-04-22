@@ -283,7 +283,7 @@
 {% endif %}
 
 <!-- Because You Searched -->
-{% if top_rated_books_sorted and top_rated_books_sorted|length >= 4 %}
+{% if top_rated_books_sorted and top_rated_books_sorted|length > 0 %}
 <section class="bg-surface-container-low py-24 border-y border-surface-container">
     <div id="trending-now-section" class="max-w-full mx-auto px-8">
         <div class="text-center mb-16">
@@ -307,10 +307,27 @@
                     <p class="text-on-surface-variant text-sm mb-4">
                         {{ book.author if book.author else (book.authors[0] if book.authors else "Anonymous") }}
                     </p>
+                    
+                    {% if book.review_text %}
+                    <div class="mb-4 bg-primary/5 rounded-xl p-3 border border-primary/10 relative">
+                        <span class="material-symbols-outlined absolute top-2 right-2 text-primary/20 text-3xl" style="font-variation-settings: 'FILL' 1;">format_quote</span>
+                        <p class="text-xs italic text-on-surface-variant line-clamp-3 relative z-10">"{{ book.review_text }}"</p>
+                        <div class="flex items-center gap-2 mt-2 relative z-10">
+                            <div class="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary">
+                                {{ book.reviewer_name[0]|upper if book.reviewer_name else 'R' }}
+                            </div>
+                            <span class="text-[10px] font-bold text-primary">— {{ book.reviewer_name }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     <div class="mt-auto flex justify-between items-center pt-4 border-t border-surface-container-highest">
-                        <div class="flex gap-1 text-tertiary">
+                        <div class="flex gap-1 text-tertiary items-center">
                             <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;" data-icon="star">star</span>
-                            <span class="text-sm font-bold text-on-surface">{{ book.rating or '5.0' }}</span>
+                            <span class="text-sm font-bold text-on-surface">{{ "%.1f"|format(book.rating|float) if book.rating else 'New' }}</span>
+                            {% if book.review_count %}
+                            <span class="text-[10px] text-on-surface-variant ml-1">({{ book.review_count }})</span>
+                            {% endif %}
                         </div>
                         <form hx-post="{{ url_for('main.create_book') }}" hx-target="this" hx-swap="outerHTML" class="m-0" onclick="event.stopPropagation()">
                             <input type="hidden" name="title" value="{{ book.title }}">
@@ -432,6 +449,70 @@
             document.body.style.overflow = '';
         }, 300);
     }
+
+    // Event Delegation for dynamically loaded "Load More Series" button
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'load-more-series-btn') {
+            const btn = e.target;
+            const isShowingLess = btn.getAttribute('data-state') === 'expanded';
+            
+            if (isShowingLess) {
+                // Action: Show Less
+                const allCards = document.querySelectorAll('.featured-list-card');
+                allCards.forEach((card, index) => {
+                    if (index >= 6) { // Hide everything after the first 6
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        
+                        setTimeout(() => {
+                            card.classList.add('hidden');
+                        }, 400); // Wait for transition
+                    }
+                });
+                
+                // Reset button
+                btn.setAttribute('data-state', 'collapsed');
+                btn.innerText = 'Load More Series';
+                
+                // Scroll back up slightly to the grid
+                setTimeout(() => {
+                    const grid = document.getElementById('featured-collections-grid');
+                    if (grid) {
+                        const y = grid.getBoundingClientRect().top + window.scrollY - 100;
+                        window.scrollTo({top: y, behavior: 'smooth'});
+                    }
+                }, 400);
+
+            } else {
+                // Action: Show More
+                const hiddenCards = document.querySelectorAll('.featured-list-card.hidden');
+                
+                if (hiddenCards.length > 0) {
+                    hiddenCards.forEach((card, index) => {
+                        if (index < 6) { // Load next 6
+                            card.classList.remove('hidden');
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                            
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, index * 50);
+                        }
+                    });
+                    
+                    // Check if we need to change button to "Show Less"
+                    setTimeout(() => {
+                        if (document.querySelectorAll('.featured-list-card.hidden').length === 0) {
+                            btn.setAttribute('data-state', 'expanded');
+                            btn.innerText = 'Show Less Series';
+                        }
+                    }, 400);
+                }
+            }
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         // Load dynamic feed sections

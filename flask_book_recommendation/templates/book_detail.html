@@ -98,6 +98,37 @@
                             {{ book.description|safe if book.description else 'No analytical synopsis available for this volume yet. Engage with the text to unlock AI-generated insights.' }}
                         </p>
                     </div>
+
+                    <!-- AI HUB Interface -->
+                    <div class="mt-16 pt-16 border-t border-surface-container">
+                        <h3 class="text-xl font-bold mb-8 flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">psychology</span>
+                            Interactive Features
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button onclick="openChatModal()" class="flex items-center justify-between p-6 bg-surface-container hover:bg-surface-container-high rounded-xl transition-all group">
+                                <div class="text-left">
+                                    <p class="font-bold text-on-surface">Chat with Book</p>
+                                    <p class="text-xs text-on-surface-variant">Ask questions about this book</p>
+                                </div>
+                                <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">chat_bubble</span>
+                            </button>
+                            <button onclick="generateSummary()" class="flex items-center justify-between p-6 bg-surface-container hover:bg-surface-container-high rounded-xl transition-all group">
+                                <div class="text-left">
+                                    <p class="font-bold text-on-surface">Book Summary</p>
+                                    <p class="text-xs text-on-surface-variant">Read a quick AI-generated summary</p>
+                                </div>
+                                <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">summarize</span>
+                            </button>
+                            <button onclick="openCoachModal()" class="md:col-span-2 flex items-center justify-between p-6 bg-primary/5 hover:bg-primary/10 rounded-xl transition-all group border border-primary/10">
+                                <div class="text-left">
+                                    <p class="font-bold text-primary">Reading Coach</p>
+                                    <p class="text-xs text-primary/60">Create a personalized reading schedule</p>
+                                </div>
+                                <span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">auto_graph</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Reading Progress Bento Mini -->
@@ -139,7 +170,12 @@
         <!-- Community Wisdom Bento -->
         <div class="lg:col-span-7 bento-card p-12 md:p-16 bg-white border border-surface-container shadow-sm overflow-hidden relative">
             <div class="flex items-center justify-between mb-12">
-                <h3 class="text-xs font-black uppercase tracking-[0.4em] text-tertiary">Community Reviews</h3>
+                <h3 class="text-xs font-black uppercase tracking-[0.4em] text-tertiary flex items-center gap-4">
+                    Community Reviews
+                    {% if reviews|length > 0 %}
+                    <button onclick="openReviewsModal()" class="text-[10px] tracking-widest font-black text-primary hover:underline lowercase normal-case">View All ({{ reviews|length }})</button>
+                    {% endif %}
+                </h3>
                 <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-[10px] font-bold border border-slate-200 shadow-sm">
                     <span class="material-symbols-outlined text-xs text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
                     <span>4.9</span>
@@ -168,6 +204,17 @@
                         </div>
                         <div class="mt-4 text-slate-600 leading-relaxed text-sm italic font-medium opacity-80">
                             "{{ review.review_text }}"
+                        </div>
+                        <div class="flex items-center justify-end mt-4 text-slate-400 border-t border-slate-100 pt-3">
+                            <div class="flex items-center gap-4">
+                                <button onclick="this.classList.toggle('text-primary'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-primary transition-all group">
+                                    <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_up</span>
+                                    <span class="text-[10px]">12</span>
+                                </button>
+                                <button onclick="this.classList.toggle('text-error'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-error transition-all group">
+                                    <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_down</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
@@ -222,7 +269,7 @@
         
         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-10 text-center">Your Review</h4>
         
-        <form action="{{ url_for('public.submit_review', gid=book.id) }}" method="POST" class="space-y-8">
+        <form action="{{ url_for('public.submit_review', gid=book.google_id or book.id) }}" method="POST" class="space-y-8">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             
             <div class="flex justify-center mb-8">
@@ -237,7 +284,7 @@
             </div>
 
             <div class="relative group">
-                <textarea name="review_text" rows="5" class="w-full bg-slate-50/50 border-none p-10 rounded-[30px] font-medium text-lg italic text-slate-600 focus:ring-4 focus:ring-primary/5 outline-none resize-none placeholder:text-slate-300 transition-all font-body" placeholder="good book" required></textarea>
+                <textarea name="review_text" rows="5" class="w-full bg-slate-50/50 border-none p-10 rounded-[30px] font-medium text-lg italic text-slate-600 focus:ring-4 focus:ring-primary/5 outline-none resize-none placeholder:text-slate-300 transition-all font-body" placeholder="good book"></textarea>
             </div>
 
             <button type="submit" class="w-full py-6 bg-primary text-on-primary rounded-full font-black text-sm uppercase tracking-widest hover:shadow-[0_20px_40px_rgba(111,38,246,0.2)] transition-all active:scale-95">
@@ -246,39 +293,18 @@
         </form>
     </div>
 </div>
+
+<!-- Unified Modal Container -->
+<div id="modalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 md:p-12 overflow-y-auto">
+    <div id="modalContainer" class="bg-surface w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 relative min-h-[400px] max-h-[90vh] md:max-h-[85vh] flex flex-col">
+        <!-- Dynamic content injected here -->
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
+{% include 'public_book_detail_scripts.html' %}
 <script>
-    function toggleReviewForm() {
-        const container = document.getElementById('review-form-container');
-        container.classList.toggle('hidden');
-    }
-
-    document.querySelectorAll('.rating-star').forEach(star => {
-        star.parentElement.onmouseenter = () => {
-            const r = parseInt(star.dataset.rating);
-            document.querySelectorAll('.rating-star').forEach(s => {
-                if (parseInt(s.dataset.rating) <= r) {
-                    s.style.fontVariationSettings = "'FILL' 1";
-                    s.style.color = "#f59e0b";
-                }
-            });
-        };
-        star.parentElement.onmouseleave = () => {
-            const checked = document.querySelector('.rating-input:checked');
-            const r = checked ? parseInt(checked.value) : 0;
-            document.querySelectorAll('.rating-star').forEach(s => {
-                if (parseInt(s.dataset.rating) <= r) {
-                    s.style.fontVariationSettings = "'FILL' 1";
-                    s.style.color = "#f59e0b";
-                } else {
-                    s.style.fontVariationSettings = "'FILL' 0";
-                    s.style.color = "";
-                }
-            });
-        };
-    });
     async function shareBook() {
         const shareData = {
             title: "{{ book.title }}",

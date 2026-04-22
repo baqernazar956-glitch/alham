@@ -29,7 +29,7 @@
 
     function openChatModal() {
         openModal(`
-            <div class="flex flex-col h-full bg-surface">
+            <div class="flex flex-col h-full min-h-0 bg-surface">
                 <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
                     <div class="space-y-2">
                         <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">AI Chat Connected</span>
@@ -40,7 +40,7 @@
                     </button>
                 </div>
                 
-                <div id="chatMessages" class="flex-grow overflow-y-auto p-12 space-y-8 bg-surface no-scrollbar">
+                <div id="chatMessages" class="flex-grow min-h-0 overflow-y-auto p-12 space-y-8 bg-surface scrollbar-premium">
                     <div class="flex justify-start">
                         <div class="bg-surface-container-high p-8 max-w-[85%] border-r-4 border-primary">
                             <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4">Elham AI</p>
@@ -149,7 +149,7 @@
                    </div>`;
 
             openModal(`
-                <div class="flex flex-col h-full bg-surface">
+                <div class="flex flex-col h-full min-h-0 bg-surface">
                     <div class="p-12 border-b border-on-surface/5 flex justify-between items-center">
                         <div>
                             <p class="font-headline font-black text-[10px] uppercase tracking-[0.2em] text-primary/60 mb-2">Exclusive AI Insight</p>
@@ -175,27 +175,29 @@
 
     function openCoachModal() {
         openModal(`
-            <div class="p-16 space-y-16">
-                <div class="flex justify-between items-center">
+            <div class="flex flex-col h-full min-h-0 bg-surface">
+                <div class="p-10 border-b border-on-surface/5 bg-surface-container-low">
                     <div class="space-y-2">
                         <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Reading Coach Setup</span>
-                        <h3 class="font-headline font-black text-4xl text-on-surface tracking-tighter uppercase">Choose Your Pace</h3>
+                        <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">Choose Your Pace</h3>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-8">
-                    ${[{d:7,l:'Rapid'}, {d:14,l:'Standard'}, {d:30,l:'Measured'}].map(p=>`
-                    <button onclick="generateReadingPlan(${p.d})" class="group bg-surface-container-high border-2 border-transparent p-10 transition-all hover:bg-on-surface hover:text-white flex flex-col items-center gap-2 shadow-2xl">
-                        <span class="font-headline font-black text-4xl group-hover:text-primary transition-colors">${p.d}</span>
-                        <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40 group-hover:opacity-100">${p.l} Pace</span>
-                    </button>`).join('')}
-                </div>
-                
-                <div class="pt-12 border-t border-on-surface/5 space-y-8">
-                    <span class="font-label text-[9px] font-black text-on-surface/20 uppercase tracking-[0.4em]">Custom Number of Days:</span>
-                    <div class="flex gap-6">
-                        <input type="number" id="customDays" placeholder="7" class="w-32 bg-surface-container-high border-none p-6 font-headline font-black text-lg text-center outline-none focus:ring-2 focus:ring-primary shadow-inner"/>
-                        <button onclick="generateReadingPlan(document.getElementById('customDays').value)" class="flex-grow bg-on-surface text-white py-6 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">Create Schedule</button>
+                <div class="flex-1 min-h-0 overflow-y-auto p-10 space-y-10 scrollbar-premium">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        ${[{d:7,l:'Rapid'}, {d:14,l:'Standard'}, {d:30,l:'Measured'}].map(p=>`
+                        <button onclick="generateReadingPlan(${p.d})" class="group bg-surface-container-high border-2 border-transparent p-8 transition-all hover:bg-on-surface hover:text-white flex flex-col items-center gap-2 shadow-2xl">
+                            <span class="font-headline font-black text-4xl group-hover:text-primary transition-colors">${p.d}</span>
+                            <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40 group-hover:opacity-100">${p.l} Pace</span>
+                        </button>`).join('')}
+                    </div>
+                    
+                    <div class="pt-8 border-t border-on-surface/5 space-y-6">
+                        <span class="font-label text-[9px] font-black text-on-surface/20 uppercase tracking-[0.4em]">Custom Number of Days:</span>
+                        <div class="flex gap-4">
+                            <input type="number" id="customDays" placeholder="7" class="w-28 bg-surface-container-high border-none p-5 font-headline font-black text-lg text-center outline-none focus:ring-2 focus:ring-primary shadow-inner"/>
+                            <button onclick="generateReadingPlan(document.getElementById('customDays').value)" class="flex-grow bg-on-surface text-white py-5 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">Create Schedule</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -240,7 +242,7 @@
             }
             
             openModal(`
-                <div class="flex flex-col h-full bg-surface">
+                <div class="flex flex-col h-full min-h-0 bg-surface">
                     <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
                         <div class="space-y-2">
                             <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Your Reading Schedule</span>
@@ -250,7 +252,7 @@
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div class="flex-grow overflow-y-auto p-12 space-y-6 bg-surface no-scrollbar">
+                    <div class="flex-grow overflow-y-auto p-12 space-y-6 bg-surface scrollbar-premium">
                         ${milestonesHTML}
                     </div>
                     ${data.advice ? `
@@ -308,6 +310,67 @@
         }
     }
 
+    function openReviewsModal() {
+        openModal(`
+            <div class="flex flex-col h-full min-h-0 bg-surface">
+                <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
+                    <div class="space-y-2">
+                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Community Reviews</span>
+                        <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">Reader Feedback</h3>
+                    </div>
+                    <button onclick="closeModal()" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                
+                <div class="flex-grow overflow-y-auto p-12 space-y-12 bg-surface scrollbar-premium">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="space-y-6 pb-12 border-b border-on-surface/5 last:border-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex text-secondary scale-110 origin-left">
+                                    {% for i in range(5) %}
+                                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {{ 1 if review.rating > i else 0 }};">star</span>
+                                    {% endfor %}
+                                </div>
+                                <span class="text-[10px] font-black text-on-surface/20 uppercase tracking-widest">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                            
+                            <p class="font-body text-xl text-on-surface/80 leading-relaxed italic">"{{ review.review_text }}"</p>
+                            
+                            <div class="flex items-center justify-between pt-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/5">
+                                        {{ review.user.name[0]|upper if review.user.name else '?' }}
+                                    </div>
+                                    <div>
+                                        <p class="font-headline font-black text-xs uppercase tracking-tight">{{ review.user.name }}</p>
+                                        <p class="text-[10px] text-on-surface/40 uppercase font-black tracking-widest">Verified Reader</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-6">
+                                    <button onclick="this.classList.toggle('text-primary'); this.classList.toggle('scale-110');" class="flex items-center gap-2 text-on-surface/40 hover:text-primary transition-all group">
+                                        <span class="material-symbols-outlined text-2xl group-hover:fill-current">thumb_up</span>
+                                        <span class="font-headline font-black text-xs uppercase">12</span>
+                                    </button>
+                                    <button onclick="this.classList.toggle('text-error'); this.classList.toggle('scale-110');" class="flex items-center gap-2 text-on-surface/40 hover:text-error transition-all group">
+                                        <span class="material-symbols-outlined text-2xl group-hover:fill-current">thumb_down</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="p-8 bg-surface-container-low border-t border-on-surface/5 text-center">
+                    <p class="font-label text-[10px] text-on-surface/30 uppercase tracking-[0.4em] font-black italic">Sharing inspiration through connection</p>
+                </div>
+            </div>
+        `);
+    }
+
     document.querySelectorAll('.rating-star').forEach(star => {
         star.parentElement.onmouseenter = () => {
             const r = parseInt(star.dataset.rating);
@@ -315,6 +378,9 @@
                 if (parseInt(s.dataset.rating) <= r) {
                     s.style.fontVariationSettings = "'FILL' 1";
                     s.style.color = "#ea580c";
+                } else {
+                    s.style.fontVariationSettings = "'FILL' 0";
+                    s.style.color = "";
                 }
             });
         };
@@ -331,5 +397,20 @@
                 }
             });
         };
+    });
+
+    document.querySelectorAll('.rating-input').forEach(input => {
+        input.addEventListener('change', () => {
+            const r = parseInt(input.value);
+            document.querySelectorAll('.rating-star').forEach(s => {
+                if (parseInt(s.dataset.rating) <= r) {
+                    s.style.fontVariationSettings = "'FILL' 1";
+                    s.style.color = "#ea580c";
+                } else {
+                    s.style.fontVariationSettings = "'FILL' 0";
+                    s.style.color = "";
+                }
+            });
+        });
     });
 </script>

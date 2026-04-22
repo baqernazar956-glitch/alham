@@ -32,31 +32,42 @@ def get_top_rated(limit=10):
             avg = float(row.avg_rating)
             count = int(row.review_count)
             
+            # Fetch latest review comment for this book
+            latest_review = BookReview.query.filter_by(google_id=gid).filter(BookReview.review_text != '').order_by(BookReview.created_at.desc()).first()
+            review_text = latest_review.review_text if latest_review else None
+            reviewer_name = latest_review.user.name if latest_review and latest_review.user else "Reader"
+            
             # 2. Get Book Details
             # Try local DB first
             book = Book.query.filter_by(google_id=gid).first()
+            
+            book_dict = None
             if book:
-                d = _book_to_dict(book, source="Community", reason=f"⭐ {avg:.1f} ({count})")
-                d['rating'] = avg # Explicit rating for UI
-                books_dicts.append(d)
+                book_dict = _book_to_dict(book, source="Community", reason=f"⭐ {avg:.1f} ({count})")
             else:
                 # Fallback to API/Utils if not in DB (slower but necessary)
-                # We can use fetch_book_details from utils (imported)
                 from .utils import fetch_book_details
                 details = fetch_book_details(gid)
                 if details:
                     cover = details.get("cover")
                     if cover and cover.startswith("http://"): cover = "https://" + cover[7:]
                     
-                    books_dicts.append({
+                    book_dict = {
                         "id": gid,
                         "title": details.get("title"),
                         "author": details.get("author"),
                         "cover": cover,
                         "source": "Community",
                         "reason": f"⭐ {avg:.1f} ({count})",
-                        "rating": avg
-                    })
+                    }
+                    
+            if book_dict:
+                book_dict['rating'] = avg # Explicit rating for UI
+                book_dict['review_count'] = count
+                if review_text:
+                    book_dict['review_text'] = review_text
+                    book_dict['reviewer_name'] = reviewer_name
+                books_dicts.append(book_dict)
         
         return books_dicts
 

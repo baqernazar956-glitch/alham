@@ -126,6 +126,29 @@
             scrollbar-width: none;
         }
 
+        /* Premium Scrollbar Style */
+        .scrollbar-premium::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-premium::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar-premium::-webkit-scrollbar-thumb {
+            background: rgba(111, 38, 246, 0.2);
+            border-radius: 10px;
+        }
+
+        .scrollbar-premium::-webkit-scrollbar-thumb:hover {
+            background: rgba(111, 38, 246, 0.5);
+        }
+
+        .scrollbar-premium {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(111, 38, 246, 0.2) transparent;
+        }
+
         /* Instant Loading SPA Progress Bar */
         #global-loader {
             position: fixed;

@@ -4,7 +4,7 @@ import json
 import os
 from flask import Blueprint, render_template, request, abort, session, flash, redirect, url_for, jsonify
 from flask_login import current_user, login_required
-from ..models import Book, SearchHistory, UserPreference, BookReview, UserBookView, ReviewReaction
+from ..models import Book, SearchHistory, UserPreference, BookReview, UserBookView, ReviewReaction, UserBookNote
 from ..extensions import db, csrf, cache
 from datetime import datetime
 import requests
@@ -1385,6 +1385,97 @@ def submit_review(gid):
         flash("حدث خطأ أثناء حفظ المراجعة", "danger")
     
     return redirect(url_for("public.book_detail", gid=gid))
+
+
+# ===========================================================================
+#                          📝 ملاحظات المستخدم الخاصة
+# ===========================================================================
+
+@public_bp.get("/books/<gid>/note")
+@login_required
+def get_book_note(gid):
+    """جلب الملاحظة الخاصة بالمستخدم لكتاب معين"""
+    # نحدد جميع المعرفات الممكنة للكتاب قبل البحث
+    is_numeric = gid.isdigit()
+    search_google_id = gid
+    search_book_id = int(gid) if is_numeric else None
+    
+    if is_numeric:
+        book = Book.query.get(search_book_id)
+        if book and book.google_id:
+            search_google_id = book.google_id
+            
+    note = UserBookNote.query.filter(
+        UserBookNote.user_id == current_user.id,
+        db.or_(
+            UserBookNote.google_id == search_google_id,
+            UserBookNote.book_id == search_book_id if search_book_id else False
+        )
+    ).first()
+    
+    if note:
+        return jsonify({"success": True, "note": note.note_text})
+    return jsonify({"success": True, "note": ""})
+
+@public_bp.post("/books/<gid>/note")
+@login_required
+@csrf.exempt
+def save_book_note(gid):
+    """حفظ أو تحديث الملاحظة الخاصة بالمستخدم"""
+    try:
+        data = request.get_json() or {}
+        note_text = data.get("note", "").strip()
+        # نحدد جميع المعرفات الممكنة للكتاب قبل البحث
+        is_numeric = gid.isdigit()
+        search_google_id = gid
+        search_book_id = int(gid) if is_numeric else None
+        
+        if is_numeric:
+            book = Book.query.get(search_book_id)
+            if book and book.google_id:
+                search_google_id = book.google_id
+        
+        # البحث عن ملاحظة موجودة باستخدام أي من المعرفات المتاحة
+        note = UserBookNote.query.filter(
+            UserBookNote.user_id == current_user.id,
+            db.or_(
+                UserBookNote.google_id == search_google_id,
+                UserBookNote.book_id == search_book_id if search_book_id else False
+            )
+        ).first()
+        
+        if note:
+            if not note_text:
+                db.session.delete(note)
+                msg = "تم حذف الملاحظة"
+            else:
+                note.note_text = note_text
+                # تحديث المعرفات إذا كانت ناقصة
+                if search_book_id and not note.book_id:
+                    note.book_id = search_book_id
+                if search_google_id and not note.google_id:
+                    note.google_id = search_google_id
+                msg = "تم تحديث الملاحظة بنجاح"
+        elif note_text:
+            # إنشاء ملاحظة جديدة
+            new_note = UserBookNote(
+                user_id=current_user.id,
+                note_text=note_text,
+                google_id=search_google_id,
+                book_id=search_book_id
+            )
+            db.session.add(new_note)
+            msg = "تم حفظ الملاحظة بنجاح"
+        else:
+            return jsonify({"success": True, "message": "لا يوجد نص لحفظه"})
+
+        db.session.commit()
+        return jsonify({"success": True, "message": msg})
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Notes] Error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 
 @public_bp.get("/books/<gid>/reviews")

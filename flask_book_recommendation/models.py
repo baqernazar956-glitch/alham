@@ -388,3 +388,33 @@ class ExperimentMetric(db.Model):
     metric_value = db.Column(db.Float, nullable=False)
     
     recorded_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+class UserBookNote(db.Model):
+    """نموذج ملاحظات الكتب الخاصة - يسمح للمستخدمين بحفظ ملاحظات خاصة بهم لكل كتاب"""
+    __tablename__ = "user_book_notes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # المستخدم الذي أضاف الملاحظة
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    user = db.relationship("User", backref=db.backref("personal_notes", lazy="dynamic"))
+    
+    # الكتاب (google_id للخارجية أو book_id للمحلية)
+    google_id = db.Column(db.String(128), nullable=True, index=True)
+    book_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=True, index=True)
+    book = db.relationship("Book", backref=db.backref("personal_notes", lazy="dynamic"))
+    
+    # نص الملاحظة
+    note_text = db.Column(db.Text, nullable=False)
+    
+    # التواريخ
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        # كل مستخدم لديه ملاحظة واحدة لكل كتاب
+        db.UniqueConstraint("user_id", "google_id", name="uq_user_note_google"),
+        db.UniqueConstraint("user_id", "book_id", name="uq_user_note_book"),
+    )
+
+    def __repr__(self):
+        return f"<UserBookNote user={self.user_id} book={self.book_id or self.google_id}>"

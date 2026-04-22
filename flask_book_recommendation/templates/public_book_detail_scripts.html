@@ -378,49 +378,136 @@
         `);
     }
 
-    document.querySelectorAll('.rating-star').forEach(star => {
-        star.parentElement.onmouseenter = () => {
-            const r = parseInt(star.dataset.rating);
-            const container = star.closest('form') || document;
-            container.querySelectorAll('.rating-star').forEach(s => {
-                if (parseInt(s.dataset.rating) <= r) {
-                    s.style.fontVariationSettings = "'FILL' 1";
-                    s.style.color = "#ea580c";
-                } else {
-                    s.style.fontVariationSettings = "'FILL' 0";
-                    s.style.color = "";
+    // --- Personal Notes Functions ---
+    const notesModal = document.getElementById('notesModal');
+    const noteTextarea = document.getElementById('personalNoteText');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+
+    function openNotesModal() {
+        const isAuth = {{ 'true' if current_user.is_authenticated else 'false' }};
+        if(!isAuth) return window.location.href = "{{ url_for('auth.login') }}";
+        
+        // Fetch existing note
+        fetch(`/public/books/${bookId}/note`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const noteContent = data.note || "";
+                    noteTextarea.value = noteContent;
+                    
+                    // Sync with page textarea if exists
+                    const pageTextarea = document.getElementById('pagePrivateNotes');
+                    if (pageTextarea) pageTextarea.value = noteContent;
                 }
+                
+                notesModal.classList.remove('hidden');
+                setTimeout(() => {
+                    notesModal.classList.remove('opacity-0');
+                    notesModal.querySelector('div').classList.remove('scale-95');
+                }, 50);
+            })
+            .catch(err => {
+                console.error("Error fetching note:", err);
+                notesModal.classList.remove('hidden');
+                setTimeout(() => {
+                    notesModal.classList.remove('opacity-0');
+                    notesModal.querySelector('div').classList.remove('scale-95');
+                }, 50);
             });
+    }
+
+    function closeNotesModal() {
+        notesModal.classList.add('opacity-0');
+        notesModal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            notesModal.classList.add('hidden');
+        }, 300);
+    }
+
+    async function saveNote(sourceId = null, btnElement = null) {
+        const targetTextarea = sourceId ? document.getElementById(sourceId) : noteTextarea;
+        const note = targetTextarea.value.trim();
+        const targetBtn = btnElement || saveNoteBtn;
+        const originalBtnHTML = targetBtn.innerHTML;
+        
+        targetBtn.disabled = true;
+        targetBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Saving...';
+        
+        try {
+            const res = await fetch(`/public/books/${bookId}/note`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({ note: note })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                targetBtn.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> Saved!';
+                const originalBg = targetBtn.style.backgroundColor;
+                targetBtn.style.backgroundColor = '#10b981'; // Green
+                
+                // Sync all textareas
+                const allNotesFields = [noteTextarea, document.getElementById('pagePrivateNotes')];
+                allNotesFields.forEach(f => { if(f) f.value = note; });
+
+                setTimeout(() => {
+                    targetBtn.disabled = false;
+                    targetBtn.innerHTML = originalBtnHTML;
+                    targetBtn.style.backgroundColor = originalBg;
+                    if (!sourceId) closeNotesModal(); // Only close if from modal
+                }, 1000);
+            } else {
+                alert("Failed to save note: " + (data.error || "Unknown error"));
+                targetBtn.disabled = false;
+                targetBtn.innerHTML = originalBtnHTML;
+            }
+        } catch (err) {
+            console.error("Error saving note:", err);
+            alert("An error occurred while saving your note.");
+            targetBtn.disabled = false;
+            targetBtn.innerHTML = originalBtnHTML;
+        }
+    }
+
+    function updateStars(rating, container) {
+        container.querySelectorAll('.rating-star').forEach(s => {
+            const starRating = parseInt(s.dataset.rating);
+            if (starRating <= rating) {
+                s.style.fontVariationSettings = "'FILL' 1";
+                s.style.color = "#FFB800"; // Vibrant yellow-orange
+                s.classList.remove('text-slate-300');
+            } else {
+                s.style.fontVariationSettings = "'FILL' 0";
+                s.style.color = "";
+                s.classList.add('text-slate-300');
+            }
+        });
+    }
+
+    document.querySelectorAll('.rating-star').forEach(star => {
+        const label = star.parentElement;
+        const container = star.closest('.flex');
+
+        label.onmouseenter = () => {
+            const r = parseInt(star.dataset.rating);
+            updateStars(r, container);
         };
-        star.parentElement.onmouseleave = () => {
-            const container = star.closest('form') || document;
+
+        label.onmouseleave = () => {
             const checked = container.querySelector('.rating-input:checked');
             const r = checked ? parseInt(checked.value) : 0;
-            container.querySelectorAll('.rating-star').forEach(s => {
-                if (parseInt(s.dataset.rating) <= r) {
-                    s.style.fontVariationSettings = "'FILL' 1";
-                    s.style.color = "#ea580c";
-                } else {
-                    s.style.fontVariationSettings = "'FILL' 0";
-                    s.style.color = "";
-                }
-            });
+            updateStars(r, container);
         };
     });
 
     document.querySelectorAll('.rating-input').forEach(input => {
         input.addEventListener('change', () => {
             const r = parseInt(input.value);
-            const container = input.closest('form') || document;
-            container.querySelectorAll('.rating-star').forEach(s => {
-                if (parseInt(s.dataset.rating) <= r) {
-                    s.style.fontVariationSettings = "'FILL' 1";
-                    s.style.color = "#ea580c";
-                } else {
-                    s.style.fontVariationSettings = "'FILL' 0";
-                    s.style.color = "";
-                }
-            });
+            const container = input.closest('.flex');
+            updateStars(r, container);
         });
     });
 </script>

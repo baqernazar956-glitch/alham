@@ -1485,6 +1485,21 @@ def book_detail(book_id):
         )
     ).order_by(BookReview.created_at.desc()).limit(20).all()
 
+    # التحقق من تفاعلات المستخدم الحالي (Likes/Dislikes)
+    if current_user.is_authenticated:
+        try:
+            from ..models import ReviewReaction
+            review_ids = [r.id for r in reviews]
+            reactions = ReviewReaction.query.filter(
+                ReviewReaction.review_id.in_(review_ids),
+                ReviewReaction.user_id == current_user.id
+            ).all()
+            reaction_map = {rr.review_id: rr.reaction_type for rr in reactions}
+            for r in reviews:
+                r.user_reaction = reaction_map.get(r.id)
+        except Exception as e:
+            print(f"Error fetching review reactions: {e}")
+
     # جلب اقتباسات المستخدم
     quotes = BookQuote.query.filter_by(user_id=current_user.id, book_id=book.id).order_by(BookQuote.created_at.desc()).all()
 

@@ -4,7 +4,7 @@ import json
 import os
 from flask import Blueprint, render_template, request, abort, session, flash, redirect, url_for, jsonify
 from flask_login import current_user, login_required
-from ..models import Book, SearchHistory, UserPreference, BookReview, UserBookView
+from ..models import Book, SearchHistory, UserPreference, BookReview, UserBookView, ReviewReaction
 from ..extensions import db, csrf, cache
 from datetime import datetime
 import requests
@@ -1069,6 +1069,20 @@ def book_detail(gid):
             user_review = BookReview.query.filter_by(user_id=current_user.id, google_id=gid).first()
     
     avg_rating = 0
+    
+    # 🆕 التحقق من تفاعلات المستخدم الحالي (Likes/Dislikes)
+    if current_user.is_authenticated:
+        try:
+            review_ids = [r.id for r in reviews]
+            reactions = ReviewReaction.query.filter(
+                ReviewReaction.review_id.in_(review_ids),
+                ReviewReaction.user_id == current_user.id
+            ).all()
+            reaction_map = {rr.review_id: rr.reaction_type for rr in reactions}
+            for r in reviews:
+                r.user_reaction = reaction_map.get(r.id)
+        except Exception as e:
+            print(f"Error fetching review reactions: {e}")
     if reviews:
         avg_rating = sum(r.rating for r in reviews) / len(reviews)
 
@@ -1443,6 +1457,16 @@ def generate_ai_summary(gid):
             book_data = fetch_openlib_detail(gid)
         elif gid.isdigit() and len(gid) == 13:
             book_data = fetch_itbook_detail(gid)
+        elif gid.isdigit():
+            from ..models import Book
+            local_book = Book.query.get(int(gid))
+            if local_book:
+                book_data = {
+                    "title": local_book.title,
+                    "author": local_book.author,
+                    "description": local_book.description,
+                    "categories": local_book.categories
+                }
         else:
             d = fetch_book_details(gid)
             if d:
@@ -1605,6 +1629,15 @@ def chat_with_book_route(gid):
         elif gid.startswith("arch_"): book_data = fetch_archive_detail(gid)
         elif gid.startswith("ol_"): book_data = fetch_openlib_detail(gid)
         elif gid.isdigit() and len(gid) == 13: book_data = fetch_itbook_detail(gid)
+        elif gid.isdigit():
+            from ..models import Book
+            local_book = Book.query.get(int(gid))
+            if local_book:
+                book_data = {
+                    "title": local_book.title,
+                    "author": local_book.author,
+                    "description": local_book.description,
+                }
         else:
             d = fetch_book_details(gid)
             if d:
@@ -1624,6 +1657,63 @@ def chat_with_book_route(gid):
     except Exception as e:
         print(f"[Book Chat] Error: {e}")
         return jsonify({"success": False, "reply": "حدث خطأ غير متوقع.", "error": str(e)}), 500
+
+
+@public_bp.post("/reviews/<int:review_id>/react")
+@login_required
+@csrf.exempt
+def react_to_review(review_id):
+    """تسجيل الإعجاب أو عدم الإعجاب بمراجعة كتاب"""
+    review = BookReview.query.get_or_404(review_id)
+    data = request.get_json() or {}
+    reaction_type = data.get("type") # 'like' or 'dislike'
+    
+    if reaction_type not in ['like', 'dislike']:
+        return jsonify({"success": False, "error": "Invalid reaction type"}), 400
+        
+    existing = ReviewReaction.query.filter_by(user_id=current_user.id, review_id=review_id).first()
+    
+    if existing:
+        if existing.reaction_type == reaction_type:
+            # إلغاء التفاعل الحالي (Toggle off)
+            db.session.delete(existing)
+            if reaction_type == 'like':
+                review.likes_count = max(0, (review.likes_count or 0) - 1)
+            else:
+                review.dislikes_count = max(0, (review.dislikes_count or 0) - 1)
+            msg = "تمت إزالة التفاعل"
+            final_type = None
+        else:
+            # تغيير نوع التفاعل (من لايك إلى ديسلايك أو العكس)
+            old_type = existing.reaction_type
+            existing.reaction_type = reaction_type
+            if old_type == 'like':
+                review.likes_count = max(0, (review.likes_count or 0) - 1)
+                review.dislikes_count = (review.dislikes_count or 0) + 1
+            else:
+                review.dislikes_count = max(0, (review.dislikes_count or 0) - 1)
+                review.likes_count = (review.likes_count or 0) + 1
+            msg = f"تم التغيير إلى {reaction_type}"
+            final_type = reaction_type
+    else:
+        # تفاعل جديد
+        new_reaction = ReviewReaction(user_id=current_user.id, review_id=review_id, reaction_type=reaction_type)
+        db.session.add(new_reaction)
+        if reaction_type == 'like':
+            review.likes_count = (review.likes_count or 0) + 1
+        else:
+            review.dislikes_count = (review.dislikes_count or 0) + 1
+        msg = f"تمت إضافة {reaction_type}"
+        final_type = reaction_type
+        
+    db.session.commit()
+    return jsonify({
+        "success": True, 
+        "msg": msg,
+        "likes": review.likes_count,
+        "dislikes": review.dislikes_count,
+        "user_reaction": final_type
+    })
 
 
 # ===========================================================================
@@ -2445,65 +2535,4 @@ def recommend_similar_book():
 
     return jsonify({"books": books_data})
 
-# ===========================================================================
-#                     🤖 AI Interactive Features (Web)
-# ===========================================================================
-
-@public_bp.post("/books/<gid>/chat")
-@login_required
-def book_chat_web(gid):
-    """Chat with a specific book for web users"""
-    data = request.json or {}
-    message = data.get("message", "").strip()
-    history = data.get("history", [])
-    
-    if not message:
-        return jsonify({"success": False, "reply": "Please enter a message."}), 400
-        
-    try:
-        # Fetch book details for AI context
-        book_info = fetch_book_details(gid)
-        if not book_info:
-            return jsonify({"success": False, "reply": "Book not found."}), 404
-            
-        # Build context for the AI
-        user_context = {
-            "book_title": book_info.get("title"),
-            "book_author": book_info.get("author"),
-            "book_desc": book_info.get("description", "")[:800],
-            "history": history
-        }
-        
-        # Call AI Utility
-        # In utils.py, chat_with_ai expects (user_message, user_context)
-        ai_msg = f"I am asking about the book '{book_info.get('title')}' by {book_info.get('author')}. {message}"
-        result = chat_with_ai(ai_msg, user_context=user_context)
-        
-        return jsonify({"success": True, "reply": result.get("reply", "")})
-        
-    except Exception as e:
-        print(f"[Web AI Chat] Error: {e}")
-        return jsonify({"success": False, "reply": "An error occurred while chatting with AI."}), 500
-
-@public_bp.post("/books/<gid>/ai-summary")
-@login_required
-def book_summary_web(gid):
-    """Generate an AI summary for web users"""
-    try:
-        book_info = fetch_book_details(gid)
-        if not book_info:
-            return jsonify({"success": False, "error": "Book not found."}), 404
-            
-        # Call AI Utility
-        # result is a dict with {"success": bool, "summary": str}
-        result = generate_book_summary(book_info)
-        
-        if result.get("success"):
-            return jsonify({"success": True, "summary": result.get("summary", "")})
-        else:
-            return jsonify({"success": False, "error": result.get("error", "Failed to generate summary.")})
-            
-    except Exception as e:
-        print(f"[Web AI Summary] Error: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
-
+# Removed duplicate AI routes for chat and summary

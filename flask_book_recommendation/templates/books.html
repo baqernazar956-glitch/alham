@@ -15,12 +15,13 @@
     .tab-content.active-list { display: flex; flex-direction: column; opacity: 1; }
     
     /* List View Overrides */
-    .book-card-list { display: flex !important; flex-direction: row !important; align-items: stretch !important; }
-    .book-card-list .book-cover-container { width: 120px !important; height: auto !important; aspect-ratio: 2/3; flex-shrink: 0; }
-    .book-card-list .book-info-container { flex: 1; padding: 1.5rem !important; display: flex; flex-direction: column; justify-content: center; }
-    .book-card-list .book-actions-overlay { position: static !important; opacity: 1 !important; visibility: visible !important; background: transparent !important; flex-direction: row !important; padding: 0 !important; gap: 0.5rem !important; margin-top: 1rem; }
-    .book-card-list .book-actions-overlay > * { transform: none !important; }
-    .book-card-list .quick-action-btn { background: var(--color-surface-container) !important; color: var(--color-on-surface) !important; }
+    .book-card-list { display: flex !important; flex-direction: row !important; align-items: center !important; text-align: left !important; padding: 1.5rem !important; margin-bottom: 1rem; width: 100% !important; max-width: 1000px; }
+    .book-card-list .book-cover-container { width: 100px !important; height: 140px !important; flex-shrink: 0; margin-bottom: 0 !important; }
+    .book-card-list .book-info-container { flex: 1; padding: 0 2rem !important; align-items: flex-start !important; }
+    .book-card-list .book-info-container h4 { font-size: 1.25rem !important; margin-bottom: 0.5rem !important; }
+    .book-card-list .book-actions-overlay { position: static !important; opacity: 1 !important; visibility: visible !important; background: transparent !important; flex-direction: row !important; padding: 0 !important; gap: 0.75rem !important; margin-top: 1rem; justify-content: flex-start !important; }
+    .book-card-list .book-actions-overlay > * { transform: none !important; width: auto !important; }
+    .book-card-list .quick-action-btn { background: var(--color-surface-container) !important; color: var(--color-on-surface) !important; padding: 0.5rem 1rem !important; border-radius: 0.75rem !important; }
     .book-card-list .quick-action-btn:hover { background: var(--color-primary) !important; color: white !important; }
 
     /* Animated Counters */
@@ -167,21 +168,13 @@
                     <input type="text" id="lib-search" placeholder="Search title or author..." class="w-full bg-surface-container hover:bg-surface-container-high focus:bg-white focus:ring-2 focus:ring-primary border-none rounded-full py-3.5 pl-12 pr-4 text-sm font-medium transition-colors shadow-inner">
                 </div>
                 
-                <!-- View Toggle -->
-                <div class="hidden md:flex bg-surface-container p-1.5 rounded-full shadow-inner border border-outline-variant/5">
-                    <button class="view-toggle p-2 rounded-full text-primary bg-white shadow-sm transition-all" data-view="grid" aria-label="Grid View">
-                        <span class="material-symbols-outlined text-[20px] block">grid_view</span>
-                    </button>
-                    <button class="view-toggle p-2 rounded-full text-on-surface-variant hover:text-on-surface transition-all" data-view="list" aria-label="List View">
-                        <span class="material-symbols-outlined text-[20px] block">view_list</span>
-                    </button>
-                </div>
 
-                <!-- Add Button -->
-                <button onclick="document.getElementById('addBookModal').showModal()" class="bg-on-surface text-surface py-3.5 px-6 rounded-full font-bold text-sm shadow-[0_10px_20px_-10px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:shadow-lg transition-all flex items-center gap-2">
+
+                <!-- Add Button (Link to Public Library) -->
+                <a href="{{ url_for('public.list_books') }}" class="bg-on-surface text-surface py-3.5 px-6 rounded-full font-bold text-sm shadow-[0_10px_20px_-10px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:shadow-lg transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">add</span>
                     <span class="hidden sm:inline">Add Book</span>
-                </button>
+                </a>
             </div>
         </div>
 
@@ -196,14 +189,8 @@
             <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="favorite">
                 Favorites <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.favorite_count }}</span>
             </button>
-            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="later">
-                Wishlist <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.later_count }}</span>
-            </button>
             <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="finished">
                 Finished <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.finished_count }}</span>
-            </button>
-            <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="on_hold">
-                On Hold <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.on_hold_count }}</span>
             </button>
         </div>
 
@@ -437,40 +424,13 @@
             }
         }, 300);
 
-        // --- 3. View Toggle (Grid/List) ---
-        const viewToggles = document.querySelectorAll('.view-toggle');
-        const gridContainer = document.getElementById('library-grid-container');
-        const bookCards = document.querySelectorAll('.book-card');
 
-        viewToggles.forEach(toggle => {
-            toggle.addEventListener('click', () => {
-                const view = toggle.getAttribute('data-view');
-                
-                // Update toggle styles
-                viewToggles.forEach(btn => {
-                    btn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-                    btn.classList.add('text-on-surface-variant');
-                });
-                toggle.classList.remove('text-on-surface-variant');
-                toggle.classList.add('bg-white', 'text-primary', 'shadow-sm');
-                
-                // Update grid layout
-                if(view === 'list') {
-                    gridContainer.classList.remove('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', '2xl:grid-cols-7', '3xl:grid-cols-8');
-                    gridContainer.classList.add('flex', 'flex-col', 'max-w-4xl', 'mx-auto');
-                    bookCards.forEach(c => c.classList.add('book-card-list'));
-                } else {
-                    gridContainer.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', '2xl:grid-cols-7', '3xl:grid-cols-8');
-                    gridContainer.classList.remove('flex', 'flex-col', 'max-w-4xl', 'mx-auto');
-                    bookCards.forEach(c => c.classList.remove('book-card-list'));
-                }
-            });
-        });
 
         // --- 4. Filtering (Tabs & Search) ---
         const tabs = document.querySelectorAll('.shelf-tab');
         const searchInput = document.getElementById('lib-search');
         const noResults = document.getElementById('no-search-results');
+        const bookCards = document.querySelectorAll('.book-card');
         
         // State
         let currentTabFilter = 'all';

@@ -229,18 +229,25 @@
                                 <p class="text-sm italic text-on-surface-variant leading-relaxed">"{{ review.review_text }}"</p>
                                 <div class="flex items-center justify-between mt-4">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                                             {{ review.user.name[0]|upper if review.user.name else '?' }}
                                         </div>
-                                        <p class="text-[10px] font-bold text-slate-400">— {{ review.user.name }}</p>
+                                        <p class="text-sm font-bold text-slate-700">— {{ review.user.name }}</p>
                                     </div>
-                                    <div class="flex items-center gap-4 text-slate-400">
-                                        <button onclick="this.classList.toggle('text-primary'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-primary transition-all group">
-                                            <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_up</span>
-                                            <span class="text-[10px]">12</span>
+                                    <div class="flex items-center bg-on-surface/5 rounded-full px-1 py-1 border border-on-surface/5 shadow-sm interaction-group">
+                                        <button data-type="like" data-active="{{ 'true' if review.user_reaction == 'like' else 'false' }}" 
+                                                onclick="const btn = this; const group = btn.closest('.interaction-group'); const dislikeBtn = group.querySelector('[data-type=\'dislike\']'); const countSpan = btn.querySelector('.like-count'); const icon = btn.querySelector('.material-symbols-outlined'); fetch('/public/reviews/{{ review.id }}/react', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'like' }) }).then(r => r.json()).then(data => { if (data.success) { btn.setAttribute('data-active', data.user_reaction === 'like' ? 'true' : 'false'); if (data.user_reaction === 'like') { btn.classList.add('bg-primary/10', 'text-primary'); icon.style.fontVariationSettings = `'FILL' 1, 'wght' 400`; if (dislikeBtn.getAttribute('data-active') === 'true') { dislikeBtn.setAttribute('data-active', 'false'); dislikeBtn.classList.remove('bg-error/10', 'text-error'); dislikeBtn.querySelector('.material-symbols-outlined').style.fontVariationSettings = `'FILL' 0, 'wght' 400`; } } else { btn.classList.remove('bg-primary/10', 'text-primary'); icon.style.fontVariationSettings = `'FILL' 0, 'wght' 400`; } countSpan.textContent = data.likes > 0 ? data.likes : ''; countSpan.classList.toggle('hidden', data.likes <= 0); } });" 
+                                                class="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-primary/5 transition-all group {{ 'bg-primary/10 text-primary' if review.user_reaction == 'like' else '' }}">
+                                            <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' {{ 1 if review.user_reaction == 'like' else 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">thumb_up</span>
+                                            <span class="like-count text-[10px] font-bold tracking-tight {{ 'hidden' if not review.likes_count }}">
+                                                {{ review.likes_count if review.likes_count else '' }}
+                                            </span>
                                         </button>
-                                        <button onclick="this.classList.toggle('text-error'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-error transition-all group">
-                                            <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_down</span>
+                                        <div class="w-[1px] h-4 bg-on-surface/10 mx-1"></div>
+                                        <button data-type="dislike" data-active="{{ 'true' if review.user_reaction == 'dislike' else 'false' }}" 
+                                                onclick="const btn = this; const group = btn.closest('.interaction-group'); const likeBtn = group.querySelector('[data-type=\'like\']'); const icon = btn.querySelector('.material-symbols-outlined'); fetch('/public/reviews/{{ review.id }}/react', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'dislike' }) }).then(r => r.json()).then(data => { if (data.success) { btn.setAttribute('data-active', data.user_reaction === 'dislike' ? 'true' : 'false'); if (data.user_reaction === 'dislike') { btn.classList.add('bg-error/10', 'text-error'); icon.style.fontVariationSettings = `'FILL' 1, 'wght' 400`; if (likeBtn.getAttribute('data-active') === 'true') { likeBtn.setAttribute('data-active', 'false'); likeBtn.classList.remove('bg-primary/10', 'text-primary'); likeBtn.querySelector('.material-symbols-outlined').style.fontVariationSettings = `'FILL' 0, 'wght' 400`; likeBtn.querySelector('.like-count').textContent = data.likes > 0 ? data.likes : ''; likeBtn.querySelector('.like-count').classList.toggle('hidden', data.likes <= 0); } } else { btn.classList.remove('bg-error/10', 'text-error'); icon.style.fontVariationSettings = `'FILL' 0, 'wght' 400`; } } });" 
+                                        class="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-error/5 transition-all group {{ 'bg-error/10 text-error' if review.user_reaction == 'dislike' else '' }}">
+                                            <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' {{ 1 if review.user_reaction == 'dislike' else 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">thumb_down</span>
                                         </button>
                                     </div>
                                 </div>

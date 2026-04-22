@@ -192,8 +192,8 @@
                                     R
                                 </div>
                                 <div>
-                                    <h4 class="text-sm font-bold text-slate-900">Reader #{{ review.user_id }}</h4>
-                                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Recent</p>
+                                    <h4 class="text-base font-bold text-slate-900">Reader #{{ review.user_id }}</h4>
+                                    <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Recent</p>
                                 </div>
                             </div>
                             <div class="flex text-amber-500 scale-90 origin-right">
@@ -205,14 +205,21 @@
                         <div class="mt-4 text-slate-600 leading-relaxed text-sm italic font-medium opacity-80">
                             "{{ review.review_text }}"
                         </div>
-                        <div class="flex items-center justify-end mt-4 text-slate-400 border-t border-slate-100 pt-3">
-                            <div class="flex items-center gap-4">
-                                <button onclick="this.classList.toggle('text-primary'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-primary transition-all group">
-                                    <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_up</span>
-                                    <span class="text-[10px]">12</span>
+                        <div class="flex items-center justify-end mt-6 border-t border-slate-100 pt-4">
+                            <div class="flex items-center bg-slate-50 rounded-full px-1 py-1 border border-slate-100 shadow-sm interaction-group">
+                                <button data-type="like" data-active="{{ 'true' if review.user_reaction == 'like' else 'false' }}" 
+                                        onclick="const btn = this; const group = btn.closest('.interaction-group'); const dislikeBtn = group.querySelector('[data-type=\'dislike\']'); const countSpan = btn.querySelector('.like-count'); const icon = btn.querySelector('.material-symbols-outlined'); fetch('/public/reviews/{{ review.id }}/react', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'like' }) }).then(r => r.json()).then(data => { if (data.success) { btn.setAttribute('data-active', data.user_reaction === 'like' ? 'true' : 'false'); if (data.user_reaction === 'like') { btn.classList.add('bg-primary/10', 'text-primary'); icon.style.fontVariationSettings = `'FILL' 1, 'wght' 400`; if (dislikeBtn.getAttribute('data-active') === 'true') { dislikeBtn.setAttribute('data-active', 'false'); dislikeBtn.classList.remove('bg-error/10', 'text-error'); dislikeBtn.querySelector('.material-symbols-outlined').style.fontVariationSettings = `'FILL' 0, 'wght' 400`; } } else { btn.classList.remove('bg-primary/10', 'text-primary'); icon.style.fontVariationSettings = `'FILL' 0, 'wght' 400`; } countSpan.textContent = data.likes > 0 ? data.likes : ''; countSpan.classList.toggle('hidden', data.likes <= 0); } });" 
+                                        class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-primary/5 transition-all group {{ 'bg-primary/10 text-primary' if review.user_reaction == 'like' else '' }}">
+                                    <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' {{ 1 if review.user_reaction == 'like' else 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">thumb_up</span>
+                                    <span class="like-count text-[10px] font-bold tracking-tight {{ 'hidden' if not review.likes_count }}">
+                                        {{ review.likes_count if review.likes_count else '' }}
+                                    </span>
                                 </button>
-                                <button onclick="this.classList.toggle('text-error'); this.classList.toggle('scale-110');" class="flex items-center gap-1 hover:text-error transition-all group">
-                                    <span class="material-symbols-outlined text-lg group-hover:fill-current">thumb_down</span>
+                                <div class="w-[1px] h-4 bg-slate-200 mx-1"></div>
+                                <button data-type="dislike" data-active="{{ 'true' if review.user_reaction == 'dislike' else 'false' }}" 
+                                        onclick="const btn = this; const group = btn.closest('.interaction-group'); const likeBtn = group.querySelector('[data-type=\'like\']'); const icon = btn.querySelector('.material-symbols-outlined'); fetch('/public/reviews/{{ review.id }}/react', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'dislike' }) }).then(r => r.json()).then(data => { if (data.success) { btn.setAttribute('data-active', data.user_reaction === 'dislike' ? 'true' : 'false'); if (data.user_reaction === 'dislike') { btn.classList.add('bg-error/10', 'text-error'); icon.style.fontVariationSettings = `'FILL' 1, 'wght' 400`; if (likeBtn.getAttribute('data-active') === 'true') { likeBtn.setAttribute('data-active', 'false'); likeBtn.classList.remove('bg-primary/10', 'text-primary'); likeBtn.querySelector('.material-symbols-outlined').style.fontVariationSettings = `'FILL' 0, 'wght' 400`; likeBtn.querySelector('.like-count').textContent = data.likes > 0 ? data.likes : ''; likeBtn.querySelector('.like-count').classList.toggle('hidden', data.likes <= 0); } } else { btn.classList.remove('bg-error/10', 'text-error'); icon.style.fontVariationSettings = `'FILL' 0, 'wght' 400`; } } });" 
+                                        class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-error/5 transition-all group {{ 'bg-error/10 text-error' if review.user_reaction == 'dislike' else '' }}">
+                                    <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' {{ 1 if review.user_reaction == 'dislike' else 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">thumb_down</span>
                                 </button>
                             </div>
                         </div>
@@ -277,14 +284,14 @@
                     {% for i in range(1, 6) %}
                     <label class="cursor-pointer group relative">
                         <input type="radio" name="rating" value="{{ i }}" class="hidden rating-input" required>
-                        <span class="material-symbols-outlined text-4xl text-slate-200 group-hover:text-amber-500 transition-all rating-star peer-checked:text-amber-500" data-rating="{{ i }}">star</span>
+                        <span class="material-symbols-outlined text-4xl text-slate-300 transition-colors rating-star" data-rating="{{ i }}" style="font-variation-settings: 'FILL' 0;">star</span>
                     </label>
                     {% endfor %}
                 </div>
             </div>
 
             <div class="relative group">
-                <textarea name="review_text" rows="5" class="w-full bg-slate-50/50 border-none p-10 rounded-[30px] font-medium text-lg italic text-slate-600 focus:ring-4 focus:ring-primary/5 outline-none resize-none placeholder:text-slate-300 transition-all font-body" placeholder="good book"></textarea>
+                <textarea name="review_text" rows="5" class="w-full bg-slate-50/50 border-none p-10 rounded-[30px] font-medium text-lg italic text-slate-600 focus:ring-4 focus:ring-primary/5 outline-none resize-none placeholder:text-slate-300 transition-all font-body" placeholder="Share your thoughts about this book..."></textarea>
             </div>
 
             <button type="submit" class="w-full py-6 bg-primary text-on-primary rounded-full font-black text-sm uppercase tracking-widest hover:shadow-[0_20px_40px_rgba(111,38,246,0.2)] transition-all active:scale-95">
@@ -295,7 +302,7 @@
 </div>
 
 <!-- Unified Modal Container -->
-<div id="modalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 md:p-12 overflow-y-auto">
+<div id="modalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 md:p-12 overflow-y-auto">
     <div id="modalContainer" class="bg-surface w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 relative min-h-[400px] max-h-[90vh] md:max-h-[85vh] flex flex-col">
         <!-- Dynamic content injected here -->
     </div>

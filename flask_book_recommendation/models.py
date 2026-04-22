@@ -198,6 +198,10 @@ class BookReview(db.Model):
     rating = db.Column(db.Integer, nullable=False)  # 1-5 نجوم
     review_text = db.Column(db.Text, nullable=True)  # نص المراجعة (اختياري)
     
+    # التفاعلات (Persistent Likes/Dislikes)
+    likes_count = db.Column(db.Integer, default=0)
+    dislikes_count = db.Column(db.Integer, default=0)
+    
     # التواريخ
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -211,6 +215,26 @@ class BookReview(db.Model):
 
     def __repr__(self):
         return f"<BookReview user={self.user_id} rating={self.rating}>"
+
+class ReviewReaction(db.Model):
+    """تتبع إعجابات وعدم إعجاب المستخدمين بالمراجعات"""
+    __tablename__ = "review_reactions"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    review_id = db.Column(db.Integer, db.ForeignKey("book_reviews.id"), nullable=False, index=True)
+    
+    # 'like' or 'dislike'
+    reaction_type = db.Column(db.String(20), nullable=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    review = db.relationship("BookReview", backref=db.backref("reactions", lazy="dynamic"))
+    user = db.relationship("User", backref="review_reactions")
+    
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "review_id", name="uq_user_review_reaction"),
+    )
 
 class UserBookView(db.Model):
     """

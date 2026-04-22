@@ -14,6 +14,7 @@
         setTimeout(() => {
             overlay.classList.remove('opacity-0');
             container.classList.remove('scale-95');
+            container.classList.remove('opacity-0');
         }, 50);
     }
     
@@ -28,6 +29,9 @@
     overlay.onclick = (e) => { if(e.target === overlay) closeModal(); };
 
     function openChatModal() {
+        const isAuth = {{ 'true' if current_user.is_authenticated else 'false' }};
+        if(!isAuth) return window.location.href = "{{ url_for('auth.login') }}";
+        
         openModal(`
             <div class="flex flex-col h-full min-h-0 bg-surface">
                 <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
@@ -106,7 +110,7 @@
                 <div class="flex justify-start">
                     <div class="bg-surface-container-high p-8 max-w-[85%] border-r-4 border-primary">
                         <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4">Elham AI</p>
-                        <p class="font-body text-lg text-on-surface/70 leading-relaxed italic">${data.reply.replace(/\n/g, '<br>')}</p>
+                        <p class="font-body text-lg text-on-surface/70 leading-relaxed italic">${(data.reply || '').replace(/\n/g, '<br>')}</p>
                     </div>
                 </div>`;
             
@@ -119,6 +123,9 @@
     }
 
     async function generateSummary() {
+        const isAuth = {{ 'true' if current_user.is_authenticated else 'false' }};
+        if(!isAuth) return window.location.href = "{{ url_for('auth.login') }}";
+        
         openModal(`
             <div class="p-24 text-center space-y-12">
                 <div class="relative w-24 h-24 mx-auto">
@@ -221,7 +228,7 @@
                 },
                 body:JSON.stringify({
                     title:bookTitle,
-                    pages:parseInt("{{ book.pageCount or 320 }}"),
+                    pages:parseInt("{{ book.page_count or 320 }}"),
                     days:parseInt(days)
                 })
             });
@@ -374,7 +381,8 @@
     document.querySelectorAll('.rating-star').forEach(star => {
         star.parentElement.onmouseenter = () => {
             const r = parseInt(star.dataset.rating);
-            document.querySelectorAll('.rating-star').forEach(s => {
+            const container = star.closest('form') || document;
+            container.querySelectorAll('.rating-star').forEach(s => {
                 if (parseInt(s.dataset.rating) <= r) {
                     s.style.fontVariationSettings = "'FILL' 1";
                     s.style.color = "#ea580c";
@@ -385,9 +393,10 @@
             });
         };
         star.parentElement.onmouseleave = () => {
-            const checked = document.querySelector('.rating-input:checked');
+            const container = star.closest('form') || document;
+            const checked = container.querySelector('.rating-input:checked');
             const r = checked ? parseInt(checked.value) : 0;
-            document.querySelectorAll('.rating-star').forEach(s => {
+            container.querySelectorAll('.rating-star').forEach(s => {
                 if (parseInt(s.dataset.rating) <= r) {
                     s.style.fontVariationSettings = "'FILL' 1";
                     s.style.color = "#ea580c";
@@ -402,7 +411,8 @@
     document.querySelectorAll('.rating-input').forEach(input => {
         input.addEventListener('change', () => {
             const r = parseInt(input.value);
-            document.querySelectorAll('.rating-star').forEach(s => {
+            const container = input.closest('form') || document;
+            container.querySelectorAll('.rating-star').forEach(s => {
                 if (parseInt(s.dataset.rating) <= r) {
                     s.style.fontVariationSettings = "'FILL' 1";
                     s.style.color = "#ea580c";

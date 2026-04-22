@@ -1301,6 +1301,17 @@ def chat_with_ai(user_message: str, user_context: dict = None) -> dict:
             context_info += f"\nاهتمامات المستخدم: {', '.join(user_context['interests'])}"
         if user_context.get("recent_books"):
             context_info += f"\nآخر الكتب التي اطلع عليها: {', '.join(user_context['recent_books'])}"
+        if user_context.get("book_title"):
+            context_info += f"\nالكتاب الحالي: {user_context['book_title']} للمؤلف {user_context.get('book_author', 'غير معروف')}"
+        if user_context.get("book_desc"):
+            context_info += f"\nوصف الكتاب: {user_context['book_desc']}"
+        
+        history = user_context.get("history", [])
+        if history:
+            context_info += "\n\nسجل المحادثة السابقة:"
+            for msg in history[-5:]:  # Limit to last 5 messages
+                role = "المستخدم" if msg.get("role") == "user" else "المساعد"
+                context_info += f"\n{role}: {msg.get('content')}"
     
     # بناء الـ prompt
     system_prompt = """أنت مساعد ذكي متخصص في الكتب واسمك "مكتبي". مهمتك:

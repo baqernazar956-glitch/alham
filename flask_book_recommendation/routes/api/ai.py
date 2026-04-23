@@ -7,16 +7,11 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import requests
 
 # استيراد دوال AI الموجودة
-try:
-    from ...utils import (
-        chat_with_ai,
-        generate_ai_description,
-        generate_ai_summary as utils_generate_summary
-    )
-except ImportError:
-    chat_with_ai = None
-    generate_ai_description = None
-    utils_generate_summary = None
+from flask_book_recommendation.utils import (
+    chat_with_ai,
+    generate_ai_description,
+    generate_book_summary as utils_generate_summary
+)
 
 api_ai_bp = Blueprint('api_ai', __name__, url_prefix='/ai')
 
@@ -61,7 +56,7 @@ def get_book_info(gid: str) -> dict:
 
 
 @api_ai_bp.route('/chat', methods=['POST'])
-@jwt_required()
+@jwt_required(optional=True)
 def general_chat():
     """
     محادثة AI عامة
@@ -130,7 +125,7 @@ def book_chat(gid: str):
     
     سؤال المستخدم: {message}
     
-    أجب بشكل مفيد ومختصر بالعربية.
+    أجب بشكل مفيد ومختصر بنفس لغة المستخدم (إذا كان السؤال بالإنجليزية أجب بالإنجليزية، وإذا كان بالعربية أجب بالعربية).
     """
     
     try:
@@ -171,11 +166,8 @@ def book_summary(gid: str):
     
     try:
         if utils_generate_summary:
-            summary = utils_generate_summary(
-                book_info.get('title'),
-                book_info.get('author'),
-                book_info.get('description', '')
-            )
+            summary_res = utils_generate_summary(book_info)
+            summary = summary_res.get('summary') if isinstance(summary_res, dict) else summary_res
             return jsonify({
                 'success': True,
                 'summary': summary,

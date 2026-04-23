@@ -147,6 +147,10 @@ def background_record_feedback(app, user_id, books):
         except Exception as e:
             print(f"Background Feedback Error: {e}")
 
+@public_bp.get("/about")
+def about():
+    return render_template("about.html")
+
 @public_bp.get("/book_rating")
 @cache.cached(timeout=86400, query_string=True)
 def get_book_rating():

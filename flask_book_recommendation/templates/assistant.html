@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Your Assistant - Elham{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col bg-surface rounded-2xl shadow-xl overflow-hidden border border-surface-container mt-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary to-primary/80 px-8 py-6 flex items-center gap-6 text-white shadow-md relative z-10">
+        <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+            <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+        </div>
+        <div>
+            <h1 class="font-black text-3xl leading-tight tracking-wide font-headline">Kutub AI Assistant</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
+                <p class="text-sm font-medium opacity-90">Online - Ready to suggest books and answer questions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-8 flex flex-col gap-6 bg-surface-container-lowest scroll-smooth relative">
+        <!-- Background Watermark -->
+        <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+            <span class="material-symbols-outlined text-[20rem]">smart_toy</span>
+        </div>
+
+        <!-- Initial Greeting -->
+        <div class="flex gap-4 max-w-[85%] relative z-10 animate-in slide-in-from-right duration-500">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+            </div>
+            <div class="bg-surface-container-low p-5 rounded-3xl rounded-tl-none text-on-surface text-base leading-relaxed shadow-sm border border-surface-container">
+                Welcome! 👋<br><br>
+                I am your smart assistant <strong>"Kutub"</strong>. You can ask me to suggest any book you want, or ask about a specific field and I will search millions of books for you! 📚✨
+            </div>
+        </div>
+    </div>
+
+    <!-- Typing Indicator (Hidden by default) -->
+    <div id="ai-chat-typing" class="hidden px-8 pb-4 bg-surface-container-lowest relative z-10">
+        <div class="flex gap-4 max-w-[85%] items-center animate-in fade-in duration-300">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+            </div>
+            <div class="bg-surface-container-low p-5 rounded-3xl rounded-tl-none flex gap-2 border border-surface-container">
+                <span class="w-3 h-3 bg-primary/60 rounded-full animate-bounce"></span>
+                <span class="w-3 h-3 bg-primary/60 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                <span class="w-3 h-3 bg-primary/60 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="p-6 bg-white border-t border-surface-container relative z-10 shadow-[0_-4px_25px_-5px_rgba(0,0,0,0.05)]">
+        <form id="ai-chat-form" class="flex gap-4 relative" onsubmit="event.preventDefault(); return false;">
+            <input type="text" id="ai-chat-input" placeholder="Type your message here... (e.g. Suggest a sci-fi novel)" 
+                   class="w-full bg-surface-container-lowest text-on-surface text-lg font-medium rounded-full pl-6 pr-20 py-4 focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all border border-outline/20 focus:border-primary shadow-inner"
+                   autocomplete="off" onkeydown="if(event.key === 'Enter') { event.preventDefault(); window.handleAiChatSubmit(); return false; }">
+            <button type="button" onclick="window.handleAiChatSubmit()" class="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg focus:outline-none group">
+                <span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform" style="font-variation-settings: 'FILL' 1;">send</span>
+            </button>
+        </form>
+        <div class="text-center mt-3">
+            <span class="text-xs text-on-surface-variant font-medium opacity-70">Powered by Elham AI</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Scrollbar for Chat */
+    #ai-chat-messages::-webkit-scrollbar {
+        width: 8px;
+    }
+    #ai-chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #ai-chat-messages::-webkit-scrollbar-thumb {
+        background-color: rgba(var(--color-on-surface-variant), 0.2);
+        border-radius: 20px;
+    }
+</style>
+
+<script>
+    // Isolated script for the full-page assistant
+    document.addEventListener('DOMContentLoaded', function() {
+        window.handleAiChatSubmit = async function() {
+            const chatInput = document.getElementById('ai-chat-input');
+            const typingIndicator = document.getElementById('ai-chat-typing');
+            const messagesArea = document.getElementById('ai-chat-messages');
+            
+            if (!chatInput) return false;
+            const message = chatInput.value.trim();
+            if (!message) return false;
+
+            // Clear input and show user message
+            chatInput.value = '';
+            addAiMessage(message, true);
+
+            // Show typing indicator
+            if (typingIndicator) typingIndicator.classList.remove('hidden');
+            if (messagesArea) messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                // Hide typing indicator
+                if (typingIndicator) typingIndicator.classList.add('hidden');
+
+                if (response.ok && data.success) {
+                    addAiMessage(data.reply, false, data.books);
+                } else {
+                    addAiMessage('Sorry, I encountered an error connecting to my brain. Please try again later. 🔌', false);
+                }
+            } catch (error) {
+                console.error('AI Chat Error:', error);
+                if (typingIndicator) typingIndicator.classList.add('hidden');
+                addAiMessage('Connection error. Please check your internet connection and try again. 📡', false);
+            }
+            return false;
+        };
+
+        function addAiMessage(text, isUser = false, books = []) {
+            const messagesArea = document.getElementById('ai-chat-messages');
+            if (!messagesArea) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex gap-4 max-w-[85%] relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? 'ml-auto flex-row-reverse' : ''}`;
+            
+            let avatarHtml = '';
+            if (!isUser) {
+                avatarHtml = `
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                `;
+            } else {
+                avatarHtml = `
+                    <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 border border-outline/20">
+                        <span class="material-symbols-outlined text-on-surface text-xl">person</span>
+                    </div>
+                `;
+            }
+
+            let msgClasses = isUser 
+                ? 'bg-primary text-white p-5 rounded-3xl rounded-tr-none text-base leading-relaxed shadow-lg' 
+                : 'bg-surface-container-low p-5 rounded-3xl rounded-tl-none text-on-surface text-base leading-relaxed shadow-sm border border-surface-container';
+
+            let booksHtml = '';
+            if (books && books.length > 0) {
+                booksHtml = '<div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">';
+                books.forEach(book => {
+                    booksHtml += `
+                        <a href="/public/books/${book.id}" target="_blank" class="flex gap-4 bg-white p-3 rounded-2xl hover:bg-primary/5 hover:border-primary/30 transition-all group border border-surface-container shadow-sm items-center">
+                            <img src="${book.cover || 'https://via.placeholder.com/60x90'}" class="w-16 h-24 object-cover rounded-xl shadow-sm" alt="Cover">
+                            <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                <h4 class="text-base font-bold text-on-surface group-hover:text-primary transition-colors leading-tight mb-1 line-clamp-2">${book.title}</h4>
+                                <p class="text-sm text-on-surface-variant truncate">${book.author}</p>
+                                <div class="mt-2 flex items-center text-xs text-primary font-bold bg-primary/10 w-fit px-2 py-1 rounded-md">
+                                    <span class="material-symbols-outlined text-[16px] mr-1">visibility</span>
+                                    View Details
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                booksHtml += '</div>';
+            }
+
+            const formattedText = text ? text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') : '';
+
+            wrapper.innerHTML = `
+                ${avatarHtml}
+                <div class="flex flex-col gap-1 w-full min-w-0">
+                    <div class="${msgClasses}">
+                        ${formattedText}
+                        ${booksHtml}
+                    </div>
+                </div>
+            `;
+
+            messagesArea.appendChild(wrapper);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

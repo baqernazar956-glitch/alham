@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}About Us - Elham{% endblock %}
+{% block content %}
+<div class="w-full -mt-24"> <!-- -mt-24 to overlap with nav if desired, or just keep as is -->
+    <!-- Hero Section -->
+    <div class="relative w-full h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                 class="w-full h-full object-cover scale-110 animate-[pulse_20s_infinite]" alt="Library Background">
+            <div class="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-black/40"></div>
+        </div>
+        
+        <div class="relative z-10 max-w-[1400px] mx-auto px-8 w-full text-center lg:text-left text-white">
+            <div class="lg:w-2/3">
+                <div class="inline-flex items-center gap-3 px-5 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-sm font-black tracking-widest uppercase mb-8 animate-in slide-in-from-top duration-700">
+                    <span class="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+                    The Future of Reading
+                </div>
+                <h1 class="text-7xl md:text-[9rem] font-black font-headline mb-8 italic leading-[0.8] tracking-tighter animate-in slide-in-from-left duration-700">Elham</h1>
+                <p class="text-2xl md:text-4xl font-medium opacity-90 mb-12 leading-tight max-w-2xl animate-in slide-in-from-left duration-1000 delay-200">
+                    A revolutionary intelligence platform where curiosity meets its companion. Discover the world, one story at a time.
+                </p>
+                <div class="flex flex-wrap gap-6 justify-center lg:justify-start animate-in fade-in duration-1000 delay-500">
+                    <a href="{{ url_for('main.home') }}" class="px-12 py-6 bg-white text-primary rounded-[2rem] text-2xl font-black shadow-2xl hover:scale-105 active:scale-95 transition-all">Start Your Journey</a>
+                    <a href="#mission" class="px-12 py-6 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-[2rem] text-2xl font-bold hover:bg-white/20 transition-all group">
+                        Our Story
+                        <span class="material-symbols-outlined align-middle ml-2 group-hover:translate-y-1 transition-transform">expand_more</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mission Section -->
+    <div id="mission" class="w-full bg-surface-container-low py-40">
+        <div class="max-w-[1400px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
+            <div class="relative group">
+                <!-- Decorative Elements -->
+                <div class="absolute -top-10 -left-10 w-40 h-40 bg-secondary/20 rounded-full blur-3xl animate-pulse"></div>
+                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+                
+                <div class="relative rounded-[4rem] overflow-hidden shadow-2xl border-8 border-white group-hover:border-primary/20 transition-all duration-700">
+                    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                         class="w-full aspect-[4/5] object-cover transition-transform duration-1000 group-hover:scale-110" alt="Library Vision">
+                </div>
+                
+                <div class="absolute -bottom-12 -right-12 bg-white p-10 rounded-[3rem] shadow-2xl border border-surface-container hidden md:block animate-in zoom-in duration-700">
+                    <p class="text-6xl font-black text-primary font-headline italic mb-1">1M+</p>
+                    <p class="text-xl text-on-surface-variant font-bold uppercase tracking-widest">Global Books</p>
+                </div>
+            </div>
+            
+            <div class="lg:pl-10">
+                <h2 class="text-lg font-black text-primary uppercase tracking-[0.3em] mb-6">Our Mission</h2>
+                <h3 class="text-6xl md:text-7xl font-black font-headline text-on-surface mb-10 leading-[0.9] italic tracking-tight">Where stories meet curious minds.</h3>
+                <div class="space-y-10 text-2xl text-on-surface-variant font-medium leading-relaxed">
+                    <p>
+                        Welcome to <strong class="text-primary font-black">Elham</strong>, an intelligent platform crafted specifically for book lovers, researchers, and curious minds. 
+                    </p>
+                    <div class="p-8 bg-white rounded-[2.5rem] border-l-8 border-primary shadow-xl italic text-on-surface">
+                        "Our mission is to transform how you discover, organize, and experience the world's literature using the power of connection."
+                    </div>
+                    <p>
+                        By integrating state-of-the-art AI technology, Elham provides deeply personalized book recommendations, smart search capabilities, and instantaneous answers.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="w-full bg-white py-40 overflow-hidden">
+        <div class="max-w-[1400px] mx-auto px-8">
+            <div class="text-center mb-32">
+                <h2 class="text-lg font-black text-primary uppercase tracking-[0.3em] mb-6">The Platform</h2>
+                <h3 class="text-6xl md:text-8xl font-black font-headline text-on-surface italic tracking-tighter">Why Elham?</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <!-- AI Feature -->
+                <div class="group p-12 rounded-[4rem] bg-surface-container-low border border-surface-container hover:bg-primary transition-all duration-700 hover:-translate-y-4">
+                    <div class="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-10 group-hover:bg-white/20 transition-all duration-500 group-hover:rotate-[10deg]">
+                        <span class="material-symbols-outlined text-5xl text-primary group-hover:text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    </div>
+                    <h4 class="text-4xl font-black font-headline text-on-surface mb-8 group-hover:text-white italic tracking-tight">AI Companion</h4>
+                    <p class="text-xl text-on-surface-variant leading-relaxed group-hover:text-white/80 font-medium">Experience a library that understands your taste. Our AI curates personalized recommendations and acts as your personal reading companion.</p>
+                </div>
+
+                <!-- Collection Feature -->
+                <div class="group p-12 rounded-[4rem] bg-surface-container-low border border-surface-container hover:bg-primary transition-all duration-700 hover:-translate-y-4">
+                    <div class="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-10 group-hover:bg-white/20 transition-all duration-500 group-hover:rotate-[10deg]">
+                        <span class="material-symbols-outlined text-5xl text-primary group-hover:text-white" style="font-variation-settings: 'FILL' 1;">public</span>
+                    </div>
+                    <h4 class="text-4xl font-black font-headline text-on-surface mb-8 group-hover:text-white italic tracking-tight">Global Access</h4>
+                    <p class="text-xl text-on-surface-variant leading-relaxed group-hover:text-white/80 font-medium">Access millions of books globally. From timeless classics to modern technical guides, our library integrates top-tier sources worldwide.</p>
+                </div>
+
+                <!-- Personal Space Feature -->
+                <div class="group p-12 rounded-[4rem] bg-surface-container-low border border-surface-container hover:bg-primary transition-all duration-700 hover:-translate-y-4">
+                    <div class="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-10 group-hover:bg-white/20 transition-all duration-500 group-hover:rotate-[10deg]">
+                        <span class="material-symbols-outlined text-5xl text-primary group-hover:text-white" style="font-variation-settings: 'FILL' 1;">person_book</span>
+                    </div>
+                    <h4 class="text-4xl font-black font-headline text-on-surface mb-8 group-hover:text-white italic tracking-tight">Tailored Experience</h4>
+                    <p class="text-xl text-on-surface-variant leading-relaxed group-hover:text-white/80 font-medium">Manage your reading journey effortlessly. Organize favorites, track progress, and review the books that left a mark on you.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final CTA Section -->
+    <div class="w-full bg-primary py-40 relative overflow-hidden">
+        <!-- Abstract Decorations -->
+        <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/10 rounded-full translate-y-1/2 -translate-x-1/4"></div>
+
+        <div class="relative z-10 max-w-[1200px] mx-auto px-8 text-center text-white">
+            <h3 class="text-6xl md:text-[8rem] font-black font-headline mb-12 italic leading-[0.8] tracking-tighter">Start Your Next Chapter</h3>
+            <p class="text-3xl opacity-80 mb-16 max-w-3xl mx-auto font-medium">Join thousands of readers who are discovering more with Elham every day.</p>
+            <div class="flex flex-wrap gap-8 justify-center">
+                <a href="{{ url_for('auth.register') if not current_user.is_authenticated else url_for('main.home') }}" 
+                   class="px-16 py-8 bg-white text-primary rounded-[2.5rem] text-3xl font-black shadow-2xl hover:scale-105 active:scale-95 transition-all">Get Started Free</a>
+                <a href="{{ url_for('public.list_books') }}" 
+                   class="px-16 py-8 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-[2.5rem] text-3xl font-bold hover:bg-white/20 transition-all">Browse Books</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { transform: scale(1.1); }
+        50% { transform: scale(1.15); }
+    }
+    
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
+{% endblock %}

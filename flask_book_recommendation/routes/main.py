@@ -430,6 +430,13 @@ def home():
     cache.set(cache_key, resp, timeout=60)
     return resp
 
+@main_bp.route("/assistant")
+def assistant():
+    """
+    Dedicated full-page AI Assistant (Kutub)
+    """
+    return render_template("assistant.html")
+
 @main_bp.route("/api/pipeline-status")
 def pipeline_status():
     """API endpoint: returns the last pipeline execution metadata for frontend visualization."""

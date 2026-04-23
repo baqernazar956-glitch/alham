@@ -398,10 +398,9 @@
                     <div class="p-6">
                         {% if user_reviews %}
                         <div class="space-y-4">
-                            {% for review in user_reviews %}
+                            {% for review, br in user_reviews %}
                             <div class="flex gap-5 p-4 rounded-xl hover:bg-surface-container-low/50 transition-all group">
-                                {% set br = review.book %}
-                                <div class="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0 shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 bg-surface-container">
+                                <a href="{{ url_for('public.book_detail', gid=br.google_id if br and br.google_id else review.google_id) }}" class="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0 shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 bg-surface-container block">
                                     {% if br and br.cover_url %}
                                         <img alt="{{ br.title }}" class="w-full h-full object-cover" src="{{ br.cover_url }}">
                                     {% else %}
@@ -409,9 +408,11 @@
                                             <span class="material-symbols-outlined">book</span>
                                         </div>
                                     {% endif %}
-                                </div>
+                                </a>
                                 <div class="flex flex-col justify-center flex-1 min-w-0">
-                                    <h4 class="font-bold text-sm mb-1 truncate text-on-surface">{{ br.title if br else 'Unknown Book' }}</h4>
+                                    <a href="{{ url_for('public.book_detail', gid=br.google_id if br and br.google_id else review.google_id) }}" class="font-bold text-sm mb-1 truncate text-on-surface hover:text-primary transition-colors block">
+                                        {{ br.title if br else 'Unknown Book' }}
+                                    </a>
                                     <div class="flex items-center gap-2 mb-2">
                                         <div class="flex text-amber-500">
                                             {% for i in range(5) %}

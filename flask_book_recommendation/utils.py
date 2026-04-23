@@ -1308,29 +1308,29 @@ def chat_with_ai(user_message: str, user_context: dict = None) -> dict:
         
         history = user_context.get("history", [])
         if history:
-            context_info += "\n\nسجل المحادثة السابقة:"
+            context_info += "\n\nPrevious conversation history:"
             for msg in history[-5:]:  # Limit to last 5 messages
-                role = "المستخدم" if msg.get("role") == "user" else "المساعد"
+                role = "User" if msg.get("role") == "user" else "Assistant"
                 context_info += f"\n{role}: {msg.get('content')}"
     
     # بناء الـ prompt
-    system_prompt = """أنت مساعد ذكي متخصص في الكتب واسمك "مكتبي". مهمتك:
-1. فهم ما يبحث عنه المستخدم من كتب
-2. تقديم توصيات مفيدة ومحددة
-3. الإجابة على أسئلة عن الكتب والقراءة
+    system_prompt = """You are a smart book assistant named "Kutub". Your mission:
+1. Understand what books the user is looking for.
+2. Provide useful and specific recommendations.
+3. Answer questions about books and reading.
 
-قواعد مهمة:
-- كن ودوداً ومختصراً (جملتين إلى 3 جمل كحد أقصى)
-- إذا طلب المستخدم كتاباً، استخرج الموضوع الرئيسي للبحث
-- رد بالعربية دائماً
-- أضف إيموجي واحد مناسب
+Important Rules:
+- Be friendly and concise (max 2-3 sentences).
+- If the user asks for a book, extract the main search topic.
+- ALWAYS respond in the SAME language the user used (If they speak English, answer in English. If they speak Arabic, answer in Arabic).
+- Add one appropriate emoji.
 
-في نهاية ردك، اكتب في سطر جديد:
-SEARCH_QUERY: [كلمات البحث بالإنجليزية للموضوع المطلوب]
+At the end of your response, write on a new line:
+SEARCH_QUERY: [English keywords for the requested topic]
 
-مثال:
-المستخدم: أريد كتاب عن الذكاء الاصطناعي
-الرد: مجال رائع! 🤖 الذكاء الاصطناعي من أهم مجالات العصر. سأبحث لك عن أفضل الكتب.
+Example:
+User: I want a book about AI
+Reply: Great choice! 🤖 Artificial Intelligence is one of the most important fields today. I'll search for the best books for you.
 SEARCH_QUERY: Artificial Intelligence books"""
 
     full_prompt = f"{system_prompt}{context_info}\n\nالمستخدم: {user_message}"

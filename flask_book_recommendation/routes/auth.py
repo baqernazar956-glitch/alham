@@ -267,9 +267,18 @@ def profile():
         flash("تم تحديث معلومات الحساب بنجاح ✅", "success")
         return redirect(url_for("auth.profile"))
     
-    # جلب المراجعات الخاصة بالمستخدم
-    user_reviews = current_user.reviews.order_by(BookReview.created_at.desc()).limit(6).all()
-    
+    # جلب المراجعات الخاصة بالمستخدم مع تفاصيل الكتب
+    user_reviews = (
+        db.session.query(BookReview, Book)
+        .outerjoin(Book, db.or_(
+            BookReview.book_id == Book.id,
+            db.and_(BookReview.google_id != None, BookReview.google_id == Book.google_id)
+        ))
+        .filter(BookReview.user_id == current_user.id)
+        .order_by(BookReview.created_at.desc())
+        .limit(6)
+        .all()
+    )
     # === تحديث سلسلة النشاط (Reading Streak) ===
     today = datetime.utcnow().date()
     if not current_user.last_active_date:

@@ -1,0 +1,249 @@
+<!-- AI Chat Widget -->
+<div id="ai-chat-widget" class="fixed bottom-8 right-8 z-[100] font-sans" dir="ltr">
+    <!-- Chat Button -->
+    <button id="ai-chat-toggle" onclick="window.toggleAiChat()" class="w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all focus:outline-none relative group">
+        <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+        <!-- Sparkle animation -->
+        <span class="absolute -top-1 -right-1 w-4 h-4 bg-secondary rounded-full animate-ping"></span>
+        <span class="absolute -top-1 -right-1 w-4 h-4 bg-secondary rounded-full"></span>
+        
+        <!-- Tooltip -->
+        <div class="absolute -top-12 right-0 bg-surface-container-highest text-on-surface text-sm font-bold px-4 py-2 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+            Ask me about books!
+        </div>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="ai-chat-window" class="hidden absolute bottom-24 right-0 w-[380px] sm:w-[450px] h-[800px] max-h-[90vh] bg-surface-container-lowest rounded-[2rem] shadow-2xl border border-surface-container flex-col overflow-hidden transition-all origin-bottom-right scale-95 opacity-0">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-4 flex justify-between items-center text-white shadow-md relative z-10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                </div>
+                <div>
+                    <h3 class="font-black text-lg leading-tight tracking-wide">Kutub AI</h3>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <p class="text-[11px] font-medium opacity-90">Online - Ready to suggest books</p>
+                    </div>
+                </div>
+            </div>
+            <button id="ai-chat-close" onclick="window.toggleAiChat(true)" class="text-white/80 hover:text-white hover:rotate-90 transition-all p-1">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-5 bg-surface-container-lowest scroll-smooth relative">
+            <!-- Background Watermark -->
+            <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+                <span class="material-symbols-outlined text-[10rem]">menu_book</span>
+            </div>
+
+            <!-- Initial Greeting -->
+            <div class="flex gap-3 max-w-[85%] relative z-10 animate-in slide-in-from-right duration-500">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                </div>
+                <div class="bg-surface-container-low p-4 rounded-2xl rounded-tl-none text-on-surface text-sm leading-relaxed shadow-sm border border-surface-container">
+                    Welcome! 👋<br><br>
+                    I am your smart assistant <strong>"Kutub"</strong>. You can ask me to suggest any book you want, or ask about a specific field and I will search millions of books for you! 📚✨
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator (Hidden by default) -->
+        <div id="ai-chat-typing" class="hidden px-5 pb-3 relative z-10">
+            <div class="flex gap-3 max-w-[85%] items-center animate-in fade-in duration-300">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                </div>
+                <div class="bg-surface-container-low p-4 rounded-2xl rounded-tr-none flex gap-1.5 border border-surface-container">
+                    <span class="w-2.5 h-2.5 bg-primary/60 rounded-full animate-bounce"></span>
+                    <span class="w-2.5 h-2.5 bg-primary/60 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                    <span class="w-2.5 h-2.5 bg-primary/60 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 bg-white border-t border-surface-container relative z-10 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
+            <form id="ai-chat-form" class="flex gap-2 relative" onsubmit="event.preventDefault(); return false;">
+                <input type="text" id="ai-chat-input" placeholder="Example: Suggest a short sci-fi novel..." 
+                       class="w-full bg-surface-container-lowest text-on-surface text-sm font-medium rounded-full pl-5 pr-14 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all border border-outline/20 focus:border-primary/50 shadow-inner"
+                       autocomplete="off" onkeydown="if(event.key === 'Enter') { event.preventDefault(); window.handleAiChatSubmit(); return false; }">
+                <button type="button" onclick="window.handleAiChatSubmit()" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md focus:outline-none group">
+                    <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform" style="font-variation-settings: 'FILL' 1;">send</span>
+                </button>
+            </form>
+            <div class="text-center mt-2">
+                <span class="text-[10px] text-on-surface-variant opacity-70">Powered by Elham AI</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Scrollbar for Chat */
+    #ai-chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    #ai-chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #ai-chat-messages::-webkit-scrollbar-thumb {
+        background-color: rgba(var(--color-on-surface-variant), 0.2);
+        border-radius: 20px;
+    }
+</style>
+
+<script>
+    if (!window.aiChatInitialized) {
+        window.aiChatInitialized = true;
+        window.isAiChatOpen = false;
+
+        window.toggleAiChat = function(forceClose = false) {
+            const chatWindow = document.getElementById('ai-chat-window');
+            const chatInput = document.getElementById('ai-chat-input');
+            if (!chatWindow) return;
+
+            if (forceClose) {
+                window.isAiChatOpen = false;
+            } else {
+                window.isAiChatOpen = !window.isAiChatOpen;
+            }
+
+            if (window.isAiChatOpen) {
+                chatWindow.classList.remove('hidden');
+                chatWindow.classList.add('flex');
+                setTimeout(() => {
+                    chatWindow.classList.add('scale-100', 'opacity-100');
+                    chatWindow.classList.remove('scale-95', 'opacity-0');
+                    if (chatInput) chatInput.focus();
+                }, 10);
+            } else {
+                chatWindow.classList.add('scale-95', 'opacity-0');
+                chatWindow.classList.remove('scale-100', 'opacity-100');
+                setTimeout(() => {
+                    chatWindow.classList.add('hidden');
+                    chatWindow.classList.remove('flex');
+                }, 200);
+            }
+        };
+
+        window.addAiMessage = function(text, isUser = false, books = []) {
+            const messagesArea = document.getElementById('ai-chat-messages');
+            if (!messagesArea) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex gap-3 max-w-[90%] relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? 'mr-auto flex-row-reverse' : ''}`;
+            
+            let avatarHtml = '';
+            if (!isUser) {
+                avatarHtml = `
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                `;
+            }
+
+            let msgClasses = isUser 
+                ? 'bg-primary text-white p-4 rounded-2xl rounded-tl-none text-sm leading-relaxed shadow-md' 
+                : 'bg-surface-container-low p-4 rounded-2xl rounded-tr-none text-on-surface text-sm leading-relaxed shadow-sm border border-surface-container';
+
+            let booksHtml = '';
+            if (books && books.length > 0) {
+                booksHtml = '<div class="mt-4 flex flex-col gap-2">';
+                books.forEach(book => {
+                    booksHtml += `
+                        <a href="/public/books/${book.id}" target="_blank" class="flex gap-3 bg-white p-2.5 rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all group border border-surface-container shadow-sm">
+                            <img src="${book.cover || 'https://via.placeholder.com/60x90'}" class="w-12 h-[72px] object-cover rounded-lg shadow-sm" alt="Cover">
+                            <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                <h4 class="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors leading-tight mb-1">${book.title}</h4>
+                                <p class="text-xs text-on-surface-variant truncate">${book.author}</p>
+                                <div class="mt-1 flex items-center text-[10px] text-primary font-bold">
+                                    <span class="material-symbols-outlined text-[14px] mr-1">visibility</span>
+                                    View Details
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                booksHtml += '</div>';
+            }
+
+            const formattedText = text ? text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') : '';
+
+            wrapper.innerHTML = `
+                ${avatarHtml}
+                <div class="flex flex-col gap-1 w-full min-w-0">
+                    <div class="${msgClasses}">
+                        ${formattedText}
+                        ${booksHtml}
+                    </div>
+                </div>
+            `;
+
+            messagesArea.appendChild(wrapper);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        };
+
+        window.handleAiChatSubmit = async function() {
+            
+            const chatInput = document.getElementById('ai-chat-input');
+            const typingIndicator = document.getElementById('ai-chat-typing');
+            const messagesArea = document.getElementById('ai-chat-messages');
+            
+            if (!chatInput) return false;
+            const message = chatInput.value.trim();
+            if (!message) return false;
+
+            window.addAiMessage(message, true);
+            chatInput.value = '';
+            
+            if (typingIndicator) {
+                typingIndicator.classList.remove('hidden');
+            }
+            if (messagesArea) {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                
+                const headers = { 
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                const currentTypingIndicator = document.getElementById('ai-chat-typing');
+                if (currentTypingIndicator) currentTypingIndicator.classList.add('hidden');
+
+                if (data.success && data.response) {
+                    window.addAiMessage(data.response.reply, false, data.response.books);
+                } else {
+                    window.addAiMessage(data.error || 'Sorry, an error occurred while connecting to the server.', false);
+                }
+            } catch (error) {
+                const currentTypingIndicator = document.getElementById('ai-chat-typing');
+                if (currentTypingIndicator) currentTypingIndicator.classList.add('hidden');
+                window.addAiMessage('Sorry, cannot connect to AI servers right now.', false);
+            }
+            
+            return false;
+        };
+    }
+</script>

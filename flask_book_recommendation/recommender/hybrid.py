@@ -245,6 +245,9 @@ def get_top_rated(limit=10):
             book = Book.query.filter_by(google_id=gid).first()
             book_dict = None
             if book:
+                setattr(book, 'average_rating', avg)
+                setattr(book, 'ratings_count', count)
+                setattr(book, 'is_local_rating', True)
                 book_dict = _book_to_dict(book, source="Community", reason=f"⭐ {avg:.1f} ({count})")
             else:
                 from ..utils import fetch_book_details
@@ -264,12 +267,32 @@ def get_top_rated(limit=10):
                     
             if book_dict:
                 book_dict['rating'] = avg
+                book_dict['average_rating'] = avg
+                book_dict['ratings_count'] = count
                 book_dict['review_count'] = count
+                book_dict['is_local_rating'] = True
                 if review_text:
                     book_dict['review_text'] = review_text
                     book_dict['reviewer_name'] = reviewer_name
                 books_dicts.append(book_dict)
         
+        if not books_dicts:
+            from ..utils import fetch_google_books
+            items, _ = fetch_google_books("top rated books", max_results=limit)
+            for it in items:
+                vi = it.get('volumeInfo', {})
+                img = vi.get('imageLinks', {}).get('thumbnail')
+                if img and img.startswith('http://'): img = img.replace('http://', 'https://')
+                books_dicts.append({
+                    "id": it.get('id'),
+                    "title": vi.get('title'),
+                    "author": ", ".join(vi.get('authors', ['Unknown'])),
+                    "cover": img,
+                    "source": "Global",
+                    "reason": "⭐ الأعلى تقييماً عالمياً",
+                    "rating": vi.get('averageRating', 4.8)
+                })
+
         return books_dicts
 
     except Exception as e:

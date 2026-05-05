@@ -29,6 +29,10 @@ from training.interaction_logger import log_interaction
 
 public_bp = Blueprint("public", __name__, url_prefix="/public")
 
+import logging
+logger = logging.getLogger("flask_book_recommendation.routes.public")
+
+
 # قوائم المواضيع العشوائية
 RANDOM_TOPICS = [
     "History", "Space", "Future", "Magic", "Mystery", "Ocean", 
@@ -1540,37 +1544,19 @@ def generate_ai_summary(gid):
     from ..utils import generate_book_summary
     from flask import jsonify
     
+    logger.debug(f"[AI Summary] Requested for gid: {gid}")
     try:
-        # جلب معلومات الكتاب
-        book_data = None
+        # جلب معلومات الكتاب باستخدام الدالة الموحدة الذكية
+        book_data = fetch_book_details(gid)
         
-        if gid.startswith("gut_"):
-            book_data = fetch_gutenberg_detail(gid)
-        elif gid.startswith("arch_"):
-            book_data = fetch_archive_detail(gid)
-        elif gid.startswith("ol_"):
-            book_data = fetch_openlib_detail(gid)
-        elif gid.isdigit() and len(gid) == 13:
-            book_data = fetch_itbook_detail(gid)
-        elif gid.isdigit():
+        # Fallback للمعلومات المحلية إذا لم نجدها في الـ APIs
+        if not book_data:
             from ..models import Book
-            local_book = Book.query.get(int(gid))
-            if local_book:
-                book_data = {
-                    "title": local_book.title,
-                    "author": local_book.author,
-                    "description": local_book.description,
-                    "categories": local_book.categories
-                }
-        else:
-            d = fetch_book_details(gid)
-            if d:
-                book_data = {
-                    "title": d.get("title", ""),
-                    "author": d.get("author", ""),
-                    "description": d.get("description", ""),
-                    "categories": ", ".join(d.get("categories", [])) if isinstance(d.get("categories"), list) else d.get("categories", "")
-                }
+            local_id = int(gid) if gid.isdigit() else None
+            book = Book.query.get(local_id) if local_id else Book.query.filter_by(google_id=gid).first()
+            if book:
+                from ..recommender.helpers import _book_to_dict
+                book_data = _book_to_dict(book)
         
         if not book_data:
             return jsonify({"success": False, "error": "لم يتم العثور على الكتاب"}), 404
@@ -1602,28 +1588,19 @@ def generate_why_like(gid):
     from ..utils import generate_why_you_like
     from flask import jsonify
     
+    logger.debug(f"[WhyLike] Requested for gid: {gid}")
     try:
-        # جلب معلومات الكتاب
-        book_data = None
+        # جلب معلومات الكتاب باستخدام الدالة الموحدة الذكية
+        book_data = fetch_book_details(gid)
         
-        if gid.startswith("gut_"):
-            book_data = fetch_gutenberg_detail(gid)
-        elif gid.startswith("arch_"):
-            book_data = fetch_archive_detail(gid)
-        elif gid.startswith("ol_"):
-            book_data = fetch_openlib_detail(gid)
-        elif gid.isdigit() and len(gid) == 13:
-            book_data = fetch_itbook_detail(gid)
-        else:
-            d = fetch_book_details(gid)
-            if d:
-                vi = d.get("volumeInfo", {}) or {}
-                book_data = {
-                    "title": vi.get("title", ""),
-                    "author": ", ".join(vi.get("authors", [])) if vi.get("authors") else "",
-                    "description": vi.get("description", ""),
-                    "categories": ", ".join(vi.get("categories", [])) if vi.get("categories") else ""
-                }
+        # Fallback للمعلومات المحلية
+        if not book_data:
+            from ..models import Book
+            local_id = int(gid) if gid.isdigit() else None
+            book = Book.query.get(local_id) if local_id else Book.query.filter_by(google_id=gid).first()
+            if book:
+                from ..recommender.helpers import _book_to_dict
+                book_data = _book_to_dict(book)
         
         if not book_data:
             return jsonify({"success": False, "error": "لم يتم العثور على الكتاب"}), 404
@@ -1676,21 +1653,19 @@ def generate_plan_route(gid):
     from ..utils import generate_reading_plan
     from flask import jsonify
     
+    logger.debug(f"[ReadingPlan] Requested for gid: {gid}")
     try:
-        # جلب معلومات الكتاب (نفس المنطق المكرر لجلب البيانات - يمكن تحسينه لاحقاً)
-        book_data = None
-        if gid.startswith("gut_"): book_data = fetch_gutenberg_detail(gid)
-        elif gid.startswith("arch_"): book_data = fetch_archive_detail(gid)
-        elif gid.startswith("ol_"): book_data = fetch_openlib_detail(gid)
-        elif gid.isdigit() and len(gid) == 13: book_data = fetch_itbook_detail(gid)
-        else:
-            d = fetch_book_details(gid)
-            if d:
-                vi = d.get("volumeInfo", {}) or {}
-                book_data = {
-                    "title": vi.get("title", ""),
-                    "pageCount": vi.get("pageCount", 0)
-                }
+        # جلب معلومات الكتاب باستخدام الدالة الموحدة الذكية
+        book_data = fetch_book_details(gid)
+        
+        # Fallback للمعلومات المحلية
+        if not book_data:
+            from ..models import Book
+            local_id = int(gid) if gid.isdigit() else None
+            book = Book.query.get(local_id) if local_id else Book.query.filter_by(google_id=gid).first()
+            if book:
+                from ..recommender.helpers import _book_to_dict
+                book_data = _book_to_dict(book)
         
         if not book_data:
             return jsonify({"success": False, "error": "Book not found"}), 404
@@ -1714,34 +1689,22 @@ def chat_with_book_route(gid):
     from ..utils import chat_with_book_context
     from flask import jsonify
     
+    logger.debug(f"[Chat] Requested for gid: {gid}")
     try:
         message = request.json.get("message", "")
         history = request.json.get("history", [])
         
-        # جلب معلومات الكتاب
-        book_data = None
-        if gid.startswith("gut_"): book_data = fetch_gutenberg_detail(gid)
-        elif gid.startswith("arch_"): book_data = fetch_archive_detail(gid)
-        elif gid.startswith("ol_"): book_data = fetch_openlib_detail(gid)
-        elif gid.isdigit() and len(gid) == 13: book_data = fetch_itbook_detail(gid)
-        elif gid.isdigit():
+        # جلب معلومات الكتاب باستخدام الدالة الموحدة الذكية
+        book_data = fetch_book_details(gid)
+        
+        # Fallback للمعلومات المحلية
+        if not book_data:
             from ..models import Book
-            local_book = Book.query.get(int(gid))
-            if local_book:
-                book_data = {
-                    "title": local_book.title,
-                    "author": local_book.author,
-                    "description": local_book.description,
-                }
-        else:
-            d = fetch_book_details(gid)
-            if d:
-                vi = d.get("volumeInfo", {}) or {}
-                book_data = {
-                    "title": vi.get("title", ""),
-                    "author": ", ".join(vi.get("authors", [])) if vi.get("authors") else "",
-                    "description": vi.get("description", ""),
-                }
+            local_id = int(gid) if gid.isdigit() else None
+            book = Book.query.get(local_id) if local_id else Book.query.filter_by(google_id=gid).first()
+            if book:
+                from ..recommender.helpers import _book_to_dict
+                book_data = _book_to_dict(book)
         
         if not book_data:
             return jsonify({"success": False, "reply": "عذراً، لم أجد الكتاب.", "error": "Not found"}), 404

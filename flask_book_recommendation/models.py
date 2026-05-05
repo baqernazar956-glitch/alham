@@ -18,6 +18,20 @@ class User(UserMixin, db.Model):
     last_active_date = db.Column(db.Date, nullable=True)  # آخر تاريخ نشاط للمستخدم
     current_streak = db.Column(db.Integer, default=0)  # سلسلة النشاط الحالية بالايام
 
+    def update_activity(self):
+        """تحديث تاريخ النشاط وسلسلة الأيام (Streak)"""
+        from datetime import date, timedelta
+        today = date.today()
+        if self.last_active_date == today:
+            return
+        
+        if self.last_active_date == today - timedelta(days=1):
+            self.current_streak += 1
+        else:
+            self.current_streak = 1
+        
+        self.last_active_date = today
+
 class Book(db.Model):
     __tablename__ = "books"
     id = db.Column(db.Integer, primary_key=True)

@@ -90,7 +90,12 @@ def create_app():
     
     # تسجيل REST API Blueprint
     # إعفاء API من CSRF (يستخدم JWT بدلاً منه)
+    from .routes.api import api_bp, api_auth_bp, api_books_bp, api_user_bp, api_ai_bp
     csrf.exempt(api_bp)
+    csrf.exempt(api_auth_bp)
+    csrf.exempt(api_books_bp)
+    csrf.exempt(api_user_bp)
+    csrf.exempt(api_ai_bp)
     app.register_blueprint(api_bp)
     
     # Onboarding

@@ -69,7 +69,13 @@
                              <div class="w-20 h-20 bg-secondary-container rounded-3xl flex items-center justify-center text-secondary shadow-xl">
                                 <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">star</span>
                              </div>
-                             <span class="font-black text-sm text-secondary">4.9/5.0</span>
+                             {% if book.local_avg_rating %}
+                                <span class="font-black text-sm text-secondary">{{ "%.1f"|format(book.local_avg_rating) }}/5.0</span>
+                                <span class="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-[-8px]">({{ book.local_rating_count }} reviews)</span>
+                             {% else %}
+                                <span class="font-black text-sm text-secondary">{{ "%.1f"|format(book.global_rating or 4.0) }}/5.0</span>
+                                <span class="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-[-8px]">(Global)</span>
+                             {% endif %}
                         </div>
                     </div>
 
@@ -182,7 +188,7 @@
                 </h3>
                 <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-[10px] font-bold border border-slate-200 shadow-sm">
                     <span class="material-symbols-outlined text-xs text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
-                    <span>4.9</span>
+                    <span>{{ "%.1f"|format(book.local_avg_rating or book.global_rating or 4.0) }}</span>
                 </div>
             </div>
             

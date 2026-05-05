@@ -12,6 +12,8 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 dotenv_path = os.path.join(BASE_DIR, '.env')
 load_dotenv(dotenv_path)
 
+_logger = logging.getLogger('flask_book_recommendation.utils')
+
 # -----------------------------------------------------------
 # 1. Google Books (تم الإصلاح هنا)
 # -----------------------------------------------------------
@@ -123,6 +125,17 @@ def fetch_book_details(book_id, source="google"):
     """
     جلب تفاصيل الكتاب بناءً على المصدر
     """
+    # Auto-detect source from ID prefix if source is 'google' (default)
+    if source == "google" and isinstance(book_id, str):
+        if book_id.startswith("gut_"):
+            source = "gutenberg"
+        elif book_id.startswith("arch_"):
+            source = "archive"
+        elif book_id.startswith("ol_"):
+            source = "openlibrary"
+        elif book_id.isdigit() and len(book_id) == 13:
+            source = "itbook"
+
     if source == "gutenberg":
         return fetch_gutenberg_detail(book_id)
     elif source == "archive":
@@ -1506,6 +1519,42 @@ def _process_ai_response(ai_text: str) -> dict:
         "search_query": search_query
     }
 
+def _call_ai_text_models(prompt: str, max_tokens: int = 500) -> str:
+    """دالة مركزية لاستدعاء نماذج الذكاء الاصطناعي لتقليل تكرار الكود (DRY)"""
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if groq_key:
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.7, "max_tokens": max_tokens
+                },
+                timeout=30
+            )
+            if response.ok:
+                return response.json()["choices"]["message"]["content"].strip()
+        except Exception as e:
+            _logger.warning(f"[AI Text] Groq Request failed: {e}")
+            
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    if gemini_key:
+        try:
+            response = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}",
+                headers={"Content-Type": "application/json"},
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=30
+            )
+            if response.ok:
+                text = response.json().get("candidates", [{}]).get("content", {}).get("parts", [{}]).get("text", "")
+                if text: return text.strip()
+        except Exception as e:
+            _logger.warning(f"[AI Text] Gemini Request failed: {e}")
+            
+    return None
 
 # -----------------------------------------------------------
 # 📝 ملخص AI للكتب
@@ -1575,6 +1624,9 @@ def generate_book_summary(book_info: dict) -> dict:
                 print(f"[AI Summary] Groq error: {response.status_code}")
         except Exception as e:
             print(f"[AI Summary] Groq exception: {e}")
+    ai_summary = _call_ai_text_models(prompt)
+    if ai_summary:
+        return {"success": True, "summary": ai_summary, "error": ""}
     
     # Fallback إلى Gemini
     if gemini_key:
@@ -2608,3 +2660,4 @@ def update_user_preferences_from_behavior(user_id: int, action: str, book_info: 
         except Exception as e:
             db.session.rollback()
             print(f"[UpdatePrefs] Error: {e}")
+

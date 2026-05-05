@@ -151,7 +151,7 @@ def logout():
 @jwt_required()
 def get_current_user():
     """
-    معلومات المستخدم الحالي
+    معلومات المستخدم الحالي (كاملة)
     GET /api/auth/me
     Headers: Authorization: Bearer <token>
     """
@@ -176,6 +176,11 @@ def get_current_user():
             'email': user.email,
             'onboarding_completed': user.onboarding_completed,
             'interests': interests,
+            'bio': user.bio,
+            'reading_goal': user.reading_goal or 0,
+            'rank': user.rank or 'Novice Reader',
+            'current_streak': user.current_streak or 0,
+            'profile_picture': user.profile_picture,
             'created_at': user.created_at.isoformat() if user.created_at else None
         }
     })

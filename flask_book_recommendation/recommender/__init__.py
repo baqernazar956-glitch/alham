@@ -17,6 +17,10 @@ from .helpers import (
     _apply_mmr_diversity,
     run_in_context,
     get_dl_engine,
+    _get_user_interests,
+    _get_book_uid,
+    _strict_interest_filter,
+    _fetch_interest_books_from_api,
 )
 
 # ── embedding cache ─────────────────────────────────────────────────

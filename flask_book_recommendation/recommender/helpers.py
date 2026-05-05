@@ -66,9 +66,13 @@ def _book_to_dict(book, source="Local", reason=None, extra_meta=None):
         "author": getattr(book, "author", None),
         "desc": getattr(book, "description", None),
         "cover": cover_url,
+        "cover_url": cover_url,
         "source": source,
         "reason": reason,
         "rating": getattr(book, "average_rating", None) or getattr(book, "rating", None),
+        "average_rating": getattr(book, "average_rating", None) or getattr(book, "rating", None),
+        "ratings_count": getattr(book, "ratings_count", 0),
+        "is_local_rating": getattr(book, "is_local_rating", False),
         "pageCount": getattr(book, "page_count", None),
         "publishedDate": getattr(book, "published_date", None),
         "isbn": getattr(book, "isbn", None),
@@ -172,3 +176,148 @@ def run_in_context(app, func, *args, **kwargs):
     """Helper to run function within app context"""
     with app.app_context():
         return func(*args, **kwargs)
+
+def _get_user_interests(user_id):
+    """
+    Get ALL user interests from both UserGenre and UserPreference.
+    Returns a set of lowercase interest/topic strings.
+    """
+    if not user_id:
+        return set()
+    
+    interests = set()
+    
+    # From UserGenre (explicit genre selections)
+    user_genres = (
+        db.session.query(Genre.name)
+        .join(UserGenre)
+        .filter(UserGenre.user_id == user_id)
+        .all()
+    )
+    for (name,) in user_genres:
+        interests.add(name.lower().strip())
+    
+    # From UserPreference (broader topic interests, behavioral)
+    user_prefs = UserPreference.query.filter_by(user_id=user_id).filter(
+        UserPreference.weight >= 5.0  # Only significant interests
+    ).all()
+    for pref in user_prefs:
+        interests.add(pref.topic.lower().strip())
+    
+    return interests
+
+
+def _get_book_uid(book):
+    """
+    Get a consistent unique ID for a book object or dictionary.
+    Favors google_id string over local integer ID.
+    """
+    if isinstance(book, dict):
+        gid = book.get("google_id") or book.get("id") or book.get("book_id")
+        # If it's a digit string, it's likely a local ID, try title|author fallback if no gid
+        if isinstance(gid, str) and gid.isdigit():
+            return f"id_{gid}"
+        return str(gid) if gid else f"title_{book.get('title')}_{book.get('author')}"
+    else:
+        # SQLAlchemy Model
+        gid = getattr(book, 'google_id', None) or getattr(book, 'id', None)
+        return str(gid)
+
+
+def _strict_interest_filter(books, user_interests, limit=100):
+    """
+    🔒 STRICT INTEREST GATEKEEPER
+    """
+    if not user_interests:
+        return books[:limit]
+    
+    filtered = []
+    seen_ids = set()
+    
+    for book in books:
+        if len(filtered) >= limit:
+            break
+            
+        uid = _get_book_uid(book)
+        if uid in seen_ids:
+            continue
+        
+        cats_raw = book.get("categories", [])
+        if isinstance(cats_raw, str):
+            cats_raw = [c.strip() for c in cats_raw.split(",")]
+        
+        cat_text = " ".join(cats_raw).lower() if cats_raw else ""
+        title_text = (book.get("title") or "").lower()
+        author_text = (book.get("author") or "").lower()
+        search_text = f"{cat_text} {title_text} {author_text}"
+        
+        matched = False
+        for interest in user_interests:
+            if interest in search_text:
+                matched = True
+                break
+        
+        if matched:
+            filtered.append(book)
+            seen_ids.add(uid)
+    
+    return filtered
+
+
+def _fetch_interest_books_from_api(interests, limit_per_interest=10):
+    """
+    Fetch books from Google Books API based on user interests.
+    """
+    import os
+    import requests as _req
+    api_key = os.environ.get("GOOGLE_BOOKS_API_KEY")
+    results = []
+    seen_ids = set()
+    
+    for interest in list(interests)[:5]:
+        try:
+            params = {
+                "q": f"subject:{interest}",
+                "maxResults": limit_per_interest,
+                "orderBy": "relevance",
+                "printType": "books",
+            }
+            if api_key:
+                params["key"] = api_key
+            
+            resp = _req.get("https://www.googleapis.com/books/v1/volumes", 
+                          params=params, timeout=10)
+            if not resp.ok:
+                continue
+            
+            for item in resp.json().get("items", []):
+                gid = item.get("id")
+                if not gid or gid in seen_ids:
+                    continue
+                seen_ids.add(gid)
+                
+                vi = item.get("volumeInfo", {})
+                imgs = vi.get("imageLinks", {}) or {}
+                cover = imgs.get("thumbnail") or imgs.get("smallThumbnail")
+                if cover:
+                    cover = cover.replace("http://", "https://").replace("&edge=curl", "")
+                
+                cats = vi.get("categories", [interest.title()])
+                
+                results.append({
+                    "id": gid,
+                    "title": vi.get("title", ""),
+                    "author": ", ".join(vi.get("authors", ["Unknown"])),
+                    "cover_url": cover,
+                    "categories": cats,
+                    "algorithm_tag": "INTEREST MATCH",
+                    "algo_tag": "Interest-Based",
+                    "confidence": 0.9,
+                    "score": 0.85,
+                    "rating": vi.get("averageRating", 4.5)
+                })
+        except Exception as e:
+            logger.warning(f"[InterestAPI] Error fetching '{interest}': {e}")
+            continue
+    
+    return results

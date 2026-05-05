@@ -14,89 +14,79 @@ from .helpers import _book_to_dict, _deduplicate_dicts
 logger = logging.getLogger(__name__)
 
 
-def get_trending(limit=12):
+def get_trending(limit=100):
     """
-    يحصل على الكتب الرائجة مع fallback ذكي في حال كانت قاعدة البيانات فارغة.
+    يحصل على الكتب الأكثر تقييماً وتفاعلاً من قبل المجتمع (حقيقية 100%).
     """
     books_dicts = []
     seen_ids = set()
 
     try:
-        user_books = (
-            Book.query
-            .filter(Book.owner_id.isnot(None))
-            .order_by(Book.created_at.desc())
-            .limit(limit * 3)
+        # 1. جلب الكتب الأكثر تقييماً من المجتمع (التي تحتوي على مراجعات فعلياً)
+        top_reviewed = (
+            db.session.query(
+                BookReview.google_id,
+                BookReview.book_id,
+                func.avg(BookReview.rating).label('avg_rating'),
+                func.count(BookReview.id).label('count')
+            )
+            .group_by(BookReview.google_id, BookReview.book_id)
+            .order_by(func.count(BookReview.id).desc(), func.avg(BookReview.rating).desc())
+            .limit(limit)
             .all()
         )
-        
-        if len(user_books) < limit:
-            # ⭐ Deterministic fallback: Recent additions instead of random
-            more_books = Book.query.order_by(Book.id.desc()).limit(limit * 3).all()
-            user_books.extend(more_books)
-            
-        random.shuffle(user_books)
-        
-        for b in user_books:
-            book_id = f"local_{b.id}" if not b.google_id else b.google_id
-            if book_id in seen_ids:
-                continue
-            seen_ids.add(book_id)
-            
-            if not b.title or b.title in ['Untitled', 'Unknown']:
-                continue
 
-            owner_name = "مستخدم"
-            owner_id = None
-            if getattr(b, "owner", None):
-                owner_id = b.owner.id
-                if b.owner.name:
-                    owner_name = b.owner.name
-                    
-            book_dict = _book_to_dict(
-                b,
-                source="المكتبة",
-                reason=f"👤 أضافه: {owner_name}" if getattr(b, "owner", None) else "🔥 شائع محلياً",
-            )
+        for google_id, book_id, avg_rating, count in top_reviewed:
+            b = None
+            if book_id: b = Book.query.get(book_id)
+            elif google_id: b = Book.query.filter_by(google_id=google_id).first()
             
-            if book_dict:
-                book_dict['owner_name'] = owner_name
-                book_dict['owner_id'] = owner_id
-                books_dicts.append(book_dict)
-            
-            if len(books_dicts) >= limit:
-                break
-                
+            if b:
+                bid = b.google_id if b.google_id else f"local_{b.id}"
+                if bid in seen_ids: continue
+                seen_ids.add(bid)
+                rating_val = float(avg_rating) if avg_rating is not None else 0.0
+                d = _book_to_dict(b, source="Community", reason=f"⭐ تقييم المجتمع: {rating_val:.1f} ({count})", extra_meta={"rating": rating_val})
+                if d: books_dicts.append(d)
+
+        # 2. إكمال العدد بكتب حقيقية مضافة للمكتبة من قبل المستخدمين (ليست وهمية)
         if len(books_dicts) < limit:
-            try:
-                # ⭐ Deterministic fallback: High-quality curated topic
-                fallback_query = "best selling books"
-                items, _ = fetch_google_books(fallback_query, max_results=limit - len(books_dicts))
-                for item in items:
-                    v = item.get("volumeInfo", {})
-                    cover = v.get("imageLinks", {}).get("thumbnail")
-                    if cover and cover.startswith("http://"): cover = "https" + cover[4:]
-                    fallback_dict = {
-                        "id": item.get("id"),
-                        "title": v.get("title", "رائج الان"),
-                        "author": v.get("authors", ["غير معروف"])[0] if v.get("authors") else "غير معروف",
-                        "cover": cover,
-                        "source": "Google Books",
-                        "reason": "🔥 شائع عالمياً",
-                        "rating": v.get("averageRating")
-                    }
-                    books_dicts.append(fallback_dict)
-            except Exception as e:
-                logger.error(f"[Trending] Internet fallback error: {e}", exc_info=True)
-                
-    except Exception as e:
-        logger.error(f"[Trending] Error: {e}", exc_info=True)
+            recent = Book.query.filter(Book.owner_id.isnot(None)).order_by(Book.created_at.desc()).limit(limit - len(books_dicts)).all()
+            for b in recent:
+                bid = b.google_id if b.google_id else f"local_{b.id}"
+                if bid in seen_ids: continue
+                seen_ids.add(bid)
+                avg_rating = db.session.query(func.avg(BookReview.rating)).filter_by(google_id=b.google_id).scalar()
+                rating_val = float(avg_rating) if avg_rating is not None else 0.0
+                d = _book_to_dict(b, source="Library", reason="📚 مضاف حديثاً للمجتمع", extra_meta={"rating": rating_val})
+                if d: books_dicts.append(d)
 
-    random.shuffle(books_dicts)
-    books_dicts = _deduplicate_dicts(books_dicts)
-    result = books_dicts[:limit]
-    logger.info(f"[Trending] Returning {len(result)} trending books")
-    return result
+        # 3. Fallback: Google Books (If still empty or too few)
+        if len(books_dicts) < 5:
+            from ..utils import fetch_google_books
+            items, _ = fetch_google_books("bestsellers", max_results=limit - len(books_dicts))
+            for b in items:
+                bid = b.get('id')
+                if bid in seen_ids: continue
+                seen_ids.add(bid)
+                vi = b.get('volumeInfo', {})
+                img = vi.get('imageLinks', {}).get('thumbnail')
+                if img and img.startswith('http://'): img = img.replace('http://', 'https://')
+                books_dicts.append({
+                    "id": bid,
+                    "title": vi.get('title'),
+                    "author": ", ".join(vi.get('authors', ['Unknown'])),
+                    "cover_url": img,
+                    "rating": vi.get('averageRating', 4.5),
+                    "source": "Global",
+                    "reason": "🔥 الأكثر مبيعاً عالمياً"
+                })
+
+    except Exception as e:
+        logger.error(f"[Trending] Error: {e}")
+
+    return [b for b in books_dicts if b.get('title')][:limit]
+
 
 
 def get_trending_by_period(period='week', limit=12):

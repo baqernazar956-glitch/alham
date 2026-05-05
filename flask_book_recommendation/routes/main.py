@@ -28,13 +28,17 @@ from ..utils import (
     chat_with_ai  # مساعد AI للكتب
 )
 from ..recommender import (
-    log_user_view, 
+    log_user_view,
     get_deep_learning_recommendations,
     get_trending,
     get_top_rated,
     get_cf_similar,
     get_view_based_recommendations,
-    get_behavior_based_recommendations
+    get_behavior_based_recommendations,
+    _get_user_interests,
+    _get_book_uid,
+    _strict_interest_filter,
+    _fetch_interest_books_from_api
 )
 from ai_book_recommender.unified_pipeline import get_unified_engine
 
@@ -44,183 +48,6 @@ from ai_book_recommender.unified_pipeline import get_unified_engine
 main_bp = Blueprint("main", __name__)
 
 
-def _get_user_interests(user_id):
-    """
-    Get ALL user interests from both UserGenre and UserPreference.
-    Returns a set of lowercase interest/topic strings.
-    """
-    if not user_id:
-        return set()
-    
-    from ..models import UserGenre, Genre, UserPreference
-    interests = set()
-    
-    # From UserGenre (explicit genre selections)
-    user_genres = (
-        db.session.query(Genre.name)
-        .join(UserGenre)
-        .filter(UserGenre.user_id == user_id)
-        .all()
-    )
-    for (name,) in user_genres:
-        interests.add(name.lower().strip())
-    
-    # From UserPreference (broader topic interests, behavioral)
-    user_prefs = UserPreference.query.filter_by(user_id=user_id).filter(
-        UserPreference.weight >= 5.0  # Only significant interests
-    ).all()
-    for pref in user_prefs:
-        interests.add(pref.topic.lower().strip())
-    
-    return interests
-
-
-def _get_book_uid(book):
-    """
-    Get a consistent unique ID for a book object or dictionary.
-    Favors google_id string over local integer ID.
-    """
-    if isinstance(book, dict):
-        gid = book.get("google_id") or book.get("id") or book.get("book_id")
-        # If it's a digit string, it's likely a local ID, try title|author fallback if no gid
-        if isinstance(gid, str) and gid.isdigit():
-            return f"id_{gid}"
-        return str(gid) if gid else f"title_{book.get('title')}_{book.get('author')}"
-    else:
-        # SQLAlchemy Model
-        gid = getattr(book, 'google_id', None) or getattr(book, 'id', None)
-        return str(gid)
-
-def _strict_interest_filter(books, user_interests, limit=100):
-    """
-    🔒 STRICT INTEREST GATEKEEPER
-    
-    Filters a list of book recommendations to ONLY include books 
-    that match at least one of the user's interests.
-    
-    Matching criteria:
-    - Book's categories contain an interest keyword
-    - Book's title contains an interest keyword
-    
-    This is a 100% strict filter — no random/unrelated books pass through.
-    
-    Args:
-        books: List of book dicts with 'categories', 'title', etc.
-        user_interests: Set of lowercase interest strings
-        limit: Maximum number of books to return
-    
-    Returns:
-        Filtered list of books matching user interests
-    """
-    if not user_interests:
-        return books[:limit]  # No interests set = return as-is (cold start)
-    
-    filtered = []
-    seen_ids = set()
-    
-    for book in books:
-        if len(filtered) >= limit:
-            break
-            
-        # 🧪 [DEDUPLICATION FIX] Skip if already seen in this filter pass
-        uid = _get_book_uid(book)
-        if uid in seen_ids:
-            continue
-        
-        # Get book's categories
-        cats_raw = book.get("categories", [])
-        if isinstance(cats_raw, str):
-            cats_raw = [c.strip() for c in cats_raw.split(",")]
-        
-        # Build searchable text from categories + title
-        cat_text = " ".join(cats_raw).lower() if cats_raw else ""
-        title_text = (book.get("title") or "").lower()
-        author_text = (book.get("author") or "").lower()
-        search_text = f"{cat_text} {title_text} {author_text}"
-        
-        # Check if ANY user interest matches
-        matched = False
-        for interest in user_interests:
-            # Split multi-word interests for flexible matching
-            interest_words = interest.split()
-            if len(interest_words) > 1:
-                # Multi-word: check if the full phrase appears
-                if interest in search_text:
-                    matched = True
-                    break
-            else:
-                # Single word: check if it appears as a word
-                if interest in search_text:
-                    matched = True
-                    break
-        
-        if matched:
-            filtered.append(book)
-            seen_ids.add(uid)
-    
-    return filtered
-
-
-def _fetch_interest_books_from_api(interests, limit_per_interest=10):
-    """
-    Fetch books from Google Books API based on user interests.
-    Used as fallback when local DB doesn't have enough matching books.
-    
-    Returns list of book dicts.
-    """
-    import os
-    api_key = os.environ.get("GOOGLE_BOOKS_API_KEY")
-    results = []
-    seen_ids = set()
-    
-    for interest in list(interests)[:5]:  # Limit to 5 interests
-        try:
-            params = {
-                "q": f"subject:{interest}",
-                "maxResults": limit_per_interest,
-                "orderBy": "relevance",
-                "printType": "books",
-            }
-            if api_key:
-                params["key"] = api_key
-            
-            import requests as _req
-            resp = _req.get("https://www.googleapis.com/books/v1/volumes", 
-                          params=params, timeout=10)
-            if not resp.ok:
-                continue
-            
-            for item in resp.json().get("items", []):
-                gid = item.get("id")
-                if not gid or gid in seen_ids:
-                    continue
-                seen_ids.add(gid)
-                
-                vi = item.get("volumeInfo", {})
-                imgs = vi.get("imageLinks", {}) or {}
-                cover = imgs.get("thumbnail") or imgs.get("smallThumbnail")
-                if cover:
-                    cover = cover.replace("http://", "https://").replace("&edge=curl", "")
-                
-                cats = vi.get("categories", [interest.title()])
-                
-                results.append({
-                    "id": gid,
-                    "title": vi.get("title", ""),
-                    "author": ", ".join(vi.get("authors", ["Unknown"])),
-                    "cover_url": cover,
-                    "categories": cats,
-                    "algorithm_tag": "INTEREST MATCH",
-                    "algo_tag": "Interest-Based",
-                    "confidence": 0.9,
-                    "score": 0.85,
-                    "rating": vi.get("averageRating", 4.5)
-                })
-        except Exception as e:
-            logger.warning(f"[InterestAPI] Error fetching '{interest}': {e}")
-            continue
-    
-    return results
 
 
 @main_bp.route("/")
@@ -1484,6 +1311,24 @@ def book_detail(book_id):
                 setattr(book, 'global_ratings_count', details.get('ratingsCount'))
         except: pass
 
+    # حساب معدل التقييمات المحلي
+    local_rating_stats = db.session.query(
+        db.func.avg(BookReview.rating), 
+        db.func.count(BookReview.id)
+    ).filter(
+        db.or_(
+            BookReview.google_id == book.google_id if book.google_id else False,
+            BookReview.google_id == str(book.id)
+        )
+    ).first()
+    
+    if local_rating_stats and local_rating_stats[1] > 0:
+        setattr(book, 'local_avg_rating', float(local_rating_stats[0]))
+        setattr(book, 'local_rating_count', int(local_rating_stats[1]))
+    else:
+        setattr(book, 'local_avg_rating', None)
+        setattr(book, 'local_rating_count', 0)
+
     # جلب المراجعات (للكتب المشتركة عبر Google ID أو المعرف المحلي)
     reviews = BookReview.query.filter(
         db.or_(
@@ -1534,6 +1379,22 @@ def save_notes(book_id):
     
     notes = request.form.get("notes")
     book.notes = notes
+    
+    # مزامنة مع UserBookNote لكي تظهر في الموبايل
+    if book.google_id:
+        from ..models import UserBookNote
+        mobile_note = UserBookNote.query.filter_by(user_id=current_user.id, google_id=book.google_id).first()
+        if mobile_note:
+            mobile_note.note_text = notes
+        else:
+            mobile_note = UserBookNote(
+                user_id=current_user.id,
+                google_id=book.google_id,
+                book_id=book.id,
+                note_text=notes
+            )
+            db.session.add(mobile_note)
+            
     db.session.commit()
     flash("تم حفظ الملاحظات بنجاح ✨", "success")
     return redirect(url_for("main.book_detail", book_id=book.id))
@@ -1551,12 +1412,19 @@ def add_review(book_id):
         flash("يرجى كتابة مراجعة قبل الحفظ", "warning")
         return redirect(url_for("main.book_detail", book_id=book.id))
         
-    # التحقق مما إذا كان هناك مراجعة سابقة
+    # التحقق مما إذا كان هناك مراجعة سابقة (من الويب أو الموبايل)
     review = BookReview.query.filter_by(user_id=current_user.id, book_id=book.id).first()
+    if not review and book.google_id:
+        review = BookReview.query.filter_by(user_id=current_user.id, google_id=book.google_id).first()
     
     if review:
         review.rating = rating
         review.review_text = content
+        # ضمان ربط book_id و google_id معاً
+        if not review.book_id:
+            review.book_id = book.id
+        if not review.google_id and book.google_id:
+            review.google_id = book.google_id
         flash("تم تحديث مراجعتك بنجاح ✨", "success")
     else:
         review = BookReview(
@@ -1584,6 +1452,15 @@ def add_review(book_id):
             book.author, 
             content
         )).start()
+    except: pass
+    
+    # 🔥 إبطال الكاش لضمان تحديث التوصيات فوراً
+    try:
+        from ..extensions import cache
+        from ..recommender import get_homepage_sections, get_top_rated
+        cache.delete_memoized(get_homepage_sections)
+        cache.delete_memoized(get_top_rated)
+        cache.delete(f"home_full_{current_user.id}")
     except: pass
     
     return redirect(url_for("main.book_detail", book_id=book.id))
@@ -1851,6 +1728,22 @@ def update_book_notes(book_id):
     
     notes = request.json.get("notes", "") if request.is_json else request.form.get("notes", "")
     book.notes = notes
+    
+    # مزامنة مع UserBookNote لكي تظهر في الموبايل
+    if book.google_id:
+        from ..models import UserBookNote
+        mobile_note = UserBookNote.query.filter_by(user_id=current_user.id, google_id=book.google_id).first()
+        if mobile_note:
+            mobile_note.note_text = notes
+        else:
+            mobile_note = UserBookNote(
+                user_id=current_user.id,
+                google_id=book.google_id,
+                book_id=book.id,
+                note_text=notes
+            )
+            db.session.add(mobile_note)
+    
     db.session.commit()
     return jsonify({"success": True, "notes": notes})
 

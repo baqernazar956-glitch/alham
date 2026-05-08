@@ -1452,7 +1452,8 @@ def add_review(book_id):
             book.author, 
             content
         )).start()
-    except: pass
+    except Exception as e:
+        logger.error(f"Error in background interest update: {e}")
     
     # 🔥 إبطال الكاش لضمان تحديث التوصيات فوراً
     try:
@@ -1461,7 +1462,8 @@ def add_review(book_id):
         cache.delete_memoized(get_homepage_sections)
         cache.delete_memoized(get_top_rated)
         cache.delete(f"home_full_{current_user.id}")
-    except: pass
+    except Exception as e:
+        logger.error(f"Error clearing cache: {e}")
     
     return redirect(url_for("main.book_detail", book_id=book.id))
 

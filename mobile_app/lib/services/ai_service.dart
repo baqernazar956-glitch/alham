@@ -1,5 +1,6 @@
 
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../config/app_config.dart';
 
@@ -15,59 +16,71 @@ class AiService {
     return _model!;
   }
 
-  /// Chat with AI about a book.
+  /// Chat with AI about a book or general.
   static Future<Map<String, dynamic>> chat(String message, String? gid,
       {String? bookTitle, String? bookAuthor}) async {
     try {
-      final context = bookTitle != null
-          ? 'You are a smart book assistant. The user is asking about the book "$bookTitle" '
-              '${bookAuthor != null ? "by $bookAuthor" : ""}. '
-              'Answer in English in a helpful and concise way. If you suggest other books, put the book title between double square brackets like [[Book Title]].'
-          : 'You are a smart book assistant. Answer in English in a helpful and concise way. '
-              'If you suggest books, always put the book title between double square brackets like [[Book Title]].';
+      final url = gid != null && gid.isNotEmpty
+          ? '${AppConfig.serverBaseUrl}/books/$gid/chat'
+          : '${AppConfig.serverBaseUrl}/api/ai-chat';
 
-      final response = await _gemini.generateContent([
-        Content.text('$context\n\nUser Question: $message'),
-      ]);
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'message': message,
+          'history': [],
+        }),
+      );
 
-      return {
-        'success': true,
-        'response': response.text ?? 'I could not answer that.',
-      };
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': data['success'] ?? true,
+          'response': data['reply'] ?? 'No response',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
     } catch (e) {
       return {
         'success': false,
-        'error': 'AI Connection Error: $e',
+        'error': 'Connection Error: $e',
       };
     }
   }
 
   /// Get AI-generated book summary.
+  /// Get AI-generated book summary from server.
   static Future<Map<String, dynamic>> getSummary(String gid,
       {String? bookTitle, String? bookAuthor, String? description}) async {
     try {
-      final prompt = '''You are a professional literary critic. Provide a comprehensive summary and critical review for this book:
+      final url = '${AppConfig.serverBaseUrl}/books/$gid/ai-summary';
+      
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
 
-Title: ${bookTitle ?? 'Unknown'}
-Author: ${bookAuthor ?? 'Unknown'}
-${description != null && description.isNotEmpty ? 'Description: $description' : ''}
-
-Provide the summary in the following format:
-📖 **Book Summary:** (3-4 sentences)
-⭐ **Why it is worth reading:** (two points)
-🎯 **Suitable for:** (one sentence)
-📊 **Rating:** (out of 5)''';
-
-      final response = await _gemini.generateContent([Content.text(prompt)]);
-
-      return {
-        'success': true,
-        'summary': response.text ?? 'I could not generate a summary.',
-      };
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': data['success'] ?? true,
+          'summary': data['summary'] ?? data['error'] ?? 'I could not generate a summary.',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
     } catch (e) {
       return {
         'success': false,
-        'error': 'Error: $e',
+        'error': 'Connection Error: $e',
       };
     }
   }

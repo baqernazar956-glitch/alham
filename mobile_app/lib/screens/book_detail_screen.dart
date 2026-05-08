@@ -403,7 +403,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       readingUrl = 'https://archive.org/details/$cleanId';
     }
 
-    if (readingUrl == null || readingUrl.isEmpty) return const SizedBox.shrink();
+    // If still no URL, fallback to an Archive.org search for the book title
+    if (readingUrl == null || readingUrl.isEmpty) {
+      readingUrl = 'https://archive.org/search.php?query=${Uri.encodeComponent(book.title)}';
+      label = 'Search on Archive';
+      icon = Icons.search;
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 32),

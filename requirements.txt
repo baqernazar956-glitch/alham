@@ -21,8 +21,8 @@ uvicorn
 python-multipart
 aiofiles
 a2wsgi
-# torch (Too heavy for free hosting)
-# sentence-transformers (Too heavy for free hosting)
+torch
+sentence-transformers
 scipy
 lxml
 beautifulsoup4
@@ -31,4 +31,4 @@ flask-caching
 flask-jwt-extended
 redis
 apscheduler
-# faiss-cpu (Too heavy for free hosting)
+faiss-cpu

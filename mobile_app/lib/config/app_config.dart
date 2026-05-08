@@ -2,11 +2,11 @@
 /// No external server needed — all APIs called directly.
 class AppConfig {
   // ─── Gemini AI ───
-  static const String geminiApiKey = 'AIzaSyCJZJ6-23vF-i-3szRWvevs6yon8o2Inz4';
+  static const String geminiApiKey = 'AIzaSyB0Z_cB-9ennSIwRRwlOQqhdrp_8uH-SOE';
   static const String geminiBaseUrl =
       'https://generativelanguage.googleapis.com/v1beta';
-  static const String geminiModel = 'gemini-flash-latest';
-  static const String embeddingModel = 'embedding-001';
+  static const String geminiModel = 'gemini-1.5-flash';
+  static const String embeddingModel = 'text-embedding-004';
 
   // ─── Backend Server ───
   static const String serverBaseUrl = 'http://192.168.100.25:2953';

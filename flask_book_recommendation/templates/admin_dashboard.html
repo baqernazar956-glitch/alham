@@ -82,7 +82,7 @@
             <div class="bg-surface-container-low p-12 shadow-2xl space-y-8 relative overflow-hidden group">
                 <div class="absolute -top-12 -right-12 font-headline text-8xl font-black text-on-surface/[0.03] select-none pointer-events-none">BOOKS</div>
                 <div class="flex justify-between items-start">
-                    <span class="font-label text-xs uppercase font-black text-secondary tracking-widest leading-none">Total Books</span>
+                    <span class="font-label text-xs uppercase font-black text-secondary tracking-widest leading-none">{{ t('Total Books') }}</span>
                     <span class="material-symbols-outlined text-secondary/20">menu_book</span>
                 </div>
                 <h3 class="font-headline text-6xl font-black text-on-surface">{{ stats.total_books if stats else 0 }}</h3>

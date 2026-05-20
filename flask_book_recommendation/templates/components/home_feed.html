@@ -1,18 +1,18 @@
-<!-- Because you searched for Section -->
+<!-- {{ t('Because you searched for') }} Section -->
 {% if dynamic_search_books is defined and dynamic_search_books and dynamic_search_books|length > 0 %}
 <section class="max-w-[1800px] mx-auto px-8 mb-20 feed-section-initially-hidden">
     <div class="bg-[#fdf2d7] rounded-[40px] p-10 md:p-16 flex flex-col lg:flex-row items-center gap-16 border border-[#f5e1b9]">
         <!-- Left Side: Content -->
         <div class="lg:w-2/5">
             <h2 class="text-5xl md:text-6xl font-black text-[#5e4518] mb-6 leading-tight font-headline">
-                Because you searched for <br>
+                {{ t('Because you searched for') }} <br>
                 <span class="italic text-[#a86e24]">"{{ last_search_term }}"</span>
             </h2>
             <p class="text-[#8b6e3f] text-lg font-medium mb-10 max-w-md leading-relaxed">
-                We noticed you're on a journey of improvement. These hand-picked titles might be the next step in your evolution.
+                {{ t("We noticed you're on a journey of improvement. These hand-picked titles might be the next step in your evolution.") }}
             </p>
             <button class="px-10 py-5 bg-[#7b541d] text-white rounded-2xl font-bold text-lg hover:bg-[#634317] transition-all hover:shadow-xl hover:-translate-y-1" onclick="window.location.href='{{ url_for('public.list_books', q=last_search_term) }}';">
-                Discover More
+                {{ t('Discover') }}
             </button>
         </div>
 
@@ -44,11 +44,11 @@
 <section class="max-w-[1800px] mx-auto px-8 py-32 feed-section-initially-hidden" id="curated-collections-section">
     <div class="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
         <div class="max-w-2xl">
-            <h2 class="text-5xl font-black text-on-surface tracking-tighter font-headline uppercase leading-none mb-6">Curated Collections</h2>
-            <p class="text-on-surface-variant/70 text-lg font-medium leading-relaxed">Immerse yourself in handpicked worlds that don't end on the last page. Every volume is a doorway to a new dimension.</p>
+            <h2 class="text-5xl font-black text-on-surface tracking-tighter font-headline uppercase leading-none mb-6">{{ t('Curated Collections') }}</h2>
+            <p class="text-on-surface-variant/70 text-lg font-medium leading-relaxed">{{ t("Immerse yourself in handpicked worlds that don't end on the last page. Every volume is a doorway to a new dimension.") }}</p>
         </div>
         <a href="{{ url_for('public.list_books') }}" class="group flex items-center gap-3 px-8 py-4 bg-surface-container-high rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm">
-            <span>Explore All</span>
+            <span>{{ t('All') }}</span>
             <span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
         </a>
     </div>
@@ -97,7 +97,7 @@
                  <div>
                      <div class="flex items-center gap-3 mb-4">
                         <span class="w-10 h-1 rounded-full transition-all duration-500 group-hover:w-16" style="background-color: {{ flist.color or '#6366f1' }};"></span>
-                        <span class="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant">{{ flist.count }}+ VOLUMES</span>
+                        <span class="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant">{{ flist.count }}+ {{ t('books') }}</span>
                     </div>
                     <h3 class="text-3xl font-black text-on-surface font-headline leading-tight mb-3 group-hover:text-primary transition-colors uppercase tracking-tight">{{ flist.title }}</h3>
                     <p class="text-on-surface-variant/70 text-sm font-medium line-clamp-2 leading-relaxed">The ultimate collection of {{ flist.title|lower }}. Start reading today.</p>
@@ -116,13 +116,13 @@
     {% if featured_lists|length > 6 %}
     <div class="mt-24 text-center">
         <button id="load-more-series-btn" class="px-12 py-5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all shadow-2xl hover:-translate-y-1 active:scale-95">
-            Load More Series
+            {{ t('Load More Series') }}
         </button>
     </div>
     {% endif %}
 </section>
 
-<!-- Modals for Curated Collections -->
+<!-- Modals for {{ t('Curated Collections') }} -->
 {% if featured_lists is defined and featured_lists and featured_lists|length > 0 %}
     {% for flist in featured_lists %}
     <div id="modal-collection-{{ loop.index }}" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6" style="opacity: 0; transition: opacity 0.3s ease;">
@@ -135,7 +135,7 @@
             <!-- Header -->
             <div class="flex items-center justify-between px-8 py-6 border-b border-surface-container" style="background-color: {{ flist.color or '#f1f5f9' }}30;">
                 <div>
-                    <span class="text-primary font-black text-[10px] uppercase tracking-[0.3em]">{{ flist.count }}+ VOLUMES</span>
+                    <span class="text-primary font-black text-[10px] uppercase tracking-[0.3em]">{{ flist.count }}+ {{ t('books') }}</span>
                     <h2 class="text-3xl font-black text-on-surface font-headline uppercase mt-1">{{ flist.title }}</h2>
                 </div>
                 <button onclick="closeCollectionModal('modal-collection-{{ loop.index }}')" class="w-10 h-10 rounded-full bg-white/50 hover:bg-white flex items-center justify-center transition-colors text-on-surface">
@@ -159,7 +159,7 @@
                     {% else %}
                         <div class="col-span-full text-center text-on-surface-variant py-10">
                             <span class="material-symbols-outlined text-5xl opacity-20 mb-3">auto_stories</span>
-                            <p>Loading collection details...</p>
+                            <p>{{ t('Loading...') }}</p>
                         </div>
                     {% endif %}
                 </div>

@@ -36,7 +36,7 @@
                 <div class="flex flex-col gap-4">
                     <a href="{{ url_for('main.book_read', book_id=book.id) }}" class="w-full bg-primary text-on-primary py-6 rounded-[1.5rem] font-black flex items-center justify-center gap-4 hover:bg-primary-dim transition-all active:scale-95 shadow-xl shadow-primary/20">
                         <span class="material-symbols-outlined">auto_stories</span>
-                        Resume Reading
+                        {{ t('Resume Reading') }}
                     </a>
                     <button onclick="shareBook()" class="w-full bg-white py-5 rounded-2xl font-black text-sm text-on-surface-variant border border-outline-variant/10 flex items-center justify-center gap-3 hover:bg-surface-container transition-all">
                         <span class="material-symbols-outlined text-xl">share</span>
@@ -114,7 +114,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button onclick="openChatModal()" class="flex items-center justify-between p-6 bg-surface-container hover:bg-surface-container-high rounded-xl transition-all group">
                                 <div class="text-left">
-                                    <p class="font-bold text-on-surface">Chat with Book</p>
+                                    <p class="font-bold text-on-surface">{{ t('Chat with Book') }}</p>
                                     <p class="text-xs text-on-surface-variant">Ask questions about this book</p>
                                 </div>
                                 <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">chat_bubble</span>
@@ -135,7 +135,7 @@
                             </button>
                             <button onclick="openNotesModal()" class="md:col-span-2 flex items-center justify-between p-6 bg-tertiary/5 hover:bg-tertiary/10 rounded-xl transition-all group border border-tertiary/10">
                                 <div class="text-left">
-                                    <p class="font-bold text-tertiary">My Personal Notes</p>
+                                    <p class="font-bold text-tertiary">My {{ t('Personal Notes') }}</p>
                                     <p class="text-xs text-tertiary/60">Private reminders and thoughts for this book</p>
                                 </div>
                                 <span class="material-symbols-outlined text-tertiary group-hover:rotate-12 transition-transform">note_alt</span>
@@ -238,17 +238,17 @@
                 {% else %}
                     <div class="py-20 text-center space-y-4 opacity-30">
                         <span class="material-symbols-outlined text-6xl">forum</span>
-                        <p class="font-black text-xl">No reviews yet for this book.</p>
+                        <p class="font-black text-xl">{{ t('No reviews yet') }} for this book.</p>
                         <p class="text-sm font-medium">Be the first to write a review.</p>
                     </div>
                 {% endif %}
             </div>
 
-            <!-- Write a Review Button -->
+            <!-- {{ t('Write a Review') }} Button -->
             <div class="mt-10 flex justify-center">
                 <button onclick="toggleReviewForm()" class="group bg-[#2D2D29] text-white px-8 py-4 rounded-full text-sm font-bold hover:bg-black transition-all active:scale-95 flex items-center gap-3 shadow-xl relative z-20">
                     <span class="material-symbols-outlined text-xs group-hover:rotate-12 transition-transform">edit_note</span>
-                    Write a Review
+                    {{ t('Write a Review') }}
                 </button>
             </div>
 
@@ -284,7 +284,7 @@
             <span class="material-symbols-outlined text-2xl">close</span>
         </button>
         
-        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-10 text-center">Your Review</h4>
+        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-10 text-center">{{ t('Your Review') }}</h4>
         
         <form action="{{ url_for('public.submit_review', gid=book.google_id or book.id) }}" method="POST" class="space-y-8">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -305,7 +305,7 @@
             </div>
 
             <button type="submit" class="w-full py-6 bg-primary text-on-primary rounded-full font-black text-sm uppercase tracking-widest hover:shadow-[0_20px_40px_rgba(111,38,246,0.2)] transition-all active:scale-95">
-                Submit Review
+                {{ t('Submit Review') }}
             </button>
         </form>
     </div>
@@ -318,13 +318,13 @@
     </div>
 </div>
 
-<!-- Personal Notes Modal (Static Template) -->
+<!-- {{ t('Personal Notes') }} Modal (Static Template) -->
 <div id="notesModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-all duration-300">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-tertiary/5">
             <h3 class="font-black text-tertiary flex items-center gap-2">
                 <span class="material-symbols-outlined">note_alt</span>
-                Personal Notes
+                {{ t('Personal Notes') }}
             </h3>
             <button onclick="closeNotesModal()" class="text-slate-400 hover:text-on-surface transition-colors">
                 <span class="material-symbols-outlined">close</span>
@@ -334,19 +334,85 @@
             <p class="text-xs text-slate-500 mb-4 bg-tertiary/5 p-3 rounded-lg border border-tertiary/10">
                 <span class="font-bold">Note:</span> These notes are <span class="text-tertiary font-bold">private</span> and visible only to you.
             </p>
-            <textarea id="personalNoteText" rows="8" class="w-full bg-slate-50 border-2 border-slate-100 p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-tertiary focus:border-tertiary outline-none transition-all" placeholder="Write your personal notes here..."></textarea>
+            <textarea id="personalNoteText" rows="8" class="w-full bg-slate-50 border-2 border-slate-100 p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-tertiary focus:border-tertiary outline-none transition-all" placeholder="{{ t('Write your personal notes here...') }}"></textarea>
             <div class="mt-8 flex gap-3">
                 <button onclick="closeNotesModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
                     Cancel
                 </button>
                 <button id="saveNoteBtn" onclick="saveNote()" class="flex-[2] py-4 bg-tertiary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">save</span>
-                    Save Note
+                    {{ t('Save Note') }}
                 </button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Edit Book / Upload PDF Modal (Static Template) -->
+{% if book.owner_id == current_user.id %}
+<div id="editBookModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-all duration-300">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-primary/5">
+            <h3 class="font-black text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined">edit</span>
+                تعديل تفاصيل الكتاب ورفع ملف القراءة
+            </h3>
+            <button onclick="closeEditBookModal()" class="text-slate-400 hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('main.update_book', book_id=book.id) }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-4 text-left" dir="rtl">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">عنوان الكتاب</label>
+                <input type="text" name="u_title" value="{{ book.title }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">المؤلف</label>
+                <input type="text" name="u_author" value="{{ book.author }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">الوصف</label>
+                <textarea name="u_description" rows="4" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">{{ book.description }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">رابط صورة الغلاف (اختياري)</label>
+                <input type="url" name="u_cover_url" value="{{ book.cover_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-left">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">رابط ملف القراءة المباشر (PDF/EPUB) (اختياري)</label>
+                <input type="url" name="u_file_url" value="{{ book.file_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-left" placeholder="https://example.com/book.pdf">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right font-black">أو قم برفع ملف الكتاب من جهازك (PDF/EPUB/TXT)</label>
+                <input type="file" name="u_file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all text-right">
+                {% if book.file_url %}
+                    <p class="text-xs text-green-600 mt-2 flex items-center gap-1 justify-end">
+                        <span class="material-symbols-outlined text-sm">check_circle</span>
+                        يوجد ملف قراءة محفوظ بالفعل لهذا الكتاب.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="mt-8 flex gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onclick="closeEditBookModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
+                    إلغاء
+                </button>
+                <button type="submit" class="flex-[2] py-4 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    حفظ التغييرات
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -368,6 +434,30 @@
             }
         } catch (err) {
             console.error(err);
+        }
+    }
+
+    function openEditBookModal() {
+        const modal = document.getElementById('editBookModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeEditBookModal() {
+        const modal = document.getElementById('editBookModal');
+        if (modal) {
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = 'auto';
         }
     }
 </script>

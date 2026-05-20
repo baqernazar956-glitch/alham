@@ -81,7 +81,7 @@
         <div class="absolute -top-24 -right-24 w-80 h-80 bg-white/30 rounded-full blur-[100px]"></div>
     </section>
 
-    <!-- Currently Reading Spotlight (if any) -->
+    <!-- {{ t('Currently Reading') }} Spotlight (if any) -->
     {% if reading_books %}
     <section>
         <div class="flex items-center gap-4 mb-10 pl-2">
@@ -173,7 +173,7 @@
                 <!-- Add Button (Link to Public Library) -->
                 <a href="{{ url_for('public.list_books') }}" class="bg-on-surface text-surface py-3.5 px-6 rounded-full font-bold text-sm shadow-[0_10px_20px_-10px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:shadow-lg transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">add</span>
-                    <span class="hidden sm:inline">Add Book</span>
+                    <span class="hidden sm:inline">{{ t('Add Book') }}</span>
                 </a>
             </div>
         </div>
@@ -225,7 +225,7 @@
                     <!-- Quick Actions Overlay -->
                     <div class="book-actions-overlay absolute inset-0 bg-inverse-surface/80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 flex flex-col items-center justify-center gap-3 p-4 backdrop-blur-sm">
                         <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="quick-action-btn w-full py-2.5 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary-dim transition-colors flex items-center justify-center gap-2 transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75">
-                            <span class="material-symbols-outlined text-[16px]">visibility</span> View Details
+                            <span class="material-symbols-outlined text-[16px]">visibility</span> {{ t('View Details') }}
                         </a>
                         
                         <div class="grid grid-cols-2 gap-2 w-full transform translate-y-4 group-hover:translate-y-0 duration-300 delay-100">
@@ -331,7 +331,7 @@
         <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <span class="material-symbols-outlined text-primary text-4xl">flag</span>
         </div>
-        <h3 class="font-headline text-3xl font-black mb-2">Yearly Reading Goal</h3>
+        <h3 class="font-headline text-3xl font-black mb-2">Yearly {{ t('Reading Goal') }}</h3>
         <p class="text-on-surface-variant text-sm mb-8">Set how many books you want to conquer in {{ current_year }}.</p>
         
         <form action="{{ url_for('main.update_reading_goal') }}" method="POST">
@@ -351,20 +351,20 @@
     </div>
 </dialog>
 
-<!-- Manual Add Book Modal -->
+<!-- Manual {{ t('Add Book') }} Modal -->
 <dialog id="addBookModal" class="bg-surface border border-outline-variant/10 p-10 md:p-14 shadow-2xl w-full max-w-2xl rounded-[3rem] backdrop:bg-inverse-surface/80 backdrop:backdrop-blur-md">
     <div class="space-y-10">
         <div class="flex justify-between items-start">
             <div>
-                <span class="font-bold text-[10px] uppercase tracking-[0.4em] text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 inline-block">Manual Entry</span>
-                <h3 class="font-headline text-4xl font-black tracking-tight">Add to Collection</h3>
+                <span class="font-bold text-[10px] uppercase tracking-[0.4em] text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 inline-block">{{ t('Manual Entry') }}</span>
+                <h3 class="font-headline text-4xl font-black tracking-tight">{{ t('Add to Collection') }}</h3>
             </div>
             <button onclick="document.getElementById('addBookModal').close()" class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-on-surface hover:bg-error hover:text-white transition-all">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         
-        <form action="{{ url_for('main.create_book') }}" method="POST" class="space-y-6">
+        <form action="{{ url_for('main.create_book') }}" method="POST" enctype="multipart/form-data" class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="space-y-2">
                 <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Title <span class="text-error">*</span></label>
@@ -374,9 +374,25 @@
                 <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Author</label>
                 <input type="text" name="author" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. Frank Herbert">
             </div>
+            <div class="space-y-2">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Description</label>
+                <textarea name="description" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. A sci-fi masterpiece..." rows="3"></textarea>
+            </div>
+            <div class="space-y-2">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Cover Image URL</label>
+                <input type="url" name="cover_url" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="https://example.com/cover.jpg">
+            </div>
+            <div class="space-y-2">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Reading File URL (PDF/EPUB)</label>
+                <input type="url" name="file_url" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="https://example.com/book.pdf">
+            </div>
+            <div class="space-y-2">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Or Upload Book File (PDF/EPUB/TXT)</label>
+                <input type="file" name="file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all">
+            </div>
             <div class="pt-6">
                 <button type="submit" class="w-full bg-on-surface text-surface font-headline font-black py-5 text-xl rounded-2xl hover:bg-primary transition-all flex justify-center items-center gap-3 group shadow-xl">
-                    Add Book
+                    {{ t('Add Book') }}
                     <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
             </div>

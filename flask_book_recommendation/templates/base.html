@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html class="light" lang="{{ lang }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
 
 <head>
     <meta charset="utf-8" />
@@ -234,7 +234,7 @@
         class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-surface-container-lowest shadow-2xl z-[9999] md:hidden flex flex-col">
         <!-- Menu Header -->
         <div class="flex justify-between items-center p-6 border-b border-surface-container">
-            <span class="text-2xl font-black text-primary font-headline italic">Elham</span>
+            <span class="text-2xl font-black text-primary font-headline italic">{{ t('Elham') }}</span>
             <button onclick="toggleMobileMenu()" class="p-2 hover:bg-surface-container rounded-full transition-colors">
                 <span class="material-symbols-outlined text-on-surface">close</span>
             </button>
@@ -245,22 +245,22 @@
             <a href="{{ url_for('main.home') }}" onclick="toggleMobileMenu()"
                 class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'main.home' else 'text-on-surface hover:bg-surface-container' }}">
                 <span class="material-symbols-outlined">explore</span>
-                Discover
+                {{ t('Discover') }}
             </a>
             <a href="{{ url_for('public.list_books') }}" onclick="toggleMobileMenu()"
                 class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'public.list_books' else 'text-on-surface hover:bg-surface-container' }}">
                 <span class="material-symbols-outlined">public</span>
-                Public Library
+                {{ t('Public Library') }}
             </a>
             <a href="{{ url_for('main.books') }}" onclick="toggleMobileMenu()"
                 class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'main.books' else 'text-on-surface hover:bg-surface-container' }}">
                 <span class="material-symbols-outlined">menu_book</span>
-                My Book
+                {{ t('My Book') }}
             </a>
             <a href="{{ url_for('public.about') }}" onclick="toggleMobileMenu()"
                 class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all {{ 'bg-primary text-white shadow-lg' if request.endpoint == 'public.about' else 'text-on-surface hover:bg-surface-container' }}">
                 <span class="material-symbols-outlined">info</span>
-                About Us
+                {{ t('About Us') }}
             </a>
 
             {% if current_user.is_authenticated %}
@@ -268,19 +268,19 @@
             <a href="{{ url_for('auth.profile') }}" onclick="toggleMobileMenu()"
                 class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all text-on-surface hover:bg-surface-container">
                 <span class="material-symbols-outlined">person</span>
-                Profile
+                {{ t('Profile') }}
             </a>
             {% else %}
             <div class="border-t border-surface-container my-2"></div>
             <a href="{{ url_for('auth.login') }}" onclick="toggleMobileMenu()"
                 class="flex items-center gap-4 px-4 py-4 rounded-xl text-lg font-bold transition-all text-on-surface hover:bg-surface-container">
                 <span class="material-symbols-outlined">login</span>
-                Login
+                {{ t('Login') }}
             </a>
             <a href="{{ url_for('auth.register') }}" onclick="toggleMobileMenu()"
                 class="flex items-center justify-center gap-3 px-4 py-4 mx-4 mt-2 bg-primary text-white rounded-xl text-lg font-bold shadow-lg">
                 <span class="material-symbols-outlined">person_add</span>
-                Register
+                {{ t('Register') }}
             </a>
             {% endif %}
         </div>
@@ -309,24 +309,24 @@
                     class="flex items-center gap-3 text-3xl font-black tracking-tighter text-[#4800b1] font-headline italic">
                     <span class="material-symbols-outlined text-4xl"
                         style="font-variation-settings: 'FILL' 1;">auto_stories</span>
-                    Elham
+                    {{ t('Elham') }}
                 </a>
                 <div class="hidden md:flex items-center gap-4">
                     <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'main.home' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
-                        href="{{ url_for('main.home') }}">Discover</a>
+                        href="{{ url_for('main.home') }}">{{ t('Discover') }}</a>
                     <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'public.list_books' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
-                        href="{{ url_for('public.list_books') }}">Public Library</a>
+                        href="{{ url_for('public.list_books') }}">{{ t('Public Library') }}</a>
                     <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'main.books' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
-                        href="{{ url_for('main.books') }}">My Book</a>
+                        href="{{ url_for('main.books') }}">{{ t('My Book') }}</a>
                     <a class="px-6 py-3 rounded-xl text-xl font-bold transition-all {{ 'bg-primary text-white shadow-lg shadow-primary/20' if request.endpoint == 'public.about' else 'text-on-surface-variant hover:bg-primary hover:text-white' }}"
-                        href="{{ url_for('public.about') }}">About Us</a>
+                        href="{{ url_for('public.about') }}">{{ t('About Us') }}</a>
                 </div>
             </div>
             <div class="flex items-center gap-5">
                 <!-- Assistant Button -->
                 <a href="{{ url_for('main.assistant') }}" class="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full font-bold transition-all shadow-sm border border-primary/20">
                     <span class="material-symbols-outlined text-xl">smart_toy</span>
-                    <span class="text-sm">Your Assistant</span>
+                    <span class="text-sm">{{ t('Your Assistant') }}</span>
                 </a>
                 <!-- Mobile Menu Button (Hamburger) -->
                 <button onclick="toggleMobileMenu()"
@@ -342,10 +342,24 @@
                         hx-trigger="keyup changed delay:150ms, search"
                         hx-target="#live-search-results"
                         class="bg-surface-container border-none rounded-full pl-12 pr-6 py-3.5 w-96 text-lg font-black font-headline focus:ring-4 focus:ring-primary/20 focus:bg-white focus:shadow-xl transition-all relative z-10 placeholder:text-base placeholder:font-medium placeholder:font-body"
-                        placeholder="Search for a book..." type="text" autocomplete="off" />
+                        placeholder="{{ t('Search for a book...') }}" type="text" autocomplete="off" />
                     <!-- Live Search Results Container -->
                     <div id="live-search-results" class="absolute top-full left-0 right-0 mt-3 origin-top transition-all duration-300 empty:hidden opacity-0 group-focus-within:opacity-100 z-50"></div>
                 </form>
+                <!-- Language Toggle -->
+                <div class="flex items-center bg-surface-container-high/40 p-1 rounded-full border border-surface-container-highest shadow-inner">
+                    {% if lang == 'ar' %}
+                    <a href="{{ url_for('public.change_language', language='en') }}" class="flex items-center gap-1.5 px-3 py-1 bg-white text-primary rounded-full text-[11px] font-bold shadow-sm hover:scale-105 transition-all">
+                        <span class="material-symbols-outlined text-[14px]">language</span>
+                        <span>English</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('public.change_language', language='ar') }}" class="flex items-center gap-1.5 px-3 py-1 bg-white text-primary rounded-full text-[11px] font-bold shadow-sm hover:scale-105 transition-all">
+                        <span class="material-symbols-outlined text-[14px]">language</span>
+                        <span>العربية</span>
+                    </a>
+                    {% endif %}
+                </div>
                 <div class="flex items-center gap-1">
                     {% if current_user.is_authenticated %}
                     <a href="{{ url_for('auth.profile') }}"
@@ -355,10 +369,10 @@
                     </a>
                     {% else %}
                     <a href="{{ url_for('auth.login') }}"
-                        class="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors mx-2">Login</a>
+                        class="text-on-surface-variant font-bold text-sm hover:text-primary transition-colors mx-2">{{ t('Login') }}</a>
                     <a href="{{ url_for('auth.register') }}"
                         class="ml-2 px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all">
-                        Register
+                        {{ t('Register') }}
                     </a>
                     {% endif %}
                 </div>
@@ -376,10 +390,9 @@
         <div class="max-w-[1800px] mx-auto px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-16 mb-16">
                 <div class="lg:col-span-2">
-                    <span class="text-2xl font-black text-primary mb-8 block font-headline italic">Elham</span>
+                    <span class="text-2xl font-black text-primary mb-8 block font-headline italic">{{ t('Elham') }}</span>
                     <p class="text-on-surface-variant text-sm font-medium leading-relaxed max-w-sm">
-                        Connecting curious minds with transformative stories. Your next inspiration starts with a single
-                        page. Join our community of readers today.
+                        {{ t('Connecting curious minds with transformative stories. Your next inspiration starts with a single page. Join our community of readers today.') }}
                     </p>
                     <div class="flex gap-4 mt-8">
                         <a class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-primary hover:text-white transition-all"
@@ -391,57 +404,45 @@
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">Explore
+                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">{{ t('Explore') }}
                     </h4>
                     <ul class="space-y-4 text-sm font-semibold">
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Browse
-                                Genres</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Gift
-                                Cards</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Book
-                                Clubs</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Authors
-                                Portal</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Browse Genres') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Gift Cards') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Book Clubs') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Authors Portal') }}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">Company
+                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">{{ t('Company') }}
                     </h4>
                     <ul class="space-y-4 text-sm font-semibold">
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">About
-                                Us</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contact
-                                Support</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Careers</a>
-                        </li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Press
-                                Kit</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('About Us') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Contact Support') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Careers') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Press Kit') }}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">Legal
+                    <h4 class="font-black text-on-surface mb-8 uppercase tracking-widest text-xs font-headline">{{ t('Legal') }}
                     </h4>
                     <ul class="space-y-4 text-sm font-semibold">
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of
-                                Service</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy
-                                Policy</a></li>
-                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Cookie
-                                Settings</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Terms of Service') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Privacy Policy') }}</a></li>
+                        <li><a class="text-on-surface-variant hover:text-primary transition-colors" href="#">{{ t('Cookie Settings') }}</a></li>
                     </ul>
                 </div>
             </div>
             <div
                 class="pt-10 border-t border-surface-container flex flex-col md:flex-row justify-between items-center gap-6">
                 <p class="text-on-surface-variant text-[13px] font-medium">
-                    © 2024 Elham. Crafted with intention for the inspired reader.
+                    {{ t('© 2024 Elham. Crafted with intention for the inspired reader.') }}
                 </p>
                 <div class="flex items-center gap-2 text-on-surface-variant text-[13px] font-medium">
-                    <span>Designed with</span>
+                    <span>{{ t('Designed with') }}</span>
                     <span class="material-symbols-outlined text-secondary text-sm" data-icon="favorite"
                         style="font-variation-settings: 'FILL' 1;">favorite</span>
-                    <span>for book lovers worldwide.</span>
-                </div>
+                    <span>{{ t('for book lovers worldwide.') }}
             </div>
         </div>
     </footer>

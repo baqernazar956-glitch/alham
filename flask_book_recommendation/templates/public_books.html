@@ -8,7 +8,7 @@
     <header class="relative overflow-hidden rounded-[2.5rem] mb-16 min-h-[350px] flex items-center bg-gradient-to-br from-primary to-primary-container p-12 md:p-20 shadow-2xl shadow-primary/20">
         <div class="relative z-10 max-w-3xl">
             <h1 class="text-5xl md:text-7xl font-black text-on-primary font-headline mb-8 leading-tight tracking-tighter">
-                {% if q %}Search Results: {{ q }}{% elif cat %}{{ cat }}{% else %}Library Collective{% endif %}
+                {% if q %}{{ t('Search') }}: {{ q }}{% elif cat %}{{ cat }}{% else %}{{ t('Public Library') }}{% endif %}
             </h1>
             <p class="text-xl md:text-2xl text-on-primary/80 font-medium leading-relaxed max-w-2xl opacity-90">
                 {% if q %}
@@ -29,7 +29,7 @@
             <section>
                 <div class="flex items-center gap-4 mb-8">
                     <div class="h-10 w-2 bg-primary rounded-full"></div>
-                    <h3 class="text-2xl font-black font-headline text-on-background uppercase tracking-[0.2em]">Categories</h3>
+                    <h3 class="text-2xl font-black font-headline text-on-background uppercase tracking-[0.2em]">{{ t('Categories') }}</h3>
                 </div>
                 <div class="flex flex-wrap lg:flex-col gap-4">
                     {% set cat_list = [
@@ -39,7 +39,7 @@
                     ] %}
                     <a href="{{ url_for('public.list_books', q=q) }}"
                        class="flex items-center justify-between px-7 py-5 {% if not cat %}bg-primary text-on-primary shadow-2xl scale-[1.02] ring-8 ring-primary/5{% else %}bg-surface-container-low text-on-surface-variant hover:bg-primary/5 hover:text-primary{% endif %} rounded-[1.5rem] font-bold text-xl transition-all duration-500 group">
-                        <span class="group-hover:translate-x-2 transition-transform">All Books</span>
+                        <span class="group-hover:translate-x-2 transition-transform">{{ t('All') }}</span>
                         <span class="material-symbols-outlined text-lg opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all">chevron_right</span>
                     </a>
                     {% for cat_en in cat_list %}
@@ -53,15 +53,15 @@
             </section>
 
             <section class="space-y-6">
-                <h3 class="text-lg font-black font-headline text-on-background uppercase tracking-widest opacity-40">Sort By</h3>
+                <h3 class="text-lg font-black font-headline text-on-background uppercase tracking-widest opacity-40">{{ t('Sort by') }}</h3>
                 <form action="{{ url_for('public.list_books') }}" method="GET">
                     {% if q %}<input type="hidden" name="q" value="{{ q }}"/>{% endif %}
                     {% if cat %}<input type="hidden" name="cat" value="{{ cat }}"/>{% endif %}
                     <div class="relative group">
                         <select name="sort" onchange="this.form.submit()" class="w-full bg-surface-container-high border-none rounded-2xl py-5 px-6 font-bold focus:ring-4 focus:ring-primary/10 text-on-surface-variant cursor-pointer transition-all appearance-none">
-                            <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Most Relevant</option>
-                            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
-                            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                            <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>{{ t('Most Popular') }}</option>
+                            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>{{ t('Newest') }}</option>
+                            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>{{ t('Highest Rated') }}</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:translate-y-[-40%] transition-all">expand_more</span>
                     </div>
@@ -69,12 +69,12 @@
             </section>
 
             <section class="bg-primary/5 p-10 rounded-[2rem] border border-primary/10 relative overflow-hidden group">
-                <h4 class="font-headline font-black text-2xl text-primary mb-4">Neural Discovery?</h4>
+                <h4 class="font-headline font-black text-2xl text-primary mb-4">{{ t('AI Assistant') }}</h4>
                 <p class="text-base font-medium text-on-surface-variant/70 mb-6 leading-relaxed">
-                    Allow our machine learning engines to curate your next read based on your unique intellectual patterns.
+                    {{ t('Ask me anything about books...') }}
                 </p>
                 <a href="{{ url_for('main.home') }}" class="inline-flex items-center gap-3 bg-primary text-white px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:shadow-xl hover:bg-primary-dim transition-all active:scale-95">
-                    Launch AI
+                    {{ t('Start Reading') }}
                     <span class="material-symbols-outlined text-sm">bolt</span>
                 </a>
                 <!-- Decorative Layer -->
@@ -105,7 +105,7 @@
             <div id="infinite-scroll-sentinel" class="h-40 flex flex-col items-center justify-center mt-12 mb-20 text-center">
                 <div id="loading-spinner" class="{% if not deferred_load %}hidden{% endif %} flex flex-col items-center gap-6">
                     <div class="animate-spin rounded-full h-16 w-16 border-[5px] border-primary border-t-transparent shadow-xl"></div>
-                    <p class="text-sm font-black text-primary uppercase tracking-[0.4em] opacity-40">Syncing more volumes...</p>
+                    <p class="text-sm font-black text-primary uppercase tracking-[0.4em] opacity-40">{{ t('Loading...') }}</p>
                 </div>
             </div>
             
@@ -205,9 +205,9 @@
             <!-- Empty State -->
             <div class="py-40 text-center bg-surface-container-low rounded-[3rem] border-4 border-dashed border-outline-variant/10 flex flex-col justify-center items-center">
                 <span class="material-symbols-outlined text-[10rem] text-outline-variant/20 mb-10">auto_stories</span>
-                <h3 class="text-4xl font-black text-on-surface mb-6 font-headline tracking-tighter uppercase">No matching results found</h3>
+                <h3 class="text-4xl font-black text-on-surface mb-6 font-headline tracking-tighter uppercase">{{ t('No results found') }}</h3>
                 <p class="text-lg text-on-surface-variant max-w-md mx-auto font-medium opacity-60">
-                    We couldn't find any matches for your selection in our archive. Please try different keywords.
+                    {{ t('Try a different search term') }}
                 </p>
             </div>
             {% endif %}

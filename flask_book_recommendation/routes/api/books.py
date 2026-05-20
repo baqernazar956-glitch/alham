@@ -55,6 +55,9 @@ def search_books():
             if uid:
                 uid = int(uid)
             app = current_app._get_current_object()
+            
+            if uid is None:
+                return  # Skip search history for anonymous users
             def _bg_log(app, user_id, q):
                 with app.app_context():
                     try:

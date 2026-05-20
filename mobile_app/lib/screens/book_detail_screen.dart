@@ -388,7 +388,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     final cs = Theme.of(context).colorScheme;
     
     String? readingUrl = book.previewLink;
-    String label = 'Read Book Now';
+    if (readingUrl == null || readingUrl.isEmpty) {
+      readingUrl = book.infoLink;
+    }
+    
+    String label = 'Read Now';
     IconData icon = Icons.menu_book_rounded;
 
     // Fallback for Gutenberg if link is missing
@@ -403,10 +407,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       readingUrl = 'https://archive.org/details/$cleanId';
     }
 
-    // If still no URL, fallback to an Archive.org search for the book title
+    // Direct Google Books link fallback using gid (matching the web project behavior)
+    if ((readingUrl == null || readingUrl.isEmpty) && book.gid != null && book.gid!.isNotEmpty && !book.gid!.startsWith('gut_') && !book.gid!.startsWith('arch_')) {
+      readingUrl = 'https://books.google.com/books?id=${book.gid}';
+    }
+
+    // If still no URL, fallback to Google Books search for the book title
     if (readingUrl == null || readingUrl.isEmpty) {
-      readingUrl = 'https://archive.org/search.php?query=${Uri.encodeComponent(book.title)}';
-      label = 'Search on Archive';
+      readingUrl = 'https://www.google.com/search?tbm=bks&q=${Uri.encodeComponent(book.title + ' ' + book.author)}';
+      label = 'Find on Google Books';
       icon = Icons.search;
     }
 

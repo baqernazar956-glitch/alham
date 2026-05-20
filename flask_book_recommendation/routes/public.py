@@ -29,6 +29,12 @@ from training.interaction_logger import log_interaction
 
 public_bp = Blueprint("public", __name__, url_prefix="/public")
 
+@public_bp.route("/change_language/<language>")
+def change_language(language):
+    if language in ['ar', 'en']:
+        session['lang'] = language
+    return redirect(request.referrer or url_for('main.home'))
+
 import logging
 logger = logging.getLogger("flask_book_recommendation.routes.public")
 
@@ -867,6 +873,7 @@ def book_detail(gid):
     # -------------------------------------------------
     personal_recs = []
     current_status = None
+    local_book = None
     if current_user.is_authenticated:
         # البحث عن الكتاب محلياً باستخدام Google ID
         local_book = Book.query.filter_by(owner_id=current_user.id, google_id=gid).first()
@@ -1106,7 +1113,8 @@ def book_detail(gid):
             user_review=user_review,
             current_status=current_status,
             total_views=total_views,
-            unique_viewers=unique_viewers
+            unique_viewers=unique_viewers,
+            local_book=local_book
         )
 
     return render_template(
@@ -1120,6 +1128,7 @@ def book_detail(gid):
         current_status=current_status,
         total_views=total_views,
         unique_viewers=unique_viewers,
+        local_book=local_book,
         deferred_load=False
     )
 
@@ -1531,6 +1540,22 @@ def get_reviews(gid):
             for r in reviews
         ]
     }
+
+
+# ===========================================================================
+#                     🎯 توصيات AI للكتب
+# ===========================================================================
+
+@public_bp.post("/api/ai-recommendations")
+@csrf.exempt
+def ai_recommendations():
+    """توليد توصيات ذكية للكتب باستخدام AI"""
+    from ..utils import generate_book_recommendations
+    from flask import jsonify, request
+    
+    data = request.get_json() or {}
+    result = generate_book_recommendations(data)
+    return jsonify({"success": True, "recommendations": result})
 
 
 # ===========================================================================

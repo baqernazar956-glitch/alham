@@ -1,13 +1,6 @@
-/// Application configuration for standalone mode.
-/// No external server needed — all APIs called directly.
+/// Application configuration.
+/// All AI calls are routed through the backend server.
 class AppConfig {
-  // ─── Gemini AI ───
-  static const String geminiApiKey = 'AIzaSyB0Z_cB-9ennSIwRRwlOQqhdrp_8uH-SOE';
-  static const String geminiBaseUrl =
-      'https://generativelanguage.googleapis.com/v1beta';
-  static const String geminiModel = 'gemini-1.5-flash';
-  static const String embeddingModel = 'text-embedding-004';
-
   // ─── Backend Server ───
   static const String serverBaseUrl = 'http://192.168.100.25:2953';
 

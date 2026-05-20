@@ -118,6 +118,20 @@ def create_app():
     def ping():
         return jsonify(status="ok")
 
+    from flask import session, g
+    from .translations import translate
+
+    @app.before_request
+    def set_language():
+        g.lang = session.get('lang', 'ar')
+
+    @app.context_processor
+    def inject_translation_helpers():
+        return dict(
+            lang=g.lang,
+            t=lambda key: translate(key, g.lang)
+        )
+
     # ⚡ Performance: Static files caching + smart response headers
     @app.after_request
     def add_performance_headers(response):

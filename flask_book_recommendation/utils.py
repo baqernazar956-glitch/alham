@@ -1535,7 +1535,7 @@ def _call_ai_text_models(prompt: str, max_tokens: int = 500) -> str:
                 timeout=30
             )
             if response.ok:
-                return response.json()["choices"]["message"]["content"].strip()
+                return response.json()["choices"][0]["message"]["content"].strip()
         except Exception as e:
             _logger.warning(f"[AI Text] Groq Request failed: {e}")
             
@@ -1549,7 +1549,7 @@ def _call_ai_text_models(prompt: str, max_tokens: int = 500) -> str:
                 timeout=30
             )
             if response.ok:
-                text = response.json().get("candidates", [{}]).get("content", {}).get("parts", [{}]).get("text", "")
+                text = response.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                 if text: return text.strip()
         except Exception as e:
             _logger.warning(f"[AI Text] Gemini Request failed: {e}")
@@ -1656,6 +1656,105 @@ def generate_book_summary(book_info: dict) -> dict:
         summary += "لا يتوفر وصف تفصيلي حالياً، لكنه يعتبر من العناوين المميزة في فئته."
         
     return {"success": True, "summary": summary, "error": ""}
+
+
+# -----------------------------------------------------------
+# 🎯 توصيات AI للكتب
+# -----------------------------------------------------------
+def generate_book_recommendations(data: dict) -> dict:
+    """
+    توليد توصيات ذكية للكتب باستخدام Groq (أو Gemini كاحتياطي)
+    
+    Args:
+        data: قاموس يحتوي interests, read_books, liked_categories, recent_searches, mood, count
+        
+    Returns:
+        قائمة توصيات بصيغة JSON
+    """
+    import json
+    
+    groq_key = os.environ.get("GROQ_API_KEY")
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    
+    interests = data.get("interests", [])
+    read_books = data.get("read_books", [])
+    liked_categories = data.get("liked_categories", [])
+    recent_searches = data.get("recent_searches", [])
+    mood = data.get("mood")
+    count = data.get("count", 10)
+    
+    search_section = ""
+    if recent_searches:
+        search_section = f"- Recently searched for: {', '.join(recent_searches[:5])} (High priority)"
+    
+    prompt = f"""You are a smart book recommendation system that uses Deep Learning and behavioral pattern analysis.
+
+User Profile:
+- Interests: {', '.join(interests) if interests else 'General'}
+- Books Read: {', '.join(read_books[:10]) if read_books else 'None'}
+- Favorite Categories: {', '.join(liked_categories) if liked_categories else 'All'}
+{search_section}
+{mood if mood else ''}
+
+Important Instructions:
+1. If the user searched for something recently, most recommendations should be directly related to that.
+2. Suggest real, well-known books that can be found in Google Books.
+3. Diversify recommendations between recent searches and general interests.
+
+Suggest {count} suitable books.
+
+The response must be a JSON array only in this format (no extra text):
+[{{"title": "Book Title", "author": "Author", "reason": "One sentence reason for recommendation"}}]"""
+
+    # Groq First
+    if groq_key:
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.7,
+                    "max_tokens": 2000
+                },
+                timeout=30
+            )
+            if response.ok:
+                text = response.json()["choices"][0]["message"]["content"].strip()
+                return _parse_recommendations_json(text)
+        except Exception as e:
+            print(f"[AI Recommendations] Groq error: {e}")
+
+    # Gemini Fallback
+    if gemini_key:
+        try:
+            response = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}",
+                headers={"Content-Type": "application/json"},
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=30
+            )
+            if response.ok:
+                text = response.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                if text:
+                    return _parse_recommendations_json(text)
+        except Exception as e:
+            print(f"[AI Recommendations] Gemini error: {e}")
+
+    return []
+
+
+def _parse_recommendations_json(text: str) -> list:
+    """استخراج JSON من رد AI وتحويله إلى قائمة"""
+    import json
+    try:
+        json_match = re.search(r'\[[\s\S]*\]', text)
+        if json_match:
+            return json.loads(json_match.group(0))
+    except:
+        pass
+    return []
 
 
 # -----------------------------------------------------------
@@ -1906,6 +2005,8 @@ def chat_with_book_context(book_info: dict, user_msg: str, history: list = None)
                 timeout=30
             )
             if response.ok:
+                data = response.json()
+                text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                 if text: return {"success": True, "reply": text, "error": ""}
         except Exception as e: print(f"Book Chat Gemini Error: {e}")
 

@@ -38,7 +38,40 @@ def ai_health():
 
 
 def get_book_info(gid: str) -> dict:
-    """جلب معلومات الكتاب من Google Books"""
+    """جلب معلومات الكتاب من مصادر متعددة (موحدة + fallback محلي)"""
+    # 1. محاولة استخدام الدالة الموحدة التي تدعم مصادر متعددة + caching
+    try:
+        from flask_book_recommendation.routes.public import fetch_book_details
+        data = fetch_book_details(gid)
+        if data:
+            return {
+                'title': data.get('title', ''),
+                'author': data.get('author', ''),
+                'description': data.get('description') or data.get('desc', ''),
+                'categories': data.get('categories', [])
+            }
+    except Exception as e:
+        print(f"[AI API] fetch_book_details error: {e}")
+
+    # 2. Fallback: البحث في قاعدة البيانات المحلية
+    try:
+        from flask_book_recommendation.models import Book
+        book = None
+        if gid.isdigit():
+            book = Book.query.get(int(gid))
+        if not book:
+            book = Book.query.filter_by(google_id=gid).first()
+        if book:
+            return {
+                'title': book.title or '',
+                'author': book.author or '',
+                'description': book.description or '',
+                'categories': book.categories.split(',') if book.categories else []
+            }
+    except Exception as e:
+        print(f"[AI API] DB fallback error: {e}")
+
+    # 3. Fallback أخير: Google Books API مباشرة
     try:
         resp = requests.get(f"https://www.googleapis.com/books/v1/volumes/{gid}", timeout=10)
         if resp.status_code == 200:
@@ -74,10 +107,14 @@ def general_chat():
     
     try:
         if chat_with_ai:
-            response = chat_with_ai(message)
+            result = chat_with_ai(message)
+            # Extract reply text for Flutter compatibility
+            reply_text = result.get('reply', '') if isinstance(result, dict) else str(result)
             return jsonify({
                 'success': True,
-                'response': response
+                'reply': reply_text,
+                'response': reply_text,
+                'books': result.get('books', []) if isinstance(result, dict) else []
             })
         else:
             return jsonify({
@@ -130,10 +167,14 @@ def book_chat(gid: str):
     
     try:
         if chat_with_ai:
-            response = chat_with_ai(context_message)
+            result = chat_with_ai(context_message)
+            # Extract reply text for Flutter compatibility
+            reply_text = result.get('reply', '') if isinstance(result, dict) else str(result)
             return jsonify({
                 'success': True,
-                'response': response,
+                'reply': reply_text,
+                'response': reply_text,
+                'books': result.get('books', []) if isinstance(result, dict) else [],
                 'book': {
                     'title': book_info.get('title'),
                     'author': book_info.get('author')

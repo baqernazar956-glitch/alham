@@ -78,6 +78,7 @@ def _book_to_dict(book, source="Local", reason=None, extra_meta=None):
         "isbn": getattr(book, "isbn", None),
         "language": getattr(book, "language", None),
         "categories": getattr(book, "categories", None).split(",") if (getattr(book, "categories", None) and isinstance(getattr(book, "categories", None), str)) else getattr(book, "categories", []),
+        "file_url": getattr(book, "file_url", None),
     }
     
     # Add AI Metadata if provided

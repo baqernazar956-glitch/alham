@@ -1481,15 +1481,13 @@ def book_read(book_id):
     if book.google_id:
         # يمكننا إعادة توجيه المستخدم لصفحة القارئ العام
         # أو عرض نفس القالب هنا
-        vi = {}
         target_link = ""
         try: 
             # محاولة جلب رابط المعاينة
             from ..utils import fetch_book_details
             d = fetch_book_details(book.google_id)
             if d:
-                vi = d.get("volumeInfo", {})
-                target_link = vi.get("previewLink") or vi.get("infoLink")
+                target_link = d.get("preview")
         except: pass
         
         if not target_link:
@@ -1697,9 +1695,27 @@ def create_book():
     b = Book(
         title=request.form.get("title"), author=request.form.get("author"),
         description=request.form.get("description"), cover_url=request.form.get("cover_url") or None,
+        file_url=request.form.get("file_url") or None,
         google_id=google_id, owner_id=current_user.id
     )
     db.session.add(b)
+    db.session.flush()
+
+    # Handle File Upload
+    import os
+    import uuid
+    from flask import current_app
+    file = request.files.get("file")
+    if file and file.filename != '':
+        ext = os.path.splitext(file.filename)[1].lower()
+        if ext in ['.pdf', '.epub', '.txt']:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'books')
+            os.makedirs(upload_folder, exist_ok=True)
+            filename = f"book_{b.id}_{uuid.uuid4().hex}{ext}"
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+            b.file_url = f"/static/uploads/books/{filename}"
+
     db.session.commit()
     
     if action == "favorite":
@@ -1752,14 +1768,48 @@ def update_book_notes(book_id):
 @main_bp.post("/books/<int:book_id>/update")
 @login_required
 def update_book(book_id: int):
+    import os
+    import uuid
+    from flask import current_app
     b = Book.query.get_or_404(book_id)
     if b.owner_id != current_user.id:
-        flash("ليس لديك صلاحية", "danger"); return redirect(url_for("main.books"))
-    b.title = request.form.get("u_title"); b.author = request.form.get("u_author")
-    b.description = request.form.get("u_description"); b.cover_url = request.form.get("u_cover_url") or None
-    b.file_url = request.form.get("u_file_url") or None
-    db.session.commit(); flash("تم التحديث", "success")
-    return redirect(url_for("main.books"))
+        flash("ليس لديك صلاحية لتعديل هذا الكتاب", "danger")
+        return redirect(url_for("main.books"))
+    
+    b.title = request.form.get("u_title")
+    b.author = request.form.get("u_author")
+    b.description = request.form.get("u_description")
+    
+    cover_val = request.form.get("u_cover_url")
+    if cover_val is not None:
+        b.cover_url = cover_val or None
+        
+    file_url_val = request.form.get("u_file_url")
+    if file_url_val is not None:
+        b.file_url = file_url_val or None
+        
+    # Handle File Upload
+    file = request.files.get("u_file")
+    if file and file.filename != '':
+        ext = os.path.splitext(file.filename)[1].lower()
+        if ext in ['.pdf', '.epub', '.txt']:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'books')
+            os.makedirs(upload_folder, exist_ok=True)
+            filename = f"book_{b.id}_{uuid.uuid4().hex}{ext}"
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+            b.file_url = f"/static/uploads/books/{filename}"
+            
+    db.session.commit()
+    flash("تم تحديث تفاصيل الكتاب بنجاح ✨", "success")
+    
+    referrer = request.referrer
+    if referrer and f"/books/{b.id}" in referrer:
+        return redirect(url_for("main.book_detail", book_id=b.id))
+    elif b.google_id:
+        return redirect(url_for("public.book_detail", gid=b.google_id))
+    else:
+        return redirect(url_for("main.book_detail", book_id=b.id))
 
 
 @main_bp.post("/books/<int:book_id>/generate_cover")

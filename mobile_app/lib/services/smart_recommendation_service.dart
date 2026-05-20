@@ -3,7 +3,6 @@ import 'dart:math';
 import '../database/database_helper.dart';
 import '../models/book.dart';
 import 'auth_service.dart';
-import 'ai_service.dart';
 import 'books_service.dart';
 
 /// 🧠 9-Stage Unified Neural Recommendation Pipeline
@@ -162,7 +161,7 @@ class SmartRecommendationService {
 
     List<double>? userEmbedding;
     if (userText.isNotEmpty) {
-      userEmbedding = await AiService.generateEmbedding(userText);
+      userEmbedding = _localEmbedding(userText);
     }
 
     final scored = <Map<String, dynamic>>[];
@@ -180,7 +179,7 @@ class SmartRecommendationService {
         
         if (bookEmbedding == null) {
           final bookText = '${book.title} by ${book.author}. ${book.description.length > 200 ? book.description.substring(0, 200) : book.description}';
-          bookEmbedding = await AiService.generateEmbedding(bookText);
+          bookEmbedding = _localEmbedding(bookText);
           if (bookEmbedding != null) {
             await _cacheEmbedding(book.gid ?? '', book.title, bookEmbedding);
           }
@@ -504,7 +503,7 @@ class SmartRecommendationService {
     try {
       // Generate embedding for the interaction
       final eventText = '${book.title} by ${book.author}. ${book.categories.join(", ")}';
-      final eventEmbedding = await AiService.generateEmbedding(eventText);
+      final eventEmbedding = _localEmbedding(eventText);
       if (eventEmbedding == null) return;
 
       // Get current user embedding
@@ -629,5 +628,22 @@ class SmartRecommendationService {
     }
     if (normA == 0 || normB == 0) return 0.0;
     return dot / (sqrt(normA) * sqrt(normB));
+  }
+
+  /// Local embedding generator (replaces Gemini Embedding API).
+  /// Uses deterministic hash-based vectors for similarity computation.
+  static List<double> _localEmbedding(String text) {
+    const dim = 64;
+    final vec = List<double>.filled(dim, 0.0);
+    for (int i = 0; i < text.length; i++) {
+      final code = text.codeUnitAt(i);
+      vec[i % dim] += (code % 100) / 100.0;
+      vec[(i + 1) % dim] += ((code >> 4) % 100) / 100.0;
+    }
+    final norm = sqrt(vec.fold(0.0, (s, v) => s + v * v));
+    if (norm > 0) {
+      for (int i = 0; i < dim; i++) vec[i] /= norm;
+    }
+    return vec;
   }
 }

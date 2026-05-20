@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/locale_provider.dart';
+import '../config/translations.dart';
 import '../services/user_service.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'widgets/stats_card.dart';
@@ -101,9 +103,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Wrap(
                 spacing: 8, runSpacing: 8, alignment: WrapAlignment.center,
                 children: [
-                  _badge('${_stats['days_member'] ?? 0} days', Icons.verified, Colors.white24, Colors.white),
+                  _badge('${_stats['days_member'] ?? 0} ${context.t('days_member')}', Icons.verified, Colors.white24, Colors.white),
                   _badge(_stats['rank'] ?? user.rank, Icons.workspace_premium, const Color(0xFFFED07F), const Color(0xFF4B3400)),
-                  if ((_stats['streak'] ?? 0) > 1) _badge('${_stats['streak']} Day Streak', Icons.local_fire_department, Colors.orange.withValues(alpha: 0.2), Colors.orange[200]!),
+                  if ((_stats['streak'] ?? 0) > 1) _badge('${_stats['streak']} ${context.t('streak')}', Icons.local_fire_department, Colors.orange.withValues(alpha: 0.2), Colors.orange[200]!),
                 ],
               ),
             ],
@@ -140,10 +142,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSpacing: 12, crossAxisSpacing: 12,
           childAspectRatio: 1.0,
           children: [
-            StatsCard(icon: Icons.library_books, iconColor: Theme.of(context).colorScheme.primary, value: '${_stats['total_books'] ?? 0}', label: 'In Library', badge: (_stats['total_books'] ?? 0) >= 10 ? '📚 Collector' : null),
-            StatsCard(icon: Icons.task_alt, iconColor: Colors.green, value: '${_stats['books_finished'] ?? 0}', label: 'Completed'),
-            StatsCard(icon: Icons.rate_review, iconColor: Theme.of(context).colorScheme.secondary, value: '${_stats['total_reviews'] ?? 0}', label: 'Reviews', badge: (_stats['total_reviews'] ?? 0) >= 5 ? '✍️ Critic' : null),
-            StatsCard(icon: Icons.visibility, iconColor: Colors.blue, value: '${_stats['total_views'] ?? 0}', label: 'Explored', badge: (_stats['total_views'] ?? 0) >= 20 ? '🧭 Explorer' : null),
+            StatsCard(icon: Icons.library_books, iconColor: Theme.of(context).colorScheme.primary, value: '${_stats['total_books'] ?? 0}', label: context.t('in_library'), badge: (_stats['total_books'] ?? 0) >= 10 ? '📚 Collector' : null),
+            StatsCard(icon: Icons.task_alt, iconColor: Colors.green, value: '${_stats['books_finished'] ?? 0}', label: context.t('completed')),
+            StatsCard(icon: Icons.rate_review, iconColor: Theme.of(context).colorScheme.secondary, value: '${_stats['total_reviews'] ?? 0}', label: context.t('reviews'), badge: (_stats['total_reviews'] ?? 0) >= 5 ? '✍️ Critic' : null),
+            StatsCard(icon: Icons.visibility, iconColor: Colors.blue, value: '${_stats['total_views'] ?? 0}', label: context.t('explored'), badge: (_stats['total_views'] ?? 0) >= 20 ? '🧭 Explorer' : null),
           ],
         ),
       ),
@@ -155,6 +157,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final nameCtrl = TextEditingController(text: user.name);
     final bioCtrl = TextEditingController(text: user.bio ?? '');
     final goalCtrl = TextEditingController(text: '${user.readingGoal}');
+
+    final localeProvider = Provider.of<LocaleProvider>(context);
+    final currentLang = localeProvider.locale.languageCode;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -173,24 +178,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Row(children: [
                 Icon(Icons.settings, color: cs.primary, size: 20),
                 const SizedBox(width: 8),
-                Text('Account Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
+                Text(context.t('settings'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
               ]),
               const SizedBox(height: 16),
-              _settingsField('Display Name', nameCtrl, Icons.badge),
+              _settingsField(context.t('display_name'), nameCtrl, Icons.badge),
               const SizedBox(height: 12),
-              _settingsField('Bio', bioCtrl, Icons.history_edu, maxLines: 2),
+              _settingsField(context.t('bio'), bioCtrl, Icons.history_edu, maxLines: 2),
               const SizedBox(height: 12),
-              _settingsField('Reading Goal', goalCtrl, Icons.flag, keyboardType: TextInputType.number, suffix: 'books/year'),
+              _settingsField(context.t('reading_goal'), goalCtrl, Icons.flag, keyboardType: TextInputType.number, suffix: context.t('books_year')),
               const SizedBox(height: 16),
+              
+              // ─── Premium Language Selector ───
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.language, size: 14, color: cs.onSurfaceVariant),
+                      const SizedBox(width: 6),
+                      Text(context.t('language'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: cs.onSurfaceVariant, letterSpacing: 1)),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      ChoiceChip(
+                        label: const Text('العربية', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        selected: currentLang == 'ar',
+                        selectedColor: cs.primary.withValues(alpha: 0.2),
+                        labelStyle: TextStyle(color: currentLang == 'ar' ? cs.primary : cs.onSurfaceVariant),
+                        onSelected: (selected) {
+                          if (selected) {
+                            localeProvider.setLocale(const Locale('ar'));
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('English', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        selected: currentLang == 'en',
+                        selectedColor: cs.primary.withValues(alpha: 0.2),
+                        labelStyle: TextStyle(color: currentLang == 'en' ? cs.primary : cs.onSurfaceVariant),
+                        onSelected: (selected) {
+                          if (selected) {
+                            localeProvider.setLocale(const Locale('en'));
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: () async {
                     await UserService.updateProfile(name: nameCtrl.text, bio: bioCtrl.text, readingGoal: int.tryParse(goalCtrl.text) ?? 0);
-                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated!'), behavior: SnackBarBehavior.floating));
+                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.t('profile_updated')), behavior: SnackBarBehavior.floating));
                   },
                   icon: const Icon(Icons.save, size: 18),
-                  label: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: Text(context.t('save_changes'), style: const TextStyle(fontWeight: FontWeight.bold)),
                   style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                 ),
               ),
@@ -230,10 +278,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildLibraryBreakdown(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final items = [
-      {'label': 'Currently Reading', 'value': _stats['books_reading'] ?? 0, 'color': Colors.blue, 'icon': Icons.auto_stories},
-      {'label': 'Completed', 'value': _stats['books_finished'] ?? 0, 'color': Colors.green, 'icon': Icons.check_circle},
-      {'label': 'Want to Read', 'value': _stats['books_later'] ?? 0, 'color': Colors.amber, 'icon': Icons.bookmark},
-      {'label': 'Favorites', 'value': _stats['books_favorite'] ?? 0, 'color': Colors.red, 'icon': Icons.favorite},
+      {'label': context.t('currently_reading'), 'value': _stats['books_reading'] ?? 0, 'color': Colors.blue, 'icon': Icons.auto_stories},
+      {'label': context.t('completed'), 'value': _stats['books_finished'] ?? 0, 'color': Colors.green, 'icon': Icons.check_circle},
+      {'label': context.t('want_to_read'), 'value': _stats['books_later'] ?? 0, 'color': Colors.amber, 'icon': Icons.bookmark},
+      {'label': context.t('favorites'), 'value': _stats['books_favorite'] ?? 0, 'color': Colors.red, 'icon': Icons.favorite},
     ];
 
     final maxVal = items.map((i) => i['value'] as int).fold(1, (a, b) => a > b ? a : b);
@@ -254,7 +302,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(children: [
               Icon(Icons.pie_chart, color: cs.secondary, size: 20),
               const SizedBox(width: 8),
-              Text('Library Breakdown', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
+              Text(context.t('library_breakdown'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
             ]),
             const SizedBox(height: 16),
             ...items.map((item) => Padding(
@@ -314,16 +362,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(children: [
               Icon(Icons.insights, color: Colors.green, size: 20),
               const SizedBox(width: 8),
-              Text('Reading Journey', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
+              Text(context.t('reading_journey'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: cs.onSurface)),
             ]),
             const SizedBox(height: 16),
             Row(
               children: [
-                _milestone(context, Icons.menu_book, cs.primary, '${_stats['total_books'] ?? 0}', 'Books'),
+                _milestone(context, Icons.menu_book, cs.primary, '${_stats['total_books'] ?? 0}', context.t('books')),
                 const SizedBox(width: 12),
-                _milestone(context, Icons.star, cs.secondary, '${_stats['avg_rating'] ?? '—'}', 'Avg Rating'),
+                _milestone(context, Icons.star, cs.secondary, '${_stats['avg_rating'] ?? '—'}', context.t('avg_rating')),
                 const SizedBox(width: 12),
-                _milestone(context, Icons.explore, Colors.blue, '${_stats['total_views'] ?? 0}', 'Explored'),
+                _milestone(context, Icons.explore, Colors.blue, '${_stats['total_views'] ?? 0}', context.t('explored')),
               ],
             ),
           ],

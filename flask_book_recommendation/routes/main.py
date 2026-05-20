@@ -55,10 +55,11 @@ def home():
     """
     الصفحة الرئيسية — مع فلتر صارم بالاهتمامات لقسم Recommended for You.
     """
-    from flask import make_response
+    from flask import make_response, session
     
     user_id = current_user.id if current_user.is_authenticated else None
-    cache_key = f"home_full_{user_id or 'anon'}"
+    lang = session.get('lang', 'ar')
+    cache_key = f"home_full_{user_id or 'anon'}_{lang}"
     
     # ⚡ محاولة جلب من الكاش أولاً (تسريع 90%+)
     cached_resp = cache.get(cache_key)
@@ -279,13 +280,14 @@ def home_feed():
     Each section calls a different strategy variant of the UnifiedRecommendationPipeline.
     """
     import time as _time
-    from flask import jsonify, render_template, current_app
+    from flask import jsonify, render_template, current_app, session
     import uuid
 
     user_id = current_user.id if current_user.is_authenticated else None
+    lang = session.get('lang', 'ar')
     
     # ⚡ Cache home_feed for 2 minutes
-    feed_cache_key = f"home_feed_{user_id or 'anon'}"
+    feed_cache_key = f"home_feed_{user_id or 'anon'}_{lang}"
     cached_feed = cache.get(feed_cache_key)
     if cached_feed:
         return cached_feed

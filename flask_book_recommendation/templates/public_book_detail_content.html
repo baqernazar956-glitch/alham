@@ -90,12 +90,12 @@
                     {% if current_user.is_authenticated %}
                     <button onclick="updateShelf(this, 'later')" id="btn-later" class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-xl text-lg font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-3">
                         <span class="material-symbols-outlined">{{ 'check_circle' if current_status == 'later' else 'library_add' }}</span>
-                        {{ '{{ t('In Library') }}' if current_status == 'later' else '{{ t('Add to Library') }}' }}
+                        {{ t('In Library') if current_status == 'later' else t('Add to Library') }}
                     </button>
                     {% else %}
                     <a href="{{ url_for('auth.login') }}" class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-xl text-lg font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-3">
                         <span class="material-symbols-outlined">login</span>
-                        Log in to Save
+                        {{ t('Log in to Save') }}
                     </a>
                     {% endif %}
                 </div>

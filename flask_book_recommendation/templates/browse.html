@@ -12,14 +12,14 @@
             <div class="flex items-center gap-4">
                 <a href="{{ url_for('main.home') }}" class="group inline-flex items-center gap-4 text-on-surface/40 hover:text-primary transition-all font-label text-xs uppercase tracking-widest font-black">
                     <span class="material-symbols-outlined text-sm group-hover:-translate-x-2 transition-transform">home</span>
-                    Central Hub
+                    {{ t('Central Hub') }}
                 </a>
             </div>
             
             <div class="space-y-4">
-                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Curated Collection</span>
-                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none">{{ title }}</h1>
-                <p class="font-body text-on-surface-variant max-w-2xl text-xl italic">{{ description }}</p>
+                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">{{ t('Curated Collection') }}</span>
+                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none">{{ t(title) }}</h1>
+                <p class="font-body text-on-surface-variant max-w-2xl text-xl italic">{{ t(description) }}</p>
             </div>
         </header>
 
@@ -33,8 +33,8 @@
             </div>
             
             <div class="flex items-center gap-4 bg-surface-container-low p-2 border border-on-surface/5">
-                <button class="bg-on-surface text-white px-6 py-3 font-headline font-black text-xs uppercase tracking-widest shadow-2xl">Grid Analysis</button>
-                <button class="text-on-surface/20 hover:text-primary px-6 py-3 font-headline font-black text-xs uppercase tracking-widest transition-colors">Vertical Ledger</button>
+                <button class="bg-on-surface text-white px-6 py-3 font-headline font-black text-xs uppercase tracking-widest shadow-2xl">{{ t('Grid Analysis') }}</button>
+                <button class="text-on-surface/20 hover:text-primary px-6 py-3 font-headline font-black text-xs uppercase tracking-widest transition-colors">{{ t('Vertical Ledger') }}</button>
             </div>
         </div>
 
@@ -69,10 +69,10 @@
                     <span class="material-symbols-outlined text-4xl text-on-surface/10">search_off</span>
                 </div>
                 <div class="space-y-4">
-                    <h3 class="font-headline font-black text-3xl">Zero Signal Detected</h3>
-                    <p class="font-body text-on-surface-variant max-w-sm mx-auto">No volumes match the current exploration parameters. Try broadening your intellectual scope.</p>
+                    <h3 class="font-headline font-black text-3xl">{{ t('Zero Signal Detected') }}</h3>
+                    <p class="font-body text-on-surface-variant max-w-sm mx-auto">{{ t('No volumes match the current exploration parameters. Try broadening your intellectual scope.') }}</p>
                 </div>
-                <a href="{{ url_for('main.home') }}" class="inline-flex bg-on-surface text-white font-headline font-black px-12 py-5 text-sm uppercase tracking-widest hover:bg-primary transition-all shadow-2xl">Return to Hub</a>
+                <a href="{{ url_for('main.home') }}" class="inline-flex bg-on-surface text-white font-headline font-black px-12 py-5 text-sm uppercase tracking-widest hover:bg-primary transition-all shadow-2xl">{{ t('Return to Hub') }}</a>
             </div>
             {% endfor %}
         </div>

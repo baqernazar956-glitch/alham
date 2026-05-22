@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/review.dart';
+import '../../config/translations.dart';
 import 'star_rating.dart';
 
 class ReviewCard extends StatelessWidget {
@@ -44,13 +45,13 @@ class ReviewCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review.userName ?? 'Reader #${review.userId}',
+                      review.userName ?? '${context.t('reader_no')} #${review.userId}',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     Text(
-                      _timeAgo(review.createdAt),
+                      _timeAgo(review.createdAt, context),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant.withValues(alpha: 0.6),
                           ),
@@ -78,13 +79,23 @@ class ReviewCard extends StatelessWidget {
     );
   }
 
-  String _timeAgo(DateTime date) {
+  String _timeAgo(DateTime date, BuildContext context) {
     final diff = DateTime.now().difference(date);
-    if (diff.inDays > 365) return '${(diff.inDays / 365).floor()}y ago';
-    if (diff.inDays > 30) return '${(diff.inDays / 30).floor()}mo ago';
-    if (diff.inDays > 0) return '${diff.inDays}d ago';
-    if (diff.inHours > 0) return '${diff.inHours}h ago';
-    return 'Just now';
+    if (diff.inDays > 365) {
+      final years = (diff.inDays / 365).floor();
+      return context.t('y_ago').replaceAll('{count}', years.toString());
+    }
+    if (diff.inDays > 30) {
+      final months = (diff.inDays / 30).floor();
+      return context.t('mo_ago').replaceAll('{count}', months.toString());
+    }
+    if (diff.inDays > 0) {
+      return context.t('d_ago').replaceAll('{count}', diff.inDays.toString());
+    }
+    if (diff.inHours > 0) {
+      return context.t('h_ago').replaceAll('{count}', diff.inHours.toString());
+    }
+    return context.t('just_now');
   }
 }
 

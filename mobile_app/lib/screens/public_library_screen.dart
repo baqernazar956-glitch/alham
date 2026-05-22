@@ -6,6 +6,7 @@ import '../providers/books_provider.dart';
 import '../services/books_service.dart';
 import '../services/user_service.dart';
 import '../models/book.dart';
+import '../config/translations.dart';
 
 class PublicLibraryScreen extends StatefulWidget {
   final String? initialSearch;
@@ -202,7 +203,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Public Library', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(context.t('public_library'), style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: const [],
@@ -215,7 +216,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search across Google, Gutenberg, Archive, OpenLib, IT...',
+                hintText: context.t('search_library_hint'),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -256,7 +257,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: ChoiceChip(
                       label: Text(
-                        cat['name'],
+                        context.t(cat['name'] ?? ''),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -322,7 +323,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
           const CircularProgressIndicator(),
           const SizedBox(height: 20),
           Text(
-            'Fetching from 5 libraries...',
+            context.t('fetching_libraries'),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
@@ -355,7 +356,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Connection Error',
+              context.t('connection_error'),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -364,7 +365,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Could not load books from the libraries.\nPlease check your connection and try again.',
+              context.t('connection_error_desc'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -374,7 +375,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
             FilledButton.icon(
               onPressed: _onRefresh,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.t('retry')),
             ),
           ],
         ),
@@ -394,7 +395,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No books found',
+            context.t('no_books_found'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -403,7 +404,7 @@ class _PublicLibraryScreenState extends State<PublicLibraryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try a different search or category',
+            context.t('empty_state_desc'),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

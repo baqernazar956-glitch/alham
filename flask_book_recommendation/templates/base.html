@@ -346,20 +346,6 @@
                     <!-- Live Search Results Container -->
                     <div id="live-search-results" class="absolute top-full left-0 right-0 mt-3 origin-top transition-all duration-300 empty:hidden opacity-0 group-focus-within:opacity-100 z-50"></div>
                 </form>
-                <!-- Language Toggle -->
-                <div class="flex items-center bg-surface-container-high/40 p-1 rounded-full border border-surface-container-highest shadow-inner">
-                    {% if lang == 'ar' %}
-                    <a href="{{ url_for('public.change_language', language='en') }}" class="flex items-center gap-1.5 px-3 py-1 bg-white text-primary rounded-full text-[11px] font-bold shadow-sm hover:scale-105 transition-all">
-                        <span class="material-symbols-outlined text-[14px]">language</span>
-                        <span>English</span>
-                    </a>
-                    {% else %}
-                    <a href="{{ url_for('public.change_language', language='ar') }}" class="flex items-center gap-1.5 px-3 py-1 bg-white text-primary rounded-full text-[11px] font-bold shadow-sm hover:scale-105 transition-all">
-                        <span class="material-symbols-outlined text-[14px]">language</span>
-                        <span>العربية</span>
-                    </a>
-                    {% endif %}
-                </div>
                 <div class="flex items-center gap-1">
                     {% if current_user.is_authenticated %}
                     <a href="{{ url_for('auth.profile') }}"

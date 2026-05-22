@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../providers/auth_provider.dart';
+import '../config/translations.dart';
 import 'home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -48,7 +49,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _finish() async {
     if (_selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Choose at least one interest'), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(context.t('choose_at_least_one_interest')), behavior: SnackBarBehavior.floating),
       );
       return;
     }
@@ -83,11 +84,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Icon(Icons.auto_stories, size: 32, color: cs.primary),
                   ),
                   const SizedBox(height: 20),
-                  Text('Welcome to Elham', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900)),
+                  Text(context.t('welcome_to_elham'), style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
-                  Text('Choose your interests for personalized recommendations', style: TextStyle(fontSize: 16, color: cs.onSurfaceVariant), textAlign: TextAlign.center),
+                  Text(context.t('choose_interests_desc'), style: TextStyle(fontSize: 16, color: cs.onSurfaceVariant), textAlign: TextAlign.center),
                   const SizedBox(height: 6),
-                  Text('Selected ${_selected.length} of ${_interests.length}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: cs.primary)),
+                  Text('${context.t('selected')} ${_selected.length} ${context.t('of')} ${_interests.length}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: cs.primary)),
                   const SizedBox(height: 16),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -129,7 +130,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           children: [
                             Text(item['emoji'] as String, style: const TextStyle(fontSize: 32)),
                             const SizedBox(height: 8),
-                            Text(item['name'] as String, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: isOn ? color : cs.onSurface)),
+                            Text(context.t('interest_$id'), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: isOn ? color : cs.onSurface)),
                             if (isOn) Padding(padding: const EdgeInsets.only(top: 4), child: Icon(Icons.check_circle, size: 18, color: color)),
                           ],
                         ),
@@ -150,13 +151,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
                       child: _saving
                           ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : Text('Start Your Journey (${_selected.length})', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                          : Text('${context.t('start_your_journey')} (${_selected.length})', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen())),
-                    child: Text('Skip for now', style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+                    child: Text(context.t('skip_for_now'), style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
                   ),
                 ],
               ),

@@ -1,59 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}Network Metrics | The Digital Curator{% endblock %}
+{% block title %}{{ t('Network Metrics') if lang != 'ar' else 'مقاييس الشبكة' }} | {{ t('The Digital Curator') if lang != 'ar' else 'المنسق الرقمي' }}{% endblock %}
 
 {% block content %}
-<main class="min-h-screen pt-32 bg-surface">
+<main class="min-h-screen pt-32 bg-surface text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <div class="max-w-screen-2xl mx-auto px-8 lg:px-24 pb-24 space-y-24">
         
         <!-- Metrics Header -->
-        <header class="space-y-8">
-            <div class="flex items-center gap-4">
+        <header class="space-y-8 text-start">
+            <div class="flex items-center gap-4 text-start">
                 <a href="{{ url_for('admin.dashboard') }}" class="group inline-flex items-center gap-4 text-on-surface/40 hover:text-primary transition-all font-label text-xs uppercase tracking-widest font-black">
-                    <span class="material-symbols-outlined text-sm group-hover:-translate-x-2 transition-transform">arrow_back</span>
-                    Administrative Portal
+                    <span class="material-symbols-outlined text-sm {{ 'rotate-180 group-hover:translate-x-2' if lang == 'ar' else 'group-hover:-translate-x-2' }} transition-transform">arrow_back</span>
+                    {{ t('Administrative Portal') if lang != 'ar' else 'البوابة الإدارية' }}
                 </a>
             </div>
             
-            <div class="space-y-4">
-                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Performance Index</span>
-                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none">Vitals</h1>
-                <p class="font-body text-on-surface-variant max-w-2xl text-xl">Comprehensive analysis of network load, user interaction density, and historical curation patterns across the digital archives.</p>
+            <div class="space-y-4 text-start">
+                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary text-start">{{ t('Performance Index') if lang != 'ar' else 'مؤشر الأداء' }}</span>
+                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none text-start">{{ t('Vitals') if lang != 'ar' else 'المؤشرات الحيوية' }}</h1>
+                <p class="font-body text-on-surface-variant max-w-2xl text-xl text-start">{{ t('Comprehensive analysis of network load, user interaction density, and historical curation patterns across the digital archives.') if lang != 'ar' else 'تحليل شامل لحمل الشبكة، وكثافة تفاعل المستخدمين، وأنماط التنسيق التاريخية عبر الأرشيف الرقمي.' }}</p>
             </div>
         </header>
 
         <!-- KPI Grid -->
-        <section class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-on-surface/5 border border-on-surface/5">
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-on-surface/5 border border-on-surface/5 text-start">
             {% set metrics_data = [
-                ('Active Nodes', stats.total_users if stats else 0, 'group', 'text-primary'),
-                ('Cataloged Folios', stats.total_books if stats else 0, 'library_books', 'text-secondary'),
-                ('Annotations', stats.total_reviews if stats else 0, 'rate_review', 'text-on-surface/40'),
-                ('Live Sessions', stats.active_users if stats else 0, 'person_pin', 'text-primary')
+                (t('Active Nodes') if lang != 'ar' else 'العقد النشطة', stats.total_users if stats else 0, 'group', 'text-primary'),
+                (t('Cataloged Folios') if lang != 'ar' else 'المجلدات المفهرسة', stats.total_books if stats else 0, 'library_books', 'text-secondary'),
+                (t('Annotations') if lang != 'ar' else 'التعليقات والملاحظات', stats.total_reviews if stats else 0, 'rate_review', 'text-on-surface/40'),
+                (t('Live Sessions') if lang != 'ar' else 'الجلسات المباشرة', stats.active_users if stats else 0, 'person_pin', 'text-primary')
             ] %}
             {% for label, val, icon, text_color in metrics_data %}
-            <div class="bg-surface p-12 space-y-8 group hover:bg-surface-container-low transition-all">
+            <div class="bg-surface p-12 space-y-8 group hover:bg-surface-container-low transition-all text-start">
                 <div class="{{ text_color }} flex justify-between items-start">
                     <span class="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">{{ icon }}</span>
                     <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40">{{ label }}</span>
                 </div>
-                <h3 class="font-headline text-5xl font-black text-on-surface">{{ val }}</h3>
+                <h3 class="font-headline text-5xl font-black text-on-surface text-start">{{ val }}</h3>
             </div>
             {% endfor %}
         </section>
 
         <!-- Architectural Analysis (Charts) -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-px bg-on-surface/5 border border-on-surface/5">
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-px bg-on-surface/5 border border-on-surface/5 text-start">
             <!-- Signal Flow Chart -->
-            <div class="bg-surface p-16 space-y-12">
-                <div class="flex justify-between items-end border-b border-on-surface/10 pb-8">
-                    <div class="space-y-4">
-                        <h3 class="font-headline font-black text-3xl">Signal Flow</h3>
-                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">Network Activity Velocity</p>
+            <div class="bg-surface p-16 space-y-12 text-start">
+                <div class="flex justify-between items-end border-b border-on-surface/10 pb-8 text-start">
+                    <div class="space-y-4 text-start">
+                        <h3 class="font-headline font-black text-3xl text-start">{{ t('Signal Flow') if lang != 'ar' else 'تدفق الإشارات' }}</h3>
+                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest text-start">{{ t('Network Activity Velocity') if lang != 'ar' else 'سرعة نشاط الشبكة' }}</p>
                     </div>
                     <span class="material-symbols-outlined text-primary text-4xl">monitoring</span>
                 </div>
                 
-                <div class="h-80 relative">
+                <div class="h-80 relative text-start">
                     <svg class="w-full h-full" viewBox="0 0 400 150" preserveAspectRatio="none">
                         <defs>
                             <linearGradient id="signalGrad" x1="0" x2="0" y1="0" y2="1">
@@ -74,22 +74,22 @@
             </div>
 
             <!-- Taxonomy Breakdown -->
-            <div class="bg-surface p-16 space-y-12">
-                <div class="flex justify-between items-end border-b border-on-surface/10 pb-8">
-                    <div class="space-y-4">
-                        <h3 class="font-headline font-black text-3xl">Taxonomy</h3>
-                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">Category Distribution</p>
+            <div class="bg-surface p-16 space-y-12 text-start">
+                <div class="flex justify-between items-end border-b border-on-surface/10 pb-8 text-start">
+                    <div class="space-y-4 text-start">
+                        <h3 class="font-headline font-black text-3xl text-start">{{ t('Taxonomy') if lang != 'ar' else 'التصنيفات' }}</h3>
+                        <p class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest text-start">{{ t('Category Distribution') if lang != 'ar' else 'توزيع الفئات' }}</p>
                     </div>
                     <span class="material-symbols-outlined text-secondary text-4xl">category</span>
                 </div>
 
-                <div class="space-y-10">
+                <div class="space-y-10 text-start">
                     {% if category_stats %}
                         {% for cat, count in category_stats[:5] %}
-                        <div class="space-y-4 group">
-                            <div class="flex justify-between items-end">
-                                <span class="font-headline font-black text-lg group-hover:text-primary transition-colors">{{ cat }}</span>
-                                <span class="font-label text-xs font-black text-on-surface/20 uppercase tracking-widest">{{ count }} Volumes</span>
+                        <div class="space-y-4 group text-start">
+                            <div class="flex justify-between items-end text-start">
+                                <span class="font-headline font-black text-lg group-hover:text-primary transition-colors text-start">{{ t(cat) }}</span>
+                                <span class="font-label text-xs font-black text-on-surface/20 uppercase tracking-widest text-start">{{ count }} {{ t('Volumes') if lang != 'ar' else 'مجلدات' }}</span>
                             </div>
                             <div class="h-1 bg-surface-container-highest w-full relative">
                                 <div class="h-full bg-primary transition-all duration-1000" style="--ui-p: {{ [count * 5, 100]|min }}%; width: var(--ui-p);"></div>
@@ -99,7 +99,7 @@
                     {% else %}
                         <div class="py-24 text-center space-y-6 border border-dashed border-on-surface/10 bg-surface-container-low">
                             <span class="material-symbols-outlined text-4xl text-on-surface/10">donut_large</span>
-                            <p class="font-body italic text-on-surface/30">Taxonomy data currently being processed.</p>
+                            <p class="font-body italic text-on-surface/30">{{ t('Taxonomy data currently being processed.') if lang != 'ar' else 'يجري معالجة بيانات التصنيفات حالياً.' }}</p>
                         </div>
                     {% endif %}
                 </div>
@@ -107,53 +107,53 @@
         </section>
 
         <!-- Personnel Registry (Table) -->
-        <section class="space-y-12">
-            <div class="flex items-center justify-between pb-8 border-b border-on-surface/10">
-                <h2 class="font-headline text-4xl font-black tracking-tight text-on-surface">Personnel Registry</h2>
-                <span class="font-label text-[10px] uppercase font-bold text-on-surface/30">Node Credentials Verification</span>
+        <section class="space-y-12 text-start">
+            <div class="flex items-center justify-between pb-8 border-b border-on-surface/10 text-start">
+                <h2 class="font-headline text-4xl font-black tracking-tight text-on-surface text-start">{{ t('Personnel Registry') if lang != 'ar' else 'سجل الموظفين' }}</h2>
+                <span class="font-label text-[10px] uppercase font-bold text-on-surface/30 text-start">{{ t('Node Credentials Verification') if lang != 'ar' else 'التحقق من بيانات اعتماد العقدة' }}</span>
             </div>
             
-            <div class="bg-surface border border-on-surface/5 overflow-hidden shadow-2xl">
-                <table class="w-full text-left font-body">
+            <div class="bg-surface border border-on-surface/5 overflow-hidden shadow-2xl text-start">
+                <table class="w-full text-start font-body">
                     <thead>
-                        <tr class="bg-surface-container-high border-b border-on-surface/10">
-                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface">Identification</th>
-                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface">Digital Coordinate</th>
-                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-center">Load</th>
-                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-right">Clearance</th>
+                        <tr class="bg-surface-container-high border-b border-on-surface/10 text-start">
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-start">{{ t('Identification') if lang != 'ar' else 'الهوية' }}</th>
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-start">{{ t('Digital Coordinate') if lang != 'ar' else 'الإحداثيات الرقمية' }}</th>
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface text-center">{{ t('Load') if lang != 'ar' else 'الحمل' }}</th>
+                            <th class="px-12 py-6 font-headline font-black text-xs uppercase tracking-widest text-on-surface {{ 'text-left' if lang == 'ar' else 'text-right' }}">{{ t('Clearance') if lang != 'ar' else 'التصريح' }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-on-surface/5">
+                    <tbody class="divide-y divide-on-surface/5 text-start">
                         {% if recent_users %}
                         {% for user in recent_users[:10] %}
-                        <tr class="hover:bg-surface-container-low transition-colors group">
-                            <td class="px-12 py-8">
-                                <div class="flex items-center gap-6">
+                        <tr class="hover:bg-surface-container-low transition-colors group text-start">
+                            <td class="px-12 py-8 text-start">
+                                <div class="flex items-center gap-6 text-start">
                                     <div class="w-12 h-12 bg-surface-container-highest flex items-center justify-center font-headline font-black text-xl text-primary border border-on-surface/5 group-hover:bg-primary group-hover:text-white transition-all">
                                         {{ user.name[0]|upper }}
                                     </div>
                                     <span class="font-headline font-black text-on-surface">{{ user.name }}</span>
                                 </div>
                             </td>
-                            <td class="px-12 py-8 text-on-surface/60 font-body text-sm lowercase">{{ user.email }}</td>
+                            <td class="px-12 py-8 text-on-surface/60 font-body text-sm lowercase text-start">{{ user.email }}</td>
                             <td class="px-12 py-8 text-center">
                                 <span class="inline-flex items-center justify-center bg-on-surface/5 w-12 h-12 font-headline font-black text-primary">
                                     {{ user.books.count() if user.books else 0 }}
                                 </span>
                             </td>
-                            <td class="px-12 py-8 text-right">
+                            <td class="px-12 py-8 {{ 'text-left' if lang == 'ar' else 'text-right' }}">
                                 {% if user.is_admin %}
-                                <span class="px-4 py-2 bg-secondary text-white text-[10px] font-black uppercase tracking-widest shadow-lg">Administrator</span>
+                                <span class="px-4 py-2 bg-secondary text-white text-[10px] font-black uppercase tracking-widest shadow-lg">{{ t('Administrator') if lang != 'ar' else 'مسؤول' }}</span>
                                 {% else %}
-                                <span class="px-4 py-2 bg-on-surface/5 text-on-surface/40 text-[10px] font-black uppercase tracking-widest">Standard Curator</span>
+                                <span class="px-4 py-2 bg-on-surface/5 text-on-surface/40 text-[10px] font-black uppercase tracking-widest">{{ t('Standard Curator') if lang != 'ar' else 'منسق قياسي' }}</span>
                                 {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                         {% else %}
-                        <tr>
+                        <tr class="text-start">
                             <td colspan="4" class="px-12 py-32 text-center text-on-surface/20">
-                                <p class="font-headline font-bold text-xl">No identity nodes detected in current epoch.</p>
+                                <p class="font-headline font-bold text-xl">{{ t('No identity nodes detected in current epoch.') if lang != 'ar' else 'لم يتم الكشف عن عقد هوية في الحقبة الحالية.' }}</p>
                             </td>
                         </tr>
                         {% endif %}

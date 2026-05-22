@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Neural Analysis | {{ book.title }} | The Digital Curator{% endblock %}
+{% block title %}{{ t('Reading') if lang != 'ar' else 'قراءة' }} | {{ book.title }} | Elham{% endblock %}
 
 {% block content %}
-<main class="min-h-screen bg-surface pt-32 lg:pt-48 pb-48 px-8 lg:px-24">
+<main class="min-h-screen bg-surface pt-32 lg:pt-48 pb-48 px-8 lg:px-24" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <div class="max-w-4xl mx-auto space-y-16">
         
         <!-- Analysis Nav -->
@@ -12,11 +12,11 @@
             
             <div class="flex items-center gap-8 w-full md:w-auto">
                 <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="w-12 h-12 bg-surface flex items-center justify-center text-on-surface/20 hover:text-primary transition-all shadow-2xl group/back">
-                    <span class="material-symbols-outlined group-hover/back:translate-x-2 transition-transform">arrow_forward</span>
+                    <span class="material-symbols-outlined {{ 'rotate-180' if lang != 'ar' else 'rotate-0' }} group-hover/back:translate-x-2 transition-transform">arrow_forward</span>
                 </a>
-                <div class="space-y-1 flex-1 min-w-0">
-                    <h1 class="font-headline font-black text-xl text-on-surface truncate tracking-tight">{{ book.title }}</h1>
-                    <p class="font-label text-[9px] uppercase font-bold text-secondary tracking-widest">Creator: {{ book.author or 'Unidentified' }}</p>
+                <div class="space-y-1 flex-1 min-w-0 text-start">
+                    <h1 class="font-headline font-black text-xl text-on-surface truncate tracking-tight text-start">{{ book.title }}</h1>
+                    <p class="font-label text-[9px] uppercase font-bold text-secondary tracking-widest text-start">{{ t('Creator:') if lang != 'ar' else 'المؤلف:' }} {{ book.author or (t('Unidentified') if lang != 'ar' else 'غير معروف') }}</p>
                 </div>
             </div>
 
@@ -52,10 +52,10 @@
                     <span class="material-symbols-outlined">architecture</span>
                 </div>
                 <div class="space-y-4">
-                    <p class="font-label text-xs uppercase tracking-[0.5em] font-black text-on-surface/20">Analysis Session Terminated</p>
+                    <p class="font-label text-xs uppercase tracking-[0.5em] font-black text-on-surface/20">{{ t('Reading Session Ended') if lang != 'ar' else 'انتهت جلسة القراءة' }}</p>
                     <div class="flex justify-center pt-8">
                         <a href="{{ url_for('main.books') }}" class="bg-on-surface text-white px-12 py-5 font-headline font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-2xl">
-                            Return to Archive
+                            {{ t('Return to Archive') if lang != 'ar' else 'العودة للمكتبة' }}
                         </a>
                     </div>
                 </div>

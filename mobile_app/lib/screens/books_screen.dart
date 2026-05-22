@@ -7,6 +7,9 @@ import '../models/book.dart';
 import '../services/user_service.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'book_detail_screen.dart';
+import '../config/translations.dart';
+import '../config/app_config.dart';
+import 'profile_screen.dart';
 
 
 class BooksScreen extends StatefulWidget {
@@ -47,7 +50,7 @@ class _BooksScreenState extends State<BooksScreen> {
     final user = Provider.of<AuthProvider>(context).currentUser;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: Text("Please login first.")));
+      return Scaffold(body: Center(child: Text(context.t("please_login_first"))));
     }
 
     final readingBooks = bp.userLibrary.where((b) => b.status == 'reading').toList();
@@ -61,23 +64,23 @@ class _BooksScreenState extends State<BooksScreen> {
     switch (_selectedStatus) {
       case 'all':
         displayBooks = bp.userLibrary;
-        sectionTitle = 'All Books';
+        sectionTitle = context.t('all_books');
         break;
       case 'favorite':
         displayBooks = favoriteBooks;
-        sectionTitle = 'Favorites';
+        sectionTitle = context.t('favorites');
         break;
       case 'reading':
         displayBooks = readingBooks;
-        sectionTitle = 'Reading Now';
+        sectionTitle = context.t('reading_now');
         break;
       case 'later':
         displayBooks = wishlistBooks;
-        sectionTitle = 'Plan to Read';
+        sectionTitle = context.t('plan_to_read');
         break;
       case 'finished':
         displayBooks = readBooks;
-        sectionTitle = 'Completed Books';
+        sectionTitle = context.t('completed_books');
         break;
     }
 
@@ -92,16 +95,43 @@ class _BooksScreenState extends State<BooksScreen> {
               pinned: true,
               title: const Text('Elham', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24)),
               actions: [
-                Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  width: 36, height: 36,
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: cs.surfaceContainerLow, width: 2),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    width: 36, height: 36,
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: cs.surfaceContainerLow, width: 2),
+                      image: (user.profilePicture != null && user.profilePicture!.isNotEmpty)
+                          ? DecorationImage(
+                              image: CachedNetworkImageProvider(
+                                '${AppConfig.serverBaseUrl}${user.profilePicture}',
+                              ),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: (user.profilePicture == null || user.profilePicture!.isEmpty)
+                        ? Center(
+                            child: Text(
+                              user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: cs.primary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          )
+                        : null,
                   ),
-                  child: Icon(Icons.person, color: cs.onSurfaceVariant, size: 20),
-                )
+                ),
               ],
             ),
 
@@ -115,9 +145,9 @@ class _BooksScreenState extends State<BooksScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('My Library', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: cs.primary, fontFamily: 'Be Vietnam Pro', fontWeight: FontWeight.w900)),
+                      Text(context.t('my_library'), style: Theme.of(context).textTheme.displaySmall?.copyWith(color: cs.primary, fontFamily: 'Be Vietnam Pro', fontWeight: FontWeight.w900)),
                       const SizedBox(height: 8),
-                      Text('Welcome back, continue your reading journey.', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.normal)),
+                      Text(context.t('welcome_back_library'), style: Theme.of(context).textTheme.titleMedium?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.normal)),
                     ],
                   ),
                 ),
@@ -196,13 +226,13 @@ class _BooksScreenState extends State<BooksScreen> {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Delete Book'),
-                                    content: const Text('Are you sure you want to delete this book from your library?'),
+                                    title: Text(context.t('delete_book_title')),
+                                    content: Text(context.t('delete_book_confirm')),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.t('cancel'))),
                                       TextButton(
                                         onPressed: () => Navigator.pop(context, true), 
-                                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                        child: Text(context.t('delete'), style: const TextStyle(color: Colors.red)),
                                       ),
                                     ],
                                   ),
@@ -210,9 +240,9 @@ class _BooksScreenState extends State<BooksScreen> {
                                 
                                 if (confirm == true) {
                                   final success = await bp.removeFromLibrary(book.uniqueId);
-                                  if (success && mounted) {
+                                  if (success && context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Book deleted successfully'))
+                                      SnackBar(content: Text(context.t('book_deleted_success')))
                                     );
                                   }
                                 }
@@ -244,7 +274,7 @@ class _BooksScreenState extends State<BooksScreen> {
                     children: [
                       Icon(Icons.library_books_outlined, size: 64, color: cs.onSurfaceVariant.withValues(alpha: 0.2)),
                       const SizedBox(height: 16),
-                      Text('No books in this section yet.', style: TextStyle(color: cs.onSurfaceVariant)),
+                      Text(context.t('no_books_in_section'), style: TextStyle(color: cs.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -277,6 +307,11 @@ class _BooksScreenState extends State<BooksScreen> {
           final cat = categories[i];
           final isActive = _selectedStatus == cat['key'];
           final color = cat['color'] as Color;
+          final labelKey = cat['key'] == 'all'
+              ? 'all_books'
+              : (cat['key'] == 'reading'
+                  ? 'reading_now'
+                  : (cat['key'] == 'favorite' ? 'favorites' : 'completed_books'));
 
           return GestureDetector(
             onTap: () => setState(() => _selectedStatus = cat['key'] as String),
@@ -294,7 +329,7 @@ class _BooksScreenState extends State<BooksScreen> {
                   Icon(cat['icon'] as IconData, color: isActive ? color : cs.onSurfaceVariant, size: 28),
                   const SizedBox(height: 8),
                   Text(
-                    cat['label'] as String,
+                    context.t(labelKey),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
@@ -335,8 +370,8 @@ class _BooksScreenState extends State<BooksScreen> {
                       const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
                       const SizedBox(height: 16),
                       Text('$finishedCount', style: const TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 28, fontWeight: FontWeight.bold)),
-                      Text('${stats['total_pages_read'] ?? 0} Pages', style: TextStyle(color: Colors.green.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.bold)),
-                      const Text('Completed', style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('${stats['total_pages_read'] ?? 0} ${context.t('pages')}', style: TextStyle(color: Colors.green.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(context.t('completed_progress'), style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -355,7 +390,7 @@ class _BooksScreenState extends State<BooksScreen> {
                       Icon(Icons.library_books, color: cs.primary, size: 28),
                       const SizedBox(height: 16),
                       Text('$libraryCount', style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 28, fontWeight: FontWeight.bold, color: cs.onPrimaryContainer)),
-                      Text('In Library', style: TextStyle(color: cs.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(context.t('in_library'), style: TextStyle(color: cs.primary, fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -376,7 +411,7 @@ class _BooksScreenState extends State<BooksScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Reading Now', style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface)),
+          Text(context.t('reading_now'), style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface)),
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BookDetailScreen(book: book))),
@@ -425,8 +460,8 @@ class _BooksScreenState extends State<BooksScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('$progress% Completed', style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
-                            Text('${book.pageCount > 0 ? (book.pageCount * (1 - progress/100)).toInt() : "--"} pages left', style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+                            Text('$progress% ${context.t('completed_progress')}', style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+                            Text('${book.pageCount > 0 ? (book.pageCount * (1 - progress/100)).toInt() : "--"} ${context.t('pages_left')}', style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
                           ],
                         )
                       ],
@@ -453,8 +488,8 @@ class _BooksScreenState extends State<BooksScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('My Collections', style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface)),
-                TextButton(onPressed: () {}, child: Text('Show All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: cs.primary))),
+                Text(context.t('my_collections'), style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface)),
+                TextButton(onPressed: () {}, child: Text(context.t('show_all'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: cs.primary))),
               ],
             ),
           ),
@@ -465,9 +500,9 @@ class _BooksScreenState extends State<BooksScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
-                _buildCollectionCard(context, 'Historical Novels', 'history_edu', cs.primary, '8 books'),
+                _buildCollectionCard(context, context.t('historical_novels'), 'history_edu', cs.primary, '8 ${context.t('books')}'),
                 const SizedBox(width: 16),
-                _buildCollectionCard(context, 'Science Fiction', 'rocket_launch', cs.secondary, '15 books'),
+                _buildCollectionCard(context, context.t('science_fiction'), 'rocket_launch', cs.secondary, '15 ${context.t('books')}'),
                 const SizedBox(width: 16),
                 // Add new collection
                 Container(
@@ -487,7 +522,7 @@ class _BooksScreenState extends State<BooksScreen> {
                         child: Icon(Icons.add, color: cs.onSurfaceVariant),
                       ),
                       const SizedBox(height: 12),
-                      Text('New Collection', style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurfaceVariant, fontSize: 13)),
+                      Text(context.t('new_collection'), style: TextStyle(fontWeight: FontWeight.bold, color: cs.onSurfaceVariant, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -535,7 +570,7 @@ class _BooksScreenState extends State<BooksScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Wishlist', style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface)),
+          Text(context.t('wishlist'), style: TextStyle(fontFamily: 'Be Vietnam Pro', fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface)),
           const SizedBox(height: 16),
           ...wishlist.map((book) => Padding(
             padding: const EdgeInsets.only(bottom: 12),

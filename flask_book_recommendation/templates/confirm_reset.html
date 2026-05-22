@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Neutralizing Archive | The Digital Curator{% endblock %}
+{% block title %}{{ t('Neutralizing Archive') if lang != 'ar' else 'تحييد الأرشيف' }} | {{ t('The Digital Curator') if lang != 'ar' else 'المنسق الرقمي' }}{% endblock %}
 
 {% block content %}
-<main class="min-h-screen bg-surface flex items-center justify-center px-8 py-24">
+<main class="min-h-screen bg-surface flex items-center justify-center px-8 py-24" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <div class="w-full max-w-2xl">
         <div class="bg-surface-container-high p-16 lg:p-24 shadow-2xl relative overflow-hidden group">
             <!-- Structural Watermark -->
-            <div class="absolute -top-12 -right-12 font-headline text-9xl font-black text-primary/[0.03] select-none pointer-events-none">PURGE</div>
+            <div class="absolute -top-12 {{ '-left-12' if lang == 'ar' else '-right-12' }} font-headline text-9xl font-black text-primary/[0.03] select-none pointer-events-none">PURGE</div>
             
             <div class="relative z-10 flex flex-col items-center text-center space-y-12">
                 <div class="w-24 h-24 bg-primary/10 flex items-center justify-center text-primary shadow-2xl relative">
@@ -16,11 +16,16 @@
                 </div>
                 
                 <div class="space-y-4">
-                    <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Protocol 00: Neutralization</span>
-                    <h1 class="font-headline text-5xl font-black text-on-surface tracking-tighter">Purge Personal Archive</h1>
+                    <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">{{ t('Protocol 00: Neutralization') if lang != 'ar' else 'بروتوكول 00: التحييد' }}</span>
+                    <h1 class="font-headline text-5xl font-black text-on-surface tracking-tighter">{{ t('Purge Personal Archive') if lang != 'ar' else 'تطهير الأرشيف الشخصي' }}</h1>
                     <p class="font-body text-on-surface-variant text-lg leading-relaxed max-w-md mx-auto italic">
+                        {% if lang == 'ar' %}
+                        أنت تبدأ تحييداً كاملاً لتاريخ التنسيق الخاص بك. سيؤدي هذا الإجراء إلى فصل جميع المجلدات المدمجة نهائياً عن ملفك الشخصي.
+                        <span class="text-primary block mt-6 font-black uppercase tracking-widest text-xs">تم رصد عملية غير قابلة للتراجع.</span>
+                        {% else %}
                         You are initiating a total neutralization of your curatorial history. This action will permanently decouple all integrated volumes from your profile.
                         <span class="text-primary block mt-6 font-black uppercase tracking-widest text-xs">Irreversible Operation Detected.</span>
+                        {% endif %}
                     </p>
                 </div>
                 
@@ -28,18 +33,18 @@
                     <form method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="w-full bg-on-surface text-white py-6 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">
-                            Execute Archive Purge
+                            {{ t('Execute Archive Purge') if lang != 'ar' else 'تنفيذ تطهير الأرشيف' }}
                         </button>
                     </form>
                     <a href="{{ url_for('main.books') }}" class="w-full bg-surface py-6 font-headline font-black text-[10px] uppercase tracking-widest text-on-surface/40 hover:text-primary transition-colors border border-on-surface/5">
-                        Abort Protocol
+                        {{ t('Abort Protocol') if lang != 'ar' else 'إلغاء البروتوكول' }}
                     </a>
                 </div>
             </div>
         </div>
         
         <footer class="mt-12 text-center">
-            <p class="font-label text-[8px] uppercase font-black tracking-[0.4em] text-on-surface/10">Data Integrity Division — Digital Curator 2024</p>
+            <p class="font-label text-[8px] uppercase font-black tracking-[0.4em] text-on-surface/10">{{ t('Data Integrity Division — Digital Curator 2024') if lang != 'ar' else 'قسم سلامة البيانات — المنسق الرقمي ٢٠٢٤' }}</p>
         </footer>
     </div>
 </main>

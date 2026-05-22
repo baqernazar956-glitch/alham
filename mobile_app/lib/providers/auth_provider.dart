@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../services/user_service.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _currentUser;
@@ -75,6 +76,79 @@ class AuthProvider with ChangeNotifier {
     await AuthService.logout();
     _currentUser = null;
     notifyListeners();
+  }
+
+  Future<bool> updateProfile({String? name, String? bio, int? readingGoal}) async {
+    _setLoading(true);
+    final result = await UserService.updateProfile(
+      name: name,
+      bio: bio,
+      readingGoal: readingGoal,
+    );
+    _setLoading(false);
+    if (result['success'] && _currentUser != null) {
+      _currentUser = User(
+        id: _currentUser!.id,
+        name: name ?? _currentUser!.name,
+        email: _currentUser!.email,
+        onboardingCompleted: _currentUser!.onboardingCompleted,
+        bio: bio ?? _currentUser!.bio,
+        readingGoal: readingGoal ?? _currentUser!.readingGoal,
+        profilePicture: _currentUser!.profilePicture,
+        rank: _currentUser!.rank,
+        currentStreak: _currentUser!.currentStreak,
+        interests: _currentUser!.interests,
+      );
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> updateProfilePicture(dynamic xFile) async {
+    _setLoading(true);
+    final result = await UserService.uploadProfilePicture(xFile);
+    _setLoading(false);
+    if (result['success'] && _currentUser != null) {
+      _currentUser = User(
+        id: _currentUser!.id,
+        name: _currentUser!.name,
+        email: _currentUser!.email,
+        onboardingCompleted: _currentUser!.onboardingCompleted,
+        bio: _currentUser!.bio,
+        readingGoal: _currentUser!.readingGoal,
+        profilePicture: result['profile_picture'],
+        rank: _currentUser!.rank,
+        currentStreak: _currentUser!.currentStreak,
+        interests: _currentUser!.interests,
+      );
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deleteProfilePicture() async {
+    _setLoading(true);
+    final success = await UserService.deleteProfilePicture();
+    _setLoading(false);
+    if (success && _currentUser != null) {
+      _currentUser = User(
+        id: _currentUser!.id,
+        name: _currentUser!.name,
+        email: _currentUser!.email,
+        onboardingCompleted: _currentUser!.onboardingCompleted,
+        bio: _currentUser!.bio,
+        readingGoal: _currentUser!.readingGoal,
+        profilePicture: null,
+        rank: _currentUser!.rank,
+        currentStreak: _currentUser!.currentStreak,
+        interests: _currentUser!.interests,
+      );
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   void _setLoading(bool value) {

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}My Library | Elham - Inspired Reading{% endblock %}
+{% block title %}{{ t('My Library') }} | {{ t('Elham') }} - {{ t('Inspired Reading') }}{% endblock %}
 
 {% block head %}
 <style>
@@ -49,45 +49,45 @@
 {% endblock %}
 
 {% block content %}
-<div class="mt-8 px-4 md:px-8 max-w-full mx-auto space-y-24 pb-32" dir="ltr">
+<div class="mt-8 px-4 md:px-8 max-w-full mx-auto space-y-24 pb-32" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     
     <!-- Reading Statistics Hero Section -->
     <section class="relative bg-gradient-to-br from-primary to-primary-dim rounded-[2.5rem] p-10 md:p-20 text-on-primary overflow-hidden shadow-2xl">
-        <div class="relative z-10 grid md:grid-cols-2 gap-12 items-center text-left">
+        <div class="relative z-10 grid md:grid-cols-2 gap-12 items-center text-start">
             <div>
-                <h1 class="text-5xl md:text-7xl font-black font-headline tracking-tighter mb-6">My Book</h1>
-                <p class="text-primary-container font-body text-2xl max-w-lg editorial-text opacity-90">"A book is a dream that you hold in your hand." Track your journey between the lines and document your intellectual milestones in your private Elham space.</p>
+                <h1 class="text-5xl md:text-7xl font-black font-headline tracking-tighter mb-6">{{ t('My Books') }}</h1>
+                <p class="text-primary-container font-body text-2xl max-w-lg editorial-text opacity-90">{{ t('"A book is a dream that you hold in your hand." Track your journey between the lines and document your intellectual milestones in your private Elham space.') }}</p>
             </div>
             <div class="grid grid-cols-3 gap-6">
                 <!-- Stat Card 1 -->
                 <div class="bg-white/5 backdrop-blur-2xl rounded-3xl p-8 flex flex-col items-center justify-center text-center border border-white/10 group">
                     <span class="text-5xl font-black font-headline tabular-nums" data-val="{{ reading_stats.total_books }}">0</span>
-                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">Books</span>
+                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">{{ t('Books') }}</span>
                 </div>
                 <!-- Stat Card 2 -->
                 <div class="bg-secondary-container/95 text-on-secondary-container rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-3xl group">
                     <span class="text-5xl font-black font-headline tabular-nums" data-val="{{ reading_stats.finished_count }}">0</span>
-                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">Finished</span>
+                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">{{ t('Finished') }}</span>
                 </div>
                 <!-- Stat Card 3 -->
                 <div class="bg-tertiary-container text-on-tertiary-container rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-3xl group">
                     <span class="text-5xl font-black font-headline tabular-nums" data-val="{{ reading_stats.total_pages }}">0</span>
-                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">Pages</span>
+                    <span class="text-[11px] uppercase font-bold tracking-[0.3em] mt-3 opacity-60">{{ t('Pages') }}</span>
                 </div>
             </div>
         </div>
         <!-- Decorative Elements -->
-        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/40 rounded-full blur-[120px]"></div>
-        <div class="absolute -top-24 -right-24 w-80 h-80 bg-white/30 rounded-full blur-[100px]"></div>
+        <div class="absolute -bottom-24 -start-24 w-96 h-96 bg-secondary/40 rounded-full blur-[120px]"></div>
+        <div class="absolute -top-24 -end-24 w-80 h-80 bg-white/30 rounded-full blur-[100px]"></div>
     </section>
 
-    <!-- {{ t('Currently Reading') }} Spotlight (if any) -->
+    <!-- Active Journeys Spotlight -->
     {% if reading_books %}
     <section>
         <div class="flex items-center gap-4 mb-10 pl-2">
             <div class="w-2 h-10 bg-secondary rounded-full"></div>
-            <h2 class="text-3xl md:text-4xl font-black font-headline text-on-surface tracking-tight">Active Journeys</h2>
-            <div class="h-px bg-outline-variant/20 flex-1 ml-4 hidden sm:block"></div>
+            <h2 class="text-3xl md:text-4xl font-black font-headline text-on-surface tracking-tight">{{ t('Active Journeys') }}</h2>
+            <div class="h-px bg-outline-variant/20 flex-1 ms-4 hidden sm:block"></div>
         </div>
 
         <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -104,19 +104,19 @@
                 </div>
                 
                 <div class="flex-1 flex flex-col justify-between py-2 z-10 w-full">
-                    <div class="text-center sm:text-left">
-                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary bg-primary/10 px-3 py-1 rounded-full mb-3 inline-block">Reading Now</span>
+                    <div class="text-center sm:text-start">
+                        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary bg-primary/10 px-3 py-1 rounded-full mb-3 inline-block">{{ t('Reading Now') }}</span>
                         <h3 class="font-headline font-black text-2xl md:text-3xl text-on-surface leading-tight mb-2 line-clamp-2 hover:text-primary transition-colors cursor-pointer" onclick="window.location.href='{{ url_for('main.book_detail', book_id=book.id) }}'">{{ book.title }}</h3>
-                        <p class="text-on-surface-variant font-medium text-sm mb-6">{{ book.author or 'Unknown Author' }}</p>
+                        <p class="text-on-surface-variant font-medium text-sm mb-6">{{ book.author or t('Unknown') }}</p>
                     </div>
                     
                     <div class="mt-auto">
                         <div class="flex justify-between items-end mb-3 text-xs font-bold text-on-surface-variant">
-                            <span>Progress</span>
+                            <span>{{ t('Progress') }}</span>
                             {% if book.page_count %}
-                                <span>{{ (book.page_count * (1 - book.reading_progress / 100)) | int }} pages left</span>
+                                <span>{{ (book.page_count * (1 - book.reading_progress / 100)) | int }} {{ t('pages left') }}</span>
                             {% else %}
-                                <span>~{{ book.estimated_read_time or 0 }} min left</span>
+                                <span>~{{ book.estimated_read_time or 0 }} {{ t('min left') }}</span>
                             {% endif %}
                         </div>
                         <div class="h-3 w-full bg-surface-container rounded-full overflow-hidden mb-5 border border-outline-variant/10 shadow-inner">
@@ -128,7 +128,7 @@
                         <div class="flex gap-3">
                             <a href="{{ url_for('main.book_detail', book_id=book.id) }}" class="flex-1 bg-primary text-on-primary font-bold py-3 px-4 rounded-xl text-center text-sm shadow-[0_10px_20px_-5px_rgba(111,38,246,0.3)] hover:shadow-primary/40 hover:-translate-y-0.5 hover:bg-primary-dim transition-all flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-[18px]">menu_book</span>
-                                Resume
+                                {{ t('Resume') }}
                             </a>
                             <form action="{{ url_for('main.set_book_status', book_id=book.id, status='finished') }}" method="POST">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -156,20 +156,18 @@
                     <span class="material-symbols-outlined text-2xl">book_4</span>
                 </div>
                 <div>
-                    <h2 class="font-headline font-black text-2xl tracking-tight leading-none">Your Collection</h2>
-                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{{ books|length }} Items</p>
+                    <h2 class="font-headline font-black text-2xl tracking-tight leading-none">{{ t('Your Collection') }}</h2>
+                    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mt-1">{{ books|length }} {{ t('Items') }}</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
                 <!-- Search within Library -->
                 <div class="relative flex-1 lg:w-64 min-w-[200px]">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50">search</span>
-                    <input type="text" id="lib-search" placeholder="Search title or author..." class="w-full bg-surface-container hover:bg-surface-container-high focus:bg-white focus:ring-2 focus:ring-primary border-none rounded-full py-3.5 pl-12 pr-4 text-sm font-medium transition-colors shadow-inner">
+                    <span class="material-symbols-outlined absolute start-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50">search</span>
+                    <input type="text" id="lib-search" placeholder="{{ t('Search title or author...') }}" class="w-full bg-surface-container hover:bg-surface-container-high focus:bg-white focus:ring-2 focus:ring-primary border-none rounded-full py-3.5 ps-12 pe-4 text-sm font-medium transition-colors shadow-inner">
                 </div>
                 
-
-
                 <!-- Add Button (Link to Public Library) -->
                 <a href="{{ url_for('public.list_books') }}" class="bg-on-surface text-surface py-3.5 px-6 rounded-full font-bold text-sm shadow-[0_10px_20px_-10px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:shadow-lg transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">add</span>
@@ -181,16 +179,16 @@
         <!-- Shelf Tabs (Filters) -->
         <div class="flex overflow-x-auto hide-scrollbar gap-2 pb-2 border-b border-outline-variant/10">
             <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-primary border-b-2 border-primary bg-primary/5 whitespace-nowrap" data-target="all">
-                All Books <span class="ml-2 bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[10px]">{{ books|length }}</span>
+                {{ t('All Books') }} <span class="ms-2 bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[10px]">{{ books|length }}</span>
             </button>
             <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="reading">
-                Reading <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.reading_count }}</span>
+                {{ t('Reading') }} <span class="ms-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.reading_count }}</span>
             </button>
             <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="favorite">
-                Favorites <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.favorite_count }}</span>
+                {{ t('Favorites') }} <span class="ms-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.favorite_count }}</span>
             </button>
             <button class="shelf-tab px-6 py-3 rounded-t-2xl font-bold text-sm transition-all text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low border-b-2 border-transparent whitespace-nowrap" data-target="finished">
-                Finished <span class="ml-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.finished_count }}</span>
+                {{ t('Finished') }} <span class="ms-2 bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">{{ reading_stats.finished_count }}</span>
             </button>
         </div>
 
@@ -205,7 +203,7 @@
                 
                 <!-- Status Badge -->
                 {% if book.status %}
-                <div class="absolute top-4 left-4 z-20 shadow-md">
+                <div class="absolute top-4 start-4 z-20 shadow-md">
                     {% if book.status == 'favorite' %}
                         <div class="bg-error text-white w-8 h-8 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">favorite</span></div>
                     {% elif book.status == 'reading' %}
@@ -232,20 +230,20 @@
                             <!-- Favorite Toggle -->
                             <form action="{{ url_for('main.set_book_status', book_id=book.id, status='favorite') }}" method="POST">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="quick-action-btn w-full p-2 bg-surface/10 hover:bg-error hover:text-white text-surface rounded-lg transition-colors flex justify-center backdrop-blur-md border border-white/20" title="Toggle Favorite">
+                                <button type="submit" class="quick-action-btn w-full p-2 bg-surface/10 hover:bg-error hover:text-white text-surface rounded-lg transition-colors flex justify-center backdrop-blur-md border border-white/20" title="{{ t('Toggle Favorite') }}">
                                     <span class="material-symbols-outlined text-[18px]">favorite</span>
                                 </button>
                             </form>
                             <!-- Finish Toggle -->
                             <form action="{{ url_for('main.set_book_status', book_id=book.id, status='finished') }}" method="POST">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="quick-action-btn w-full p-2 bg-surface/10 hover:bg-secondary text-surface hover:text-white rounded-lg transition-colors flex justify-center backdrop-blur-md border border-white/20" title="Mark Finished">
+                                <button type="submit" class="quick-action-btn w-full p-2 bg-surface/10 hover:bg-secondary text-surface hover:text-white rounded-lg transition-colors flex justify-center backdrop-blur-md border border-white/20" title="{{ t('Mark Finished') }}">
                                     <span class="material-symbols-outlined text-[18px]">done</span>
                                 </button>
                             </form>
                         </div>
                         
-                        <form action="{{ url_for('main.delete_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Remove this book from your library permanently?');" class="w-full transform translate-y-4 group-hover:translate-y-0 duration-300 delay-150">
+                        <form action="{{ url_for('main.delete_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('{{ t('Remove this book from your library permanently?') }}');" class="w-full transform translate-y-4 group-hover:translate-y-0 duration-300 delay-150">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="quick-action-btn w-full p-2 hover:bg-error/90 text-error-container hover:text-white rounded-lg transition-colors flex justify-center items-center gap-2 text-xs font-bold bg-transparent">
                                 <span class="material-symbols-outlined text-[16px]">delete</span>
@@ -257,7 +255,7 @@
                 <!-- Info -->
                 <div class="book-info-container w-full flex flex-col items-center">
                     <h4 class="font-headline font-black text-sm text-on-surface line-clamp-2 leading-tight mb-1" title="{{ book.title }}">{{ book.title }}</h4>
-                    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider line-clamp-1 mb-2">{{ book.author or 'Unknown' }}</p>
+                    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider line-clamp-1 mb-2">{{ book.author or t('Unknown') }}</p>
                     
                     <!-- Stars Display -->
                     <div class="flex text-tertiary gap-0.5 mt-auto">
@@ -275,11 +273,11 @@
                 <div class="w-32 h-32 bg-surface-container-high rounded-full flex items-center justify-center mb-6">
                     <span class="material-symbols-outlined text-outline-variant text-5xl">inventory_2</span>
                 </div>
-                <h3 class="text-2xl font-black font-headline text-on-surface mb-2">Your shelf is empty</h3>
-                <p class="text-on-surface-variant max-w-sm mx-auto mb-8">Start your reading journey by adding books from the public library or manually entering them.</p>
+                <h3 class="text-2xl font-black font-headline text-on-surface mb-2">{{ t('Your shelf is empty') }}</h3>
+                <p class="text-on-surface-variant max-w-sm mx-auto mb-8">{{ t('Start your reading journey by adding books from the public library or manually entering them.') }}</p>
                 <div class="flex gap-4">
-                    <a href="{{ url_for('public.list_books') }}" class="bg-primary text-white font-bold py-3 px-6 rounded-full hover:-translate-y-1 transition-all shadow-lg shadow-primary/30">Explore Public Library</a>
-                    <button onclick="document.getElementById('addBookModal').showModal()" class="bg-surface-container-highest text-on-surface font-bold py-3 px-6 rounded-full hover:bg-outline-variant/20 transition-all">Add Manually</button>
+                    <a href="{{ url_for('public.list_books') }}" class="bg-primary text-white font-bold py-3 px-6 rounded-full hover:-translate-y-1 transition-all shadow-lg shadow-primary/30">{{ t('Explore Public Library') }}</a>
+                    <button onclick="document.getElementById('addBookModal').showModal()" class="bg-surface-container-highest text-on-surface font-bold py-3 px-6 rounded-full hover:bg-outline-variant/20 transition-all">{{ t('Add Manually') }}</button>
                 </div>
             </div>
             {% endfor %}
@@ -287,7 +285,7 @@
             <!-- No Results from Search (Hidden initially) -->
             <div id="no-search-results" class="col-span-full py-20 flex flex-col items-center justify-center text-center hidden">
                 <span class="material-symbols-outlined text-outline-variant text-5xl mb-4 opacity-50">search_off</span>
-                <p class="font-bold text-lg text-on-surface-variant">No matching books found in your library.</p>
+                <p class="font-bold text-lg text-on-surface-variant">{{ t('No matching books found in your library.') }}</p>
             </div>
 
         </div>
@@ -300,7 +298,7 @@
         <section class="bg-surface-container-lowest rounded-[2rem] p-8 md:p-10 shadow-sm border border-outline-variant/10">
             <h3 class="font-headline font-black text-2xl mb-8 flex items-center gap-3">
                 <span class="material-symbols-outlined text-secondary">pie_chart</span>
-                Genre Fingerprint
+                {{ t('Genre Fingerprint') }}
             </h3>
             <div class="relative h-64 w-full flex justify-center">
                 <canvas id="categoryChart"></canvas>
@@ -310,12 +308,12 @@
 
         <!-- Quotation Section -->
         <section class="custom-quote-shape bg-secondary border border-secondary-dim text-white p-10 md:p-14 relative overflow-hidden flex flex-col justify-center shadow-2xl">
-            <span class="material-symbols-outlined text-[10rem] absolute -top-10 -right-4 opacity-10 transform -rotate-12">auto_stories</span>
+            <span class="material-symbols-outlined text-[10rem] absolute -top-10 -end-4 opacity-10 transform -rotate-12">auto_stories</span>
             <p class="text-2xl md:text-3xl font-headline font-black italic relative z-10 leading-snug tracking-tight mb-6">
-                "A reader lives a thousand lives before he dies. The man who never reads lives only one."
+                {{ t('"A reader lives a thousand lives before he dies. The man who never reads lives only one."') }}
             </p>
-            <p class="font-bold text-white/70 text-sm uppercase tracking-[0.2em] relative z-10">— George R.R. Martin</p>
-            <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-white/20 rounded-full blur-[80px]"></div>
+            <p class="font-bold text-white/70 text-sm uppercase tracking-[0.2em] relative z-10">{{ t('— George R.R. Martin') }}</p>
+            <div class="absolute -bottom-24 -start-24 w-80 h-80 bg-white/20 rounded-full blur-[80px]"></div>
         </section>
     </div>
 
@@ -325,19 +323,19 @@
 <!-- Goal Setting Modal -->
 <dialog id="goalModal" class="bg-surface border border-outline-variant/10 p-10 shadow-2xl w-full max-w-md rounded-[2.5rem] backdrop:bg-inverse-surface/60 backdrop:backdrop-blur-sm">
     <div class="text-center relative">
-        <button onclick="document.getElementById('goalModal').close()" class="absolute -top-4 -right-4 w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-on-surface hover:bg-error hover:text-white transition-all">
+        <button onclick="document.getElementById('goalModal').close()" class="absolute -top-4 -end-4 w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-on-surface hover:bg-error hover:text-white transition-all">
             <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
         <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <span class="material-symbols-outlined text-primary text-4xl">flag</span>
         </div>
         <h3 class="font-headline text-3xl font-black mb-2">Yearly {{ t('Reading Goal') }}</h3>
-        <p class="text-on-surface-variant text-sm mb-8">Set how many books you want to conquer in {{ current_year }}.</p>
+        <p class="text-on-surface-variant text-sm mb-8">{{ t('Set how many books you want to conquer in') }} {{ current_year }}.</p>
         
         <form action="{{ url_for('main.update_reading_goal') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-8">
-                <label class="block font-black text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-4">Target Books</label>
+                <label class="block font-black text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-4">{{ t('Target Books') }}</label>
                 <div class="flex items-center justify-center gap-4">
                     <button type="button" onclick="document.getElementById('goal-input').stepDown();" class="w-12 h-12 rounded-full border border-outline-variant/30 flex justify-center items-center hover:bg-surface-container transition-all">-</button>
                     <input type="number" name="reading_goal" id="goal-input" value="{{ reading_stats.reading_goal }}" min="1" max="500" class="w-32 text-center text-4xl font-headline font-black bg-transparent border-none focus:ring-0 p-0">
@@ -345,13 +343,13 @@
                 </div>
             </div>
             <button type="submit" class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:shadow-[0_10px_20px_-5px_rgba(111,38,246,0.4)] transition-all">
-                Save Goal
+                {{ t('Save Goal') }}
             </button>
         </form>
     </div>
 </dialog>
 
-<!-- Manual {{ t('Add Book') }} Modal -->
+<!-- Manual Add Book Modal -->
 <dialog id="addBookModal" class="bg-surface border border-outline-variant/10 p-10 md:p-14 shadow-2xl w-full max-w-2xl rounded-[3rem] backdrop:bg-inverse-surface/80 backdrop:backdrop-blur-md">
     <div class="space-y-10">
         <div class="flex justify-between items-start">
@@ -367,27 +365,27 @@
         <form action="{{ url_for('main.create_book') }}" method="POST" enctype="multipart/form-data" class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="space-y-2">
-                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Title <span class="text-error">*</span></label>
-                <input type="text" name="title" required class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. Dune">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant ps-2">{{ t('Title') }} <span class="text-error">*</span></label>
+                <input type="text" name="title" required class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="{{ t('E.g. Dune') }}">
             </div>
             <div class="space-y-2">
-                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Author</label>
-                <input type="text" name="author" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. Frank Herbert">
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant ps-2">{{ t('Author') }}</label>
+                <input type="text" name="author" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="{{ t('E.g. Frank Herbert') }}">
             </div>
             <div class="space-y-2">
-                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Description</label>
-                <textarea name="description" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="E.g. A sci-fi masterpiece..." rows="3"></textarea>
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant ps-2">{{ t('Description') }}</label>
+                <textarea name="description" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="{{ t('E.g. A sci-fi masterpiece...') }}" rows="3"></textarea>
             </div>
             <div class="space-y-2">
-                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Cover Image URL</label>
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant ps-2">{{ t('Cover Image URL') }}</label>
                 <input type="url" name="cover_url" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="https://example.com/cover.jpg">
             </div>
             <div class="space-y-2">
-                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Reading File URL (PDF/EPUB)</label>
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant ps-2">{{ t('Reading File URL (PDF/EPUB)') }}</label>
                 <input type="url" name="file_url" class="w-full bg-surface-container rounded-2xl p-5 font-bold text-lg focus:ring-2 focus:ring-primary border-none shadow-inner transition-all placeholder:text-outline/40" placeholder="https://example.com/book.pdf">
             </div>
             <div class="space-y-2">
-                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant pl-2">Or Upload Book File (PDF/EPUB/TXT)</label>
+                <label class="font-bold text-xs uppercase tracking-widest text-on-surface-variant ps-2">{{ t('Or Upload Book File (PDF/EPUB/TXT)') }}</label>
                 <input type="file" name="file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all">
             </div>
             <div class="pt-6">

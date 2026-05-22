@@ -4,6 +4,7 @@ import '../services/ai_service.dart';
 import '../services/books_service.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'book_detail_screen.dart';
+import '../config/translations.dart';
 
 class ChatMessage {
   final String text;
@@ -29,15 +30,22 @@ class _AssistantScreenState extends State<AssistantScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.book != null) {
-      _messages.add(ChatMessage(
-          text: "Hello! I'm your AI assistant 🤖. How can I help you with the book \"${widget.book!.title}\"?",
-          isUser: false));
-    } else {
-      _messages.add(ChatMessage(
-          text: "Hello! I'm your AI assistant 🤖. How can I help you find great books today?",
-          isUser: false));
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          if (widget.book != null) {
+            final template = context.t('assistant_greeting_book');
+            _messages.add(ChatMessage(
+                text: template.replaceAll('{bookTitle}', widget.book!.title),
+                isUser: false));
+          } else {
+            _messages.add(ChatMessage(
+                text: context.t('assistant_greeting_general'),
+                isUser: false));
+          }
+        });
+      }
+    });
   }
 
   Future<void> _sendMessage() async {
@@ -59,7 +67,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     );
     
     if (mounted) {
-      String reply = response['response'] ?? "Sorry, I didn't understand that.";
+      String reply = response['response'] ?? context.t('assistant_not_understand');
       List<Book>? books;
       
       // Parse [[Title]] blocks
@@ -87,7 +95,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
             recommendedBooks: books?.isNotEmpty == true ? books : null,
           ));
         } else {
-          _messages.add(ChatMessage(text: "Sorry, a connection error occurred. 😔", isUser: false));
+          _messages.add(ChatMessage(text: context.t('assistant_error'), isUser: false));
         }
       });
       _scrollToBottom();
@@ -110,7 +118,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kutub AI', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(context.t('kutub_ai'), style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -120,12 +128,13 @@ class _AssistantScreenState extends State<AssistantScreen> {
               setState(() {
                 _messages.clear();
                 if (widget.book != null) {
+                  final template = context.t('assistant_greeting_book');
                   _messages.add(ChatMessage(
-                      text: "Hello! I'm your AI assistant 🤖. How can I help you with the book \"${widget.book!.title}\"?",
+                      text: template.replaceAll('{bookTitle}', widget.book!.title),
                       isUser: false));
                 } else {
                   _messages.add(ChatMessage(
-                      text: "Hello! I'm your AI assistant 🤖. How can I help you find great books today?",
+                      text: context.t('assistant_greeting_general'),
                       isUser: false));
                 }
               });
@@ -215,7 +224,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right),
+            Icon(context.isRtl ? Icons.chevron_left : Icons.chevron_right),
           ],
         ),
       ),
@@ -326,7 +335,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
               child: TextField(
                 controller: _controller,
                 decoration: InputDecoration(
-                  hintText: 'Ask about a book, author, or category...',
+                  hintText: context.t('ask_ai_placeholder'),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,

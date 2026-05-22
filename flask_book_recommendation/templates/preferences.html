@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Preferences | Elham{% endblock %}
+{% block title %}{{ t('Preferences') }} | Elham{% endblock %}
 
 {% block content %}
-<main class="min-h-screen pt-32 flex items-center justify-center bg-surface px-8 pb-24">
+<main class="min-h-screen pt-32 flex items-center justify-center bg-surface px-8 pb-24" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <div class="w-full max-w-5xl space-y-16">
         
         <!-- Preferences Header -->
         <div class="text-center space-y-4">
-            <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">Personalize Your Experience</span>
-            <h1 class="font-headline text-7xl font-black tracking-tighter">Your Interests</h1>
-            <p class="font-body text-on-surface-variant max-w-xl mx-auto">Select the genres you enjoy reading. We'll use these to recommend books you will love.</p>
+            <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">{{ t('Personalize Your Experience') }}</span>
+            <h1 class="font-headline text-7xl font-black tracking-tighter">{{ t('Your Interests') }}</h1>
+            <p class="font-body text-on-surface-variant max-w-xl mx-auto">{{ t("Select the genres you enjoy reading. We'll use these to recommend books you will love.") }}</p>
         </div>
 
         <!-- Configuration Card -->
@@ -50,7 +50,7 @@
                         
                         <div class="h-full flex flex-col items-center justify-center p-8 bg-surface border-2 border-on-surface-variant/5 group-hover:bg-surface-container-high group-hover:border-primary/20 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all duration-500 shadow-sm peer-checked:shadow-xl active:scale-95">
                             <span class="material-symbols-outlined text-4xl mb-4 group-hover:scale-110 transition-transform">{{ icon }}</span>
-                            <span class="font-headline font-bold text-xs uppercase tracking-widest text-center">{{ label }}</span>
+                            <span class="font-headline font-bold text-xs uppercase tracking-widest text-center">{{ t(label) }}</span>
                         </div>
                     </label>
                     {% endfor %}
@@ -58,11 +58,11 @@
 
                 <div class="flex flex-col sm:flex-row gap-8 justify-center pt-8 border-t border-on-surface/5">
                     <a href="{{ url_for('main.home') }}" class="font-headline font-black text-on-surface/40 hover:text-primary transition-all px-12 py-6 text-sm uppercase tracking-widest">
-                        Skip for now
+                        {{ t('Skip for now') }}
                     </a>
                     <button type="submit" class="bg-primary hover:bg-on-surface text-white font-headline font-black px-12 py-6 text-xl transition-all active:scale-[0.98] shadow-2xl flex items-center justify-center gap-3">
                         <span class="material-symbols-outlined">save</span>
-                        Save Preferences
+                        {{ t('Save Preferences') }}
                     </button>
                 </div>
             </form>

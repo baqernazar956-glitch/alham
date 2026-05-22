@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Your Assistant - Elham{% endblock %}
+{% block title %}{{ t('Your Assistant') if lang != 'ar' else 'مساعدك الشخصي' }} - Elham{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col bg-surface rounded-2xl shadow-xl overflow-hidden border border-surface-container mt-6">
+<div class="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col bg-surface rounded-2xl shadow-xl overflow-hidden border border-surface-container mt-6 text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <!-- Header -->
     <div class="bg-gradient-to-r from-primary to-primary/80 px-8 py-6 flex items-center gap-6 text-white shadow-md relative z-10">
         <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
             <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
         </div>
         <div>
-            <h1 class="font-black text-3xl leading-tight tracking-wide font-headline">Kutub {{ t('AI Assistant') }}</h1>
+            <h1 class="font-black text-3xl leading-tight tracking-wide font-headline">{% if lang == 'ar' %}مساعد إلهام الذكي{% else %}Kutub AI Assistant{% endif %}</h1>
             <div class="flex items-center gap-2 mt-1">
                 <span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
-                <p class="text-sm font-medium opacity-90">Online - Ready to suggest books and answer questions</p>
+                <p class="text-sm font-medium opacity-90">{{ t('Online - Ready to suggest books and answer questions') if lang != 'ar' else 'نشط - جاهز لاقتراح الكتب والإجابة على الأسئلة' }}</p>
             </div>
         </div>
     </div>
@@ -31,8 +31,13 @@
                 <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
             </div>
             <div class="bg-surface-container-low p-5 rounded-3xl rounded-tl-none text-on-surface text-base leading-relaxed shadow-sm border border-surface-container">
+                {% if lang == 'ar' %}
+                أهلاً بك! 👋<br><br>
+                أنا مساعدك الذكي <strong>"كُتُب"</strong>. يمكنك أن تطلب مني اقتراح أي كتاب تريده، أو السؤال عن مجال معين وسأقوم بالبحث في ملايين الكتب من أجلك! 📚✨
+                {% else %}
                 Welcome! 👋<br><br>
                 I am your smart assistant <strong>"Kutub"</strong>. You can ask me to suggest any book you want, or ask about a specific field and I will search millions of books for you! 📚✨
+                {% endif %}
             </div>
         </div>
     </div>
@@ -54,7 +59,7 @@
     <!-- Input Area -->
     <div class="p-6 bg-white border-t border-surface-container relative z-10 shadow-[0_-4px_25px_-5px_rgba(0,0,0,0.05)]">
         <form id="ai-chat-form" class="flex gap-4 relative" onsubmit="event.preventDefault(); return false;">
-            <input type="text" id="ai-chat-input" placeholder="Type your message here... (e.g. Suggest a sci-fi novel)" 
+            <input type="text" id="ai-chat-input" placeholder="{{ t('Type your message here... (e.g. Suggest a sci-fi novel)') if lang != 'ar' else 'اكتب رسالتك هنا... (مثال: اقترح رواية خيال علمي)' }}" 
                    class="w-full bg-surface-container-lowest text-on-surface text-lg font-medium rounded-full pl-6 pr-20 py-4 focus:outline-none focus:ring-4 focus:ring-primary/20 transition-all border border-outline/20 focus:border-primary shadow-inner"
                    autocomplete="off" onkeydown="if(event.key === 'Enter') { event.preventDefault(); window.handleAiChatSubmit(); return false; }">
             <button type="button" onclick="window.handleAiChatSubmit()" class="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg focus:outline-none group">
@@ -62,7 +67,7 @@
             </button>
         </form>
         <div class="text-center mt-3">
-            <span class="text-xs text-on-surface-variant font-medium opacity-70">Powered by Elham AI</span>
+            <span class="text-xs text-on-surface-variant font-medium opacity-70">{{ t('Powered by Elham AI') if lang != 'ar' else 'بدعم من إلهام للذكاء الاصطناعي' }}</span>
         </div>
     </div>
 </div>
@@ -92,7 +97,7 @@
             if (!chatInput) return false;
             const message = chatInput.value.trim();
             if (!message) return false;
-
+ 
             // Clear input and show user message
             chatInput.value = '';
             addAiMessage(message, true);
@@ -118,12 +123,12 @@
                 if (response.ok && data.success) {
                     addAiMessage(data.reply, false, data.books);
                 } else {
-                    addAiMessage('Sorry, I encountered an error connecting to my brain. Please try again later. 🔌', false);
+                    addAiMessage("{{ t('Sorry, I encountered an error connecting to my brain. Please try again later. 🔌') if lang != 'ar' else 'عذراً، واجهت خطأ في الاتصال بدماغي. يرجى المحاولة مرة أخرى لاحقاً. 🔌' }}", false);
                 }
             } catch (error) {
                 console.error('AI Chat Error:', error);
                 if (typingIndicator) typingIndicator.classList.add('hidden');
-                addAiMessage('Connection error. Please check your internet connection and try again. 📡', false);
+                addAiMessage("{{ t('Connection error. Please check your internet connection and try again. 📡') if lang != 'ar' else 'خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى. 📡' }}", false);
             }
             return false;
         };
@@ -133,7 +138,8 @@
             if (!messagesArea) return;
 
             const wrapper = document.createElement('div');
-            wrapper.className = `flex gap-4 max-w-[85%] relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? 'ml-auto flex-row-reverse' : ''}`;
+            const isRtl = "{{ 'true' if lang == 'ar' else 'false' }}" === "true";
+            wrapper.className = `flex gap-4 max-w-[85%] relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? (isRtl ? 'mr-auto flex-row' : 'ml-auto flex-row-reverse') : (isRtl ? 'ml-auto flex-row-reverse' : '')}`;
             
             let avatarHtml = '';
             if (!isUser) {
@@ -159,14 +165,14 @@
                 booksHtml = '<div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">';
                 books.forEach(book => {
                     booksHtml += `
-                        <a href="/public/books/${book.id}" target="_blank" class="flex gap-4 bg-white p-3 rounded-2xl hover:bg-primary/5 hover:border-primary/30 transition-all group border border-surface-container shadow-sm items-center">
+                        <a href="/public/books/${book.id}" target="_blank" class="flex gap-4 bg-white p-3 rounded-2xl hover:bg-primary/5 hover:border-primary/30 transition-all group border border-surface-container shadow-sm items-center text-start">
                             <img src="${book.cover || 'https://via.placeholder.com/60x90'}" class="w-16 h-24 object-cover rounded-xl shadow-sm" alt="Cover">
                             <div class="flex-1 min-w-0 flex flex-col justify-center">
                                 <h4 class="text-base font-bold text-on-surface group-hover:text-primary transition-colors leading-tight mb-1 line-clamp-2">${book.title}</h4>
                                 <p class="text-sm text-on-surface-variant truncate">${book.author}</p>
                                 <div class="mt-2 flex items-center text-xs text-primary font-bold bg-primary/10 w-fit px-2 py-1 rounded-md">
-                                    <span class="material-symbols-outlined text-[16px] mr-1">visibility</span>
-                                    View Details
+                                    <span class="material-symbols-outlined text-[16px] mx-1">visibility</span>
+                                    ${isRtl ? 'عرض التفاصيل' : 'View Details'}
                                 </div>
                             </div>
                         </a>

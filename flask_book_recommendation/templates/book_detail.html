@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-<main class="mt-8 px-6 md:px-12 max-w-full mx-auto pb-32" dir="ltr">
+<main class="mt-8 px-6 md:px-12 max-w-full mx-auto pb-32" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     
     <!-- Hero Section: The Masterwork -->
     <div class="grid lg:grid-cols-12 gap-10 items-stretch">
@@ -26,7 +26,7 @@
                      class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-12">
                      <button class="w-full bg-white/20 backdrop-blur-xl text-white py-5 rounded-2xl font-black text-lg border border-white/30 hover:bg-white hover:text-primary transition-all">
-                        View High-Res
+                        {{ t('View High-Res') if lang != 'ar' else 'عرض الصورة بدقة عالية' }}
                      </button>
                 </div>
             </div>
@@ -38,9 +38,15 @@
                         <span class="material-symbols-outlined">auto_stories</span>
                         {{ t('Resume Reading') }}
                     </a>
+                    {% if book.owner_id == current_user.id %}
+                    <button onclick="openEditBookModal()" class="w-full bg-secondary text-on-secondary py-5 rounded-[1.5rem] font-black text-sm flex items-center justify-center gap-3 hover:bg-secondary-dim transition-all">
+                        <span class="material-symbols-outlined text-xl">edit</span>
+                        {{ t('Edit Details') if lang != 'ar' else 'تعديل التفاصيل' }}
+                    </button>
+                    {% endif %}
                     <button onclick="shareBook()" class="w-full bg-white py-5 rounded-2xl font-black text-sm text-on-surface-variant border border-outline-variant/10 flex items-center justify-center gap-3 hover:bg-surface-container transition-all">
                         <span class="material-symbols-outlined text-xl">share</span>
-                        Share
+                        {{ t('Share') }}
                     </button>
                 </div>
             </div>
@@ -56,14 +62,14 @@
                         <div class="space-y-4">
                             <div class="flex gap-3">
                                 <span class="status-badge bg-tertiary-container/40 text-on-tertiary-container">
-                                    {{ (book.categories.split(',')[0] if book.categories else 'Classical') }}
+                                    {{ t(book.categories.split(',')[0]) if book.categories else t('Classical') }}
                                 </span>
                                 {% if status and status.status == 'finished' %}
-                                <span class="status-badge bg-primary/10 text-primary">Mastered</span>
+                                <span class="status-badge bg-primary/10 text-primary">{{ t('Mastered') if lang != 'ar' else 'مكتمل' }}</span>
                                 {% endif %}
                             </div>
                             <h1 class="text-5xl md:text-7xl font-black font-headline tracking-tighter leading-tight text-on-surface">{{ book.title }}</h1>
-                            <p class="text-2xl md:text-3xl font-bold text-on-surface-variant/60 italic">{{ book.author or 'Unknown Visionary' }}</p>
+                            <p class="text-2xl md:text-3xl font-bold text-on-surface-variant/60 italic">{{ book.author or t('Unknown Visionary') if lang != 'ar' else book.author or 'رائد أعمال مجهول' }}</p>
                         </div>
                         <div class="flex flex-col items-center gap-2">
                              <div class="w-20 h-20 bg-secondary-container rounded-3xl flex items-center justify-center text-secondary shadow-xl">
@@ -71,37 +77,37 @@
                              </div>
                              {% if book.local_avg_rating %}
                                 <span class="font-black text-sm text-secondary">{{ "%.1f"|format(book.local_avg_rating) }}/5.0</span>
-                                <span class="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-[-8px]">({{ book.local_rating_count }} reviews)</span>
+                                <span class="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-[-8px]">({{ book.local_rating_count }} {{ t('reviews') if lang != 'ar' else 'مراجعة' }})</span>
                              {% else %}
                                 <span class="font-black text-sm text-secondary">{{ "%.1f"|format(book.global_rating or 4.0) }}/5.0</span>
-                                <span class="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-[-8px]">(Global)</span>
+                                <span class="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-[-8px]">({{ t('Global') if lang != 'ar' else 'عالمي' }})</span>
                              {% endif %}
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pt-10 border-t border-surface-container">
                         <div class="space-y-2">
-                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">Pages</span>
+                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">{{ t('Pages') }}</span>
                             <p class="text-2xl font-black font-headline">{{ book.page_count or 'N/A' }}</p>
                         </div>
                         <div class="space-y-2">
-                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">Year</span>
-                            <p class="text-2xl font-black font-headline">{{ book.published_date or 'Classic' }}</p>
+                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">{{ t('Year') if lang != 'ar' else 'السنة' }}</span>
+                            <p class="text-2xl font-black font-headline">{{ book.published_date or (t('Classic') if lang != 'ar' else 'كلاسيكي') }}</p>
                         </div>
                         <div class="space-y-2">
-                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">Language</span>
+                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">{{ t('Language') }}</span>
                             <p class="text-2xl font-black font-headline">{{ book.language|upper if book.language else 'EN' }}</p>
                         </div>
                         <div class="space-y-2">
-                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">Reading Time</span>
-                            <p class="text-2xl font-black font-headline">~{{ ((book.page_count or 200) / 25)|int }} hrs</p>
+                            <span class="text-xs uppercase tracking-[0.3em] font-black text-on-surface-variant/40">{{ t('Reading Time') if lang != 'ar' else 'وقت القراءة' }}</span>
+                            <p class="text-2xl font-black font-headline">~{{ ((book.page_count or 200) / 25)|int }} {{ t('hrs') if lang != 'ar' else 'ساعة' }}</p>
                         </div>
                     </div>
 
                     <div class="space-y-6 pt-10">
-                        <h3 class="text-xs font-black uppercase tracking-[0.4em] text-primary">Synopsis & Analysis</h3>
+                        <h3 class="text-xs font-black uppercase tracking-[0.4em] text-primary">{{ t('Synopsis & Analysis') if lang != 'ar' else 'الملخص والتحليل' }}</h3>
                         <p class="text-xl md:text-2xl leading-relaxed text-on-surface-variant font-medium opacity-80 max-w-4xl">
-                            {{ book.description|safe if book.description else 'No analytical synopsis available for this volume yet. Engage with the text to unlock AI-generated insights.' }}
+                            {{ book.description|safe if book.description else (t('No analytical synopsis available for this volume yet. Engage with the text to unlock AI-generated insights.') if lang != 'ar' else 'لا يوجد ملخص تحليلي متاح لهذا الجزء بعد. تفاعل مع النص لفتح رؤى الذكاء الاصطناعي.') }}
                         </p>
                     </div>
 
@@ -109,34 +115,34 @@
                     <div class="mt-16 pt-16 border-t border-surface-container">
                         <h3 class="text-xl font-bold mb-8 flex items-center gap-3">
                             <span class="material-symbols-outlined text-primary">psychology</span>
-                            Interactive Features
+                            {{ t('Interactive Features') }}
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button onclick="openChatModal()" class="flex items-center justify-between p-6 bg-surface-container hover:bg-surface-container-high rounded-xl transition-all group">
-                                <div class="text-left">
+                                <div class="text-start">
                                     <p class="font-bold text-on-surface">{{ t('Chat with Book') }}</p>
-                                    <p class="text-xs text-on-surface-variant">Ask questions about this book</p>
+                                    <p class="text-xs text-on-surface-variant">{{ t('Ask questions about this book') }}</p>
                                 </div>
                                 <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">chat_bubble</span>
                             </button>
                             <button onclick="generateSummary()" class="flex items-center justify-between p-6 bg-surface-container hover:bg-surface-container-high rounded-xl transition-all group">
-                                <div class="text-left">
-                                    <p class="font-bold text-on-surface">Book Summary</p>
-                                    <p class="text-xs text-on-surface-variant">Read a quick AI-generated summary</p>
+                                <div class="text-start">
+                                    <p class="font-bold text-on-surface">{{ t('Book Summary') }}</p>
+                                    <p class="text-xs text-on-surface-variant">{{ t('Read a quick AI-generated summary') }}</p>
                                 </div>
                                 <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">summarize</span>
                             </button>
                             <button onclick="openCoachModal()" class="md:col-span-2 flex items-center justify-between p-6 bg-primary/5 hover:bg-primary/10 rounded-xl transition-all group border border-primary/10">
-                                <div class="text-left">
-                                    <p class="font-bold text-primary">Reading Coach</p>
-                                    <p class="text-xs text-primary/60">Create a personalized reading schedule</p>
+                                <div class="text-start">
+                                    <p class="font-bold text-primary">{{ t('Reading Coach') }}</p>
+                                    <p class="text-xs text-primary/60">{{ t('Create a personalized reading schedule') }}</p>
                                 </div>
                                 <span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">auto_graph</span>
                             </button>
                             <button onclick="openNotesModal()" class="md:col-span-2 flex items-center justify-between p-6 bg-tertiary/5 hover:bg-tertiary/10 rounded-xl transition-all group border border-tertiary/10">
-                                <div class="text-left">
-                                    <p class="font-bold text-tertiary">My {{ t('Personal Notes') }}</p>
-                                    <p class="text-xs text-tertiary/60">Private reminders and thoughts for this book</p>
+                                <div class="text-start">
+                                    <p class="font-bold text-tertiary">{{ t('My Personal Notes') if lang != 'ar' else 'ملاحظاتي الشخصية' }}</p>
+                                    <p class="text-xs text-tertiary/60">{{ t('Private reminders and thoughts for this book') if lang != 'ar' else 'تذكيرات وأفكار خاصة بهذا الكتاب' }}</p>
                                 </div>
                                 <span class="material-symbols-outlined text-tertiary group-hover:rotate-12 transition-transform">note_alt</span>
                             </button>
@@ -155,8 +161,8 @@
                         <span class="absolute inset-0 flex items-center justify-center font-black text-xl">{{ status.reading_progress }}%</span>
                     </div>
                     <div>
-                        <h4 class="font-black text-lg">Reading Status</h4>
-                        <p class="text-sm text-on-surface-variant font-medium opacity-60">You're currently in the flow of this narrative.</p>
+                        <h4 class="font-black text-lg">{{ t('Reading Status') if lang != 'ar' else 'حالة القراءة' }}</h4>
+                        <p class="text-sm text-on-surface-variant font-medium opacity-60">{{ t("You're currently in the flow of this narrative.") if lang != 'ar' else 'أنت الآن في تدفق هذه الرواية.' }}</p>
                     </div>
                 </div>
                 {% endif %}
@@ -170,20 +176,20 @@
         <!-- Private Notes Bento -->
         <div class="lg:col-span-5 bento-card p-12 bg-surface-container-low shadow-inner">
             <div class="flex justify-between items-center mb-10">
-                <h3 class="text-xs font-black uppercase tracking-[0.4em] text-secondary">Private Notes</h3>
+                <h3 class="text-xs font-black uppercase tracking-[0.4em] text-secondary">{{ t('Private Notes') if lang != 'ar' else 'ملاحظات خاصة' }}</h3>
                 <span class="material-symbols-outlined text-secondary opacity-40">edit_note</span>
             </div>
-            <textarea id="pagePrivateNotes" class="w-full bg-white/60 border-none rounded-3xl p-8 h-80 text-lg font-medium focus:ring-4 focus:ring-secondary/10 transition-all placeholder:italic placeholder:opacity-30" 
-                      placeholder="Write your notes here...">{{ book.notes or '' }}</textarea>
+            <textarea id="pagePrivateNotes" class="w-full bg-white/60 border-none rounded-3xl p-8 h-80 text-lg font-medium focus:ring-4 focus:ring-secondary/10 transition-all placeholder:italic placeholder:opacity-30 text-start" 
+                      placeholder="{{ t('Write your notes here...') }}">{{ book.notes or '' }}</textarea>
         </div>
 
         <!-- Community Wisdom Bento -->
         <div class="lg:col-span-7 bento-card p-12 md:p-16 bg-white border border-surface-container shadow-sm overflow-hidden relative">
             <div class="flex items-center justify-between mb-12">
                 <h3 class="text-xs font-black uppercase tracking-[0.4em] text-tertiary flex items-center gap-4">
-                    Community Reviews
+                    {{ t('Community Reviews') if lang != 'ar' else 'مراجعات المجتمع' }}
                     {% if reviews|length > 0 %}
-                    <button onclick="openReviewsModal()" class="text-[10px] tracking-widest font-black text-primary hover:underline lowercase normal-case">View All ({{ reviews|length }})</button>
+                    <button onclick="openReviewsModal()" class="text-[10px] tracking-widest font-black text-primary hover:underline lowercase normal-case">{{ t('View All') }} ({{ reviews|length }})</button>
                     {% endif %}
                 </h3>
                 <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-[10px] font-bold border border-slate-200 shadow-sm">
@@ -199,11 +205,11 @@
                         <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 rounded-full bg-tertiary/10 flex items-center justify-center text-sm font-bold text-tertiary border border-tertiary/5">
-                                    R
+                                    {{ review.user.name[0]|upper if review.user and review.user.name else 'R' }}
                                 </div>
                                 <div>
-                                    <h4 class="text-base font-bold text-slate-900">Reader #{{ review.user_id }}</h4>
-                                    <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Recent</p>
+                                    <h4 class="text-base font-bold text-slate-900">{{ review.user.name if review.user and review.user.name else (t('Reader') if lang != 'ar' else 'قارئ') }}</h4>
+                                    <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{{ t('Recent') if lang != 'ar' else 'مؤخراً' }}</p>
                                 </div>
                             </div>
                             <div class="flex text-amber-500 scale-90 origin-right">
@@ -212,7 +218,7 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="mt-4 text-slate-600 leading-relaxed text-sm italic font-medium opacity-80">
+                        <div class="mt-4 text-slate-600 leading-relaxed text-sm italic font-medium opacity-80 text-start">
                             "{{ review.review_text }}"
                         </div>
                         <div class="flex items-center justify-end mt-6 border-t border-slate-100 pt-4">
@@ -238,13 +244,13 @@
                 {% else %}
                     <div class="py-20 text-center space-y-4 opacity-30">
                         <span class="material-symbols-outlined text-6xl">forum</span>
-                        <p class="font-black text-xl">{{ t('No reviews yet') }} for this book.</p>
-                        <p class="text-sm font-medium">Be the first to write a review.</p>
+                        <p class="font-black text-xl">{{ t('No reviews yet') }} {{ t('for this book.') }}</p>
+                        <p class="text-sm font-medium">{{ t('Be the first to write a review.') }}</p>
                     </div>
                 {% endif %}
             </div>
-
-            <!-- {{ t('Write a Review') }} Button -->
+            
+            <!-- Write a Review Button -->
             <div class="mt-10 flex justify-center">
                 <button onclick="toggleReviewForm()" class="group bg-[#2D2D29] text-white px-8 py-4 rounded-full text-sm font-bold hover:bg-black transition-all active:scale-95 flex items-center gap-3 shadow-xl relative z-20">
                     <span class="material-symbols-outlined text-xs group-hover:rotate-12 transition-transform">edit_note</span>
@@ -267,7 +273,7 @@
             </p>
             <div class="mt-12 flex items-center gap-4 opacity-60 font-black text-sm uppercase tracking-widest relative z-10">
                 <div class="h-px w-12 bg-on-tertiary-container/30"></div>
-                Page {{ quotes[0].page_number or 'Unmarked' }}
+                {{ t('Page') if lang != 'ar' else 'الصفحة' }} {{ quotes[0].page_number or (t('Unmarked') if lang != 'ar' else 'غير محدد') }}
             </div>
             <!-- Interactive Highlight -->
             <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -301,7 +307,7 @@
             </div>
 
             <div class="relative group">
-                <textarea name="review_text" rows="5" class="w-full bg-slate-50/50 border-none p-10 rounded-[30px] font-medium text-lg italic text-slate-600 focus:ring-4 focus:ring-primary/5 outline-none resize-none placeholder:text-slate-300 transition-all font-body" placeholder="Share your thoughts about this book..."></textarea>
+                <textarea name="review_text" rows="5" class="w-full bg-slate-50/50 border-none p-10 rounded-[30px] font-medium text-lg italic text-slate-600 focus:ring-4 focus:ring-primary/5 outline-none resize-none placeholder:text-slate-300 transition-all font-body text-start" placeholder="{{ t('Share your thoughts about this book...') }}"></textarea>
             </div>
 
             <button type="submit" class="w-full py-6 bg-primary text-on-primary rounded-full font-black text-sm uppercase tracking-widest hover:shadow-[0_20px_40px_rgba(111,38,246,0.2)] transition-all active:scale-95">
@@ -331,13 +337,13 @@
             </button>
         </div>
         <div class="p-8">
-            <p class="text-xs text-slate-500 mb-4 bg-tertiary/5 p-3 rounded-lg border border-tertiary/10">
-                <span class="font-bold">Note:</span> These notes are <span class="text-tertiary font-bold">private</span> and visible only to you.
+            <p class="text-xs text-slate-500 mb-4 bg-tertiary/5 p-3 rounded-lg border border-tertiary/10 text-start">
+                <span class="font-bold">{{ t('Note:') }}</span> {{ t('These notes are') if lang != 'ar' else 'هذه الملاحظات' }} <span class="text-tertiary font-bold">{{ t('private') if lang != 'ar' else 'خاصة' }}</span> {{ t('and visible only to you.') if lang != 'ar' else 'ومرئية لك فقط.' }}
             </p>
-            <textarea id="personalNoteText" rows="8" class="w-full bg-slate-50 border-2 border-slate-100 p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-tertiary focus:border-tertiary outline-none transition-all" placeholder="{{ t('Write your personal notes here...') }}"></textarea>
+            <textarea id="personalNoteText" rows="8" class="w-full bg-slate-50 border-2 border-slate-100 p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-tertiary focus:border-tertiary outline-none transition-all text-start" placeholder="{{ t('Write your personal notes here...') }}"></textarea>
             <div class="mt-8 flex gap-3">
                 <button onclick="closeNotesModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
-                    Cancel
+                    {{ t('Cancel') }}
                 </button>
                 <button id="saveNoteBtn" onclick="saveNote()" class="flex-[2] py-4 bg-tertiary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">save</span>
@@ -355,58 +361,58 @@
         <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-primary/5">
             <h3 class="font-black text-primary flex items-center gap-2">
                 <span class="material-symbols-outlined">edit</span>
-                تعديل تفاصيل الكتاب ورفع ملف القراءة
+                {{ t('Edit Book Details & Upload PDF') if lang != 'ar' else 'تعديل تفاصيل الكتاب ورفع ملف القراءة' }}
             </h3>
             <button onclick="closeEditBookModal()" class="text-slate-400 hover:text-on-surface transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <form action="{{ url_for('main.update_book', book_id=book.id) }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-4 text-left" dir="rtl">
+        <form action="{{ url_for('main.update_book', book_id=book.id) }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-4 text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">عنوان الكتاب</label>
-                <input type="text" name="u_title" value="{{ book.title }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Book Title') if lang != 'ar' else 'عنوان الكتاب' }}</label>
+                <input type="text" name="u_title" value="{{ book.title }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">المؤلف</label>
-                <input type="text" name="u_author" value="{{ book.author }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Author') }}</label>
+                <input type="text" name="u_author" value="{{ book.author }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">الوصف</label>
-                <textarea name="u_description" rows="4" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">{{ book.description }}</textarea>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Description') }}</label>
+                <textarea name="u_description" rows="4" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">{{ book.description }}</textarea>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">رابط صورة الغلاف (اختياري)</label>
-                <input type="url" name="u_cover_url" value="{{ book.cover_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-left">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Cover Image URL') }} ({{ t('Optional') if lang != 'ar' else 'اختياري' }})</label>
+                <input type="url" name="u_cover_url" value="{{ book.cover_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">رابط ملف القراءة المباشر (PDF/EPUB) (اختياري)</label>
-                <input type="url" name="u_file_url" value="{{ book.file_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-left" placeholder="https://example.com/book.pdf">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Reading File URL (PDF/EPUB)') }} ({{ t('Optional') if lang != 'ar' else 'اختياري' }})</label>
+                <input type="url" name="u_file_url" value="{{ book.file_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start" placeholder="https://example.com/book.pdf">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right font-black">أو قم برفع ملف الكتاب من جهازك (PDF/EPUB/TXT)</label>
-                <input type="file" name="u_file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all text-right">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start font-black">{{ t('Or Upload Book File (PDF/EPUB/TXT)') if lang != 'ar' else 'أو قم برفع ملف الكتاب من جهازك (PDF/EPUB/TXT)' }}</label>
+                <input type="file" name="u_file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all text-start">
                 {% if book.file_url %}
-                    <p class="text-xs text-green-600 mt-2 flex items-center gap-1 justify-end">
+                    <p class="text-xs text-green-600 mt-2 flex items-center gap-1 justify-start">
                         <span class="material-symbols-outlined text-sm">check_circle</span>
-                        يوجد ملف قراءة محفوظ بالفعل لهذا الكتاب.
+                        {{ t('A reading file is already saved for this book.') if lang != 'ar' else 'يوجد ملف قراءة محفوظ بالفعل لهذا الكتاب.' }}
                     </p>
                 {% endif %}
             </div>
 
             <div class="mt-8 flex gap-3 pt-4 border-t border-slate-100">
                 <button type="button" onclick="closeEditBookModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
-                    إلغاء
+                    {{ t('Cancel') }}
                 </button>
                 <button type="submit" class="flex-[2] py-4 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">save</span>
-                    حفظ التغييرات
+                    {{ t('Save Changes') if lang != 'ar' else 'حفظ التغييرات' }}
                 </button>
             </div>
         </form>
@@ -430,7 +436,7 @@
                 await navigator.share(shareData);
             } else {
                 await navigator.clipboard.writeText(window.location.href);
-                alert("Link copied to clipboard!");
+                alert("{{ t('Link copied to clipboard!') }}");
             }
         } catch (err) {
             console.error(err);

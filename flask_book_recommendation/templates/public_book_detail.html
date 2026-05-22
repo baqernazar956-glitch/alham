@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {% if deferred_load %}Loading... | Elham{% else %}{{ book.title }} | Elham{% endif %}
+    {% if deferred_load %}{{ t('Loading...') if lang != 'ar' else 'جاري التحميل...' }} | Elham{% else %}{{ book.title }} | Elham{% endif %}
 {% endblock %}
 
 {% block content %}

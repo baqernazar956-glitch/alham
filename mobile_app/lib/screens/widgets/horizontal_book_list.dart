@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/book.dart';
+import '../../config/translations.dart';
 import 'book_card.dart';
 
 class HorizontalBookList extends StatelessWidget {
@@ -17,9 +18,9 @@ class HorizontalBookList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (books.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 250,
-        child: Center(child: Text('No books found.')),
+        child: Center(child: Text(context.t('no_books_found'))),
       );
     }
 

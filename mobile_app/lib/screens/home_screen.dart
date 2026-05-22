@@ -10,8 +10,11 @@ import 'assistant_screen.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'widgets/book_card.dart';
 import '../models/user.dart';
-import '../services/auth_service.dart';
 import 'public_library_screen.dart';
+import '../config/translations.dart';
+import '../config/app_config.dart';
+import '../providers/auth_provider.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -26,26 +29,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
   bool _initialLoadDone = false;
   int _trendingLimit = 6;
   int _communityPulseLimit = 6;
-  User? _currentUser;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _fetchUser();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadAllData();
     });
-  }
-
-  Future<void> _fetchUser() async {
-    final user = await AuthService.getCurrentUser();
-    if (mounted) {
-      setState(() {
-        _currentUser = user;
-      });
-    }
   }
 
   @override
@@ -74,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final bp = Provider.of<BooksProvider>(context);
+    final currentUser = Provider.of<AuthProvider>(context).currentUser;
 
     return Scaffold(
       body: RefreshIndicator(
@@ -96,15 +89,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                 children: [
                   GestureDetector(
                     onTap: () {
-                      // Navigate to profile tab (index 3)
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                      );
                     },
                     child: CircleAvatar(
                       radius: 22,
                       backgroundColor: cs.primary.withValues(alpha: 0.1),
-                      backgroundImage: (_currentUser?.profilePicture != null && _currentUser!.profilePicture!.isNotEmpty)
-                          ? NetworkImage(_currentUser!.profilePicture!)
+                      backgroundImage: (currentUser?.profilePicture != null && currentUser!.profilePicture!.isNotEmpty)
+                          ? CachedNetworkImageProvider(
+                              '${AppConfig.serverBaseUrl}${currentUser.profilePicture}',
+                            )
                           : null,
-                      child: (_currentUser?.profilePicture == null || _currentUser!.profilePicture!.isEmpty)
+                      child: (currentUser?.profilePicture == null || currentUser!.profilePicture!.isEmpty)
                           ? Icon(Icons.person_outline, color: cs.primary, size: 24)
                           : null,
                     ),
@@ -169,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                         }
                       },
                       decoration: InputDecoration(
-                        hintText: 'Search for your next read...',
+                        hintText: context.t('search_hint'),
                         hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.4), fontSize: 15),
                         prefixIcon: Icon(Icons.search_rounded, color: cs.primary, size: 22),
                         border: InputBorder.none,
@@ -197,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                     child: _sectionHeader(
                       context, 
                       '', 
-                      bp.personalizedSections[i]['title'] ?? 'Recommended for You', 
+                      context.t(bp.personalizedSections[i]['title'] ?? 'Recommended for You'), 
                       cs.secondary,
                       icon: null,
                       trailing: (bp.personalizedSections[i]['books'] as List).length > 6 ? TextButton(
@@ -206,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                             _showAllRecommendations = !_showAllRecommendations;
                           });
                         },
-                        child: Text(_showAllRecommendations ? 'Show Less' : 'Show All'),
+                        child: Text(_showAllRecommendations ? context.t('show_less') : context.t('show_all')),
                       ) : null,
                     ),
                   ),
@@ -225,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                 child: _sectionHeader(
                   context, 
                   '', 
-                  'Community Pulse', 
+                  context.t('community_pulse'), 
                   cs.onSurface,
                   trailing: bp.trendingBooks.length > 6 ? TextButton(
                     onPressed: () {
@@ -237,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                         }
                       });
                     },
-                    child: Text((_communityPulseLimit >= bp.trendingBooks.length || _communityPulseLimit >= 15) ? 'Show Less' : 'Show All'),
+                    child: Text((_communityPulseLimit >= bp.trendingBooks.length || _communityPulseLimit >= 15) ? context.t('show_less') : context.t('show_all')),
                   ) : null,
                 ),
               ),
@@ -253,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                 child: _sectionHeader(
                   context, 
                   '', 
-                  'Trending Now', 
+                  context.t('trending_now'), 
                   cs.secondary,
                   icon: null,
                   trailing: bp.topRatedBooks.length > 6 ? TextButton(
@@ -266,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                         }
                       });
                     },
-                    child: Text((_trendingLimit >= bp.topRatedBooks.length || _trendingLimit >= 100) ? 'Show Less' : 'Show All'),
+                    child: Text((_trendingLimit >= bp.topRatedBooks.length || _trendingLimit >= 100) ? context.t('show_less') : context.t('show_all')),
                   ) : null,
                 ),
               ),
@@ -310,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
 
             // ─── Curated Collections (Book Series) ───
             if (bp.curatedCollections.isNotEmpty) ...[
-              SliverToBoxAdapter(child: _sectionHeader(context, '', 'Curated Collections', cs.onSurface, icon: null)),
+              SliverToBoxAdapter(child: _sectionHeader(context, '', context.t('curated_collections'), cs.onSurface, icon: null)),
               SliverToBoxAdapter(child: _buildCuratedCollections(context, bp.curatedCollections)),
             ],
 
@@ -349,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
           ),
           const SizedBox(height: 20),
           Text(
-            'Set sail into the vast\nhorizons of knowledge',
+            context.t('hero_quote'),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w900, height: 1.2, letterSpacing: -1),
           ),
@@ -384,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-                    child: const Text('Featured Read', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    child: Text(context.t('featured_read'), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 8),
                   Text(book.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20), maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -394,7 +392,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                    child: Text('Start Reading', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                    child: Text(context.t('start_reading'), style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                   ),
                 ],
               ),
@@ -489,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Because you\nsearched for\n"$query"',
+                      context.t('because_you_searched').replaceAll('{query}', query),
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
@@ -499,9 +497,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      "We noticed you're on a journey of improvement. These hand-picked titles might be the next step in your evolution.",
-                      style: TextStyle(
+                    Text(
+                      context.t('because_you_searched_desc'),
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF8B7355),
                         height: 1.4,
@@ -524,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Discover More', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(context.t('discover_more'), style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -593,7 +591,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
-                                        '${(85 + (book.title.length % 15))}% MATCH',
+                                        '${(85 + (book.title.length % 15))}% ${context.t('match')}',
                                         style: const TextStyle(color: Color(0xFF8E24AA), fontSize: 8, fontWeight: FontWeight.bold),
                                       ),
                                     ),
@@ -669,7 +667,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(color: cs.secondary.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(12)),
-                            child: const Text('Top Rated', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                            child: Text(context.t('top_rated'), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
                           ),
                         ),
                       ],
@@ -687,7 +685,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                             children: [
                               Icon(Icons.star, size: 14, color: cs.tertiary),
                               const SizedBox(width: 4),
-                              Text(book.averageRating > 0 ? book.averageRating.toStringAsFixed(1) : 'New', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cs.onSurface)),
+                              Text(book.averageRating > 0 ? book.averageRating.toStringAsFixed(1) : context.t('new_rating'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cs.onSurface)),
                               if (book.ratingsCount > 0) ...[
                                 const SizedBox(width: 4),
                                 Text('(${book.ratingsCount})', style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
@@ -771,13 +769,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
                             children: [
                               Container(width: 20, height: 3, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
                               const SizedBox(width: 8),
-                              Text('$count+ VOLUMES', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.grey[500], letterSpacing: 1.5)),
+                              Text('$count+ ${context.t('volumes')}', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.grey[500], letterSpacing: 1.5)),
                             ],
                           ),
                           const SizedBox(height: 6),
                           Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
                           const Spacer(),
-                          Text('EXPLORE →', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.primary, letterSpacing: 1.5)),
+                          Text(context.t('explore'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.primary, letterSpacing: 1.5)),
                         ],
                       ),
                     ),
@@ -801,11 +799,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
         children: [
           Icon(Icons.format_quote, size: 36, color: cs.onSurface.withValues(alpha: 0.1)),
           const SizedBox(height: 12),
-          Text('A book is a structural entity, a space where thought is architectural and narrative is material.', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold, height: 1.5)),
+          Text(context.t('quote_manifesto'), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold, height: 1.5)),
           const SizedBox(height: 12),
           Container(width: 32, height: 3, decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(2))),
           const SizedBox(height: 8),
-          Text("The Curator's Manifesto", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: cs.onSurfaceVariant)),
+          Text(context.t('quote_author'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: cs.onSurfaceVariant)),
         ],
       ),
     );
@@ -825,13 +823,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver, Ro
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('How are you feeling?', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(context.t('mood_selector_title'), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8, runSpacing: 8,
             children: moods.map((m) => ActionChip(
               avatar: Text(m['emoji'] as String, style: const TextStyle(fontSize: 16)),
-              label: Text(m['label'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              label: Text(context.t('mood_${m['key']}'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               onPressed: () => _loadMoodBooks(m['key'] as String),
               side: BorderSide.none,
               backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),

@@ -275,6 +275,61 @@ class UserService {
     );
   }
 
+  /// Uploads user profile picture. Accepts an XFile from image_picker.
+  static Future<Map<String, dynamic>> uploadProfilePicture(dynamic xFile) async {
+    try {
+      final token = await AuthService.getToken();
+      final url = '${AppConfig.serverBaseUrl}/api/user/profile-picture';
+      
+      final request = http.MultipartRequest('POST', Uri.parse(url));
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      
+      final bytes = await xFile.readAsBytes();
+      final multipartFile = http.MultipartFile.fromBytes(
+        'profile_picture',
+        bytes,
+        filename: xFile.name,
+      );
+      request.files.add(multipartFile);
+      
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 25));
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      final data = jsonDecode(response.body);
+      return {
+        'success': data['success'] ?? false,
+        'error': data['error'],
+        'profile_picture': data['profile_picture'],
+      };
+    } catch (e) {
+      return {'success': false, 'error': '$e'};
+    }
+  }
+
+  /// Deletes the user profile picture from the backend.
+  static Future<bool> deleteProfilePicture() async {
+    try {
+      final headers = await AuthService.authHeaders;
+      final url = '${AppConfig.serverBaseUrl}/api/user/profile-picture';
+      
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      print('Error deleting profile picture: $e');
+      return false;
+    }
+  }
+
   // ─── Update Reading Progress ───
   
   static Future<bool> updateReadingProgress(String gid, int progress) async {

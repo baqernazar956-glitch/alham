@@ -78,3 +78,11 @@ update_db_schema.py
 
 # Images (generated/temp)
 *.png
+
+# App Uploads
+flask_book_recommendation/static/uploads/
+
+# Local Scratch and logs
+scratch/
+screenshot/
+server_log.txt

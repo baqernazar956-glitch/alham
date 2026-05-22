@@ -158,7 +158,10 @@
             </div>
         </div>
         <div class="-mt-20 relative z-10 text-center w-full" id="reco-btn-container">
-            <button id="toggle-reco-bottom" class="px-10 py-3.5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg hover:-translate-y-1 block mx-auto">
+            <button id="toggle-reco-bottom" 
+                    data-text-more="{{ t('SHOW MORE') }}" 
+                    data-text-less="{{ t('SHOW LESS') }}"
+                    class="px-10 py-3.5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg hover:-translate-y-1 block mx-auto">
                 {{ t('SHOW MORE') }}
             </button>
         </div>
@@ -177,7 +180,7 @@
                         card.style.transform = 'scale(0.9)';
                         setTimeout(() => card.classList.add('hidden'), 300);
                     });
-                    btn.innerText = 'SHOW MORE';
+                    btn.innerText = btn.getAttribute('data-text-more') || 'SHOW MORE';
                     // Scroll back to start
                     setTimeout(() => {
                         document.getElementById('reco-scroll').scrollTo({ left: 0, behavior: 'smooth' });
@@ -194,7 +197,7 @@
                             card.style.transform = 'scale(1)';
                         }, i * 30);
                     });
-                    btn.innerText = 'SHOW LESS';
+                    btn.innerText = btn.getAttribute('data-text-less') || 'SHOW LESS';
                     // Nudge scroll to show new books
                     setTimeout(() => {
                         document.getElementById('reco-scroll').scrollBy({ left: 300, behavior: 'smooth' });
@@ -240,8 +243,12 @@
 
     {% if most_viewed_books|length > 10 %}
     <div class="mt-8 text-center">
-        <button id="show-more-community" class="px-10 py-3.5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg hover:-translate-y-1 block mx-auto">
-            SHOW MORE
+        <button id="show-more-community" 
+                data-text-more="{{ t('SHOW MORE') }}" 
+                data-text-less="{{ t('SHOW LESS') }}"
+                data-expanded="false"
+                class="px-10 py-3.5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg hover:-translate-y-1 block mx-auto">
+            {{ t('SHOW MORE') }}
         </button>
     </div>
 
@@ -249,7 +256,7 @@
         document.getElementById('show-more-community').addEventListener('click', function() {
             const btn = this;
             const hiddenItems = document.querySelectorAll('.community-item-hidden');
-            const isExpanded = btn.innerText.toUpperCase().includes('LESS');
+            const isExpanded = btn.getAttribute('data-expanded') === 'true';
             
             if (isExpanded) {
                 // Collapse
@@ -257,7 +264,8 @@
                     item.classList.add('opacity-0');
                     setTimeout(() => item.classList.add('hidden'), 500);
                 });
-                btn.innerText = 'SHOW MORE';
+                btn.innerText = btn.getAttribute('data-text-more') || 'SHOW MORE';
+                btn.setAttribute('data-expanded', 'false');
                 
                 // Smoothly scroll back to the start
                 document.getElementById('community-slider').scrollTo({ left: 0, behavior: 'smooth' });
@@ -268,7 +276,8 @@
                     item.classList.remove('hidden');
                     setTimeout(() => item.classList.remove('opacity-0'), index * 10);
                 });
-                btn.innerText = 'SHOW LESS';
+                btn.innerText = btn.getAttribute('data-text-less') || 'SHOW LESS';
+                btn.setAttribute('data-expanded', 'true');
                 
                 setTimeout(() => {
                     document.getElementById('community-slider').scrollBy({ left: 300, behavior: 'smooth' });
@@ -345,7 +354,11 @@
 
         {% if top_rated_books_sorted|length > 10 %}
         <div class="mt-12 text-center" id="trending-btn-container">
-            <button id="show-more-trending" class="px-10 py-3.5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg hover:-translate-y-1">
+            <button id="show-more-trending" 
+                    data-text-more="{{ t('Show 100 TRENDING MASTERPIECES') }}" 
+                    data-text-less="{{ t('Show Less') }}"
+                    data-expanded="false"
+                    class="px-10 py-3.5 bg-on-surface text-surface rounded-full font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg hover:-translate-y-1">
                 {{ t('Show 100 TRENDING MASTERPIECES') }}
             </button>
         </div>
@@ -354,7 +367,7 @@
             document.getElementById('show-more-trending').addEventListener('click', function() {
                 const btn = this;
                 const hiddenItems = document.querySelectorAll('.trending-item-hidden');
-                const isExpanded = btn.innerText.toUpperCase().includes('LESS');
+                const isExpanded = btn.getAttribute('data-expanded') === 'true';
                 
                 if (isExpanded) {
                     // Collapse
@@ -362,7 +375,8 @@
                         item.classList.add('opacity-0');
                         setTimeout(() => item.classList.add('hidden'), 500);
                     });
-                    btn.innerText = 'Show 100 TRENDING MASTERPIECES';
+                    btn.innerText = btn.getAttribute('data-text-more') || 'Show 100 TRENDING MASTERPIECES';
+                    btn.setAttribute('data-expanded', 'false');
                     
                     // Smoothly scroll back to the start of the trending section
                     document.getElementById('trending-slider').scrollTo({ left: 0, behavior: 'smooth' });
@@ -373,7 +387,8 @@
                         item.classList.remove('hidden');
                         setTimeout(() => item.classList.remove('opacity-0'), index * 10);
                     });
-                    btn.innerText = 'Show Less';
+                    btn.innerText = btn.getAttribute('data-text-less') || 'Show Less';
+                    btn.setAttribute('data-expanded', 'true');
                     
                     // Optional: nudge to show more items
                     setTimeout(() => {
@@ -470,7 +485,7 @@
                 
                 // Reset button
                 btn.setAttribute('data-state', 'collapsed');
-                btn.innerText = 'Load More Series';
+                btn.innerText = btn.getAttribute('data-text-more') || 'Load More Series';
                 
                 // Scroll back up slightly to the grid
                 setTimeout(() => {
@@ -504,7 +519,7 @@
                     setTimeout(() => {
                         if (document.querySelectorAll('.featured-list-card.hidden').length === 0) {
                             btn.setAttribute('data-state', 'expanded');
-                            btn.innerText = 'Show Less Series';
+                            btn.innerText = btn.getAttribute('data-text-less') || 'Show Less Series';
                         }
                     }, 400);
                 }

@@ -1,48 +1,48 @@
 {% extends "base.html" %}
 {% from "components/macros.html" import render_book_card %}
 
-{% block title %}{{ title }} | The Digital Curator{% endblock %}
+{% block title %}{{ title }} | {{ t('The Digital Curator') if lang != 'ar' else 'المنسق الرقمي' }}{% endblock %}
 
 {% block content %}
-<main class="min-h-screen pt-32 bg-surface">
+<main class="min-h-screen pt-32 bg-surface text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <div class="max-w-screen-2xl mx-auto px-8 lg:px-24 pb-24 space-y-24">
         
         <!-- Exploration Header -->
-        <header class="space-y-8">
-            <div class="flex items-center gap-4">
+        <header class="space-y-8 text-start">
+            <div class="flex items-center gap-4 text-start">
                 <a href="{{ url_for('main.home') }}" class="group inline-flex items-center gap-4 text-on-surface/40 hover:text-primary transition-all font-label text-xs uppercase tracking-widest font-black">
-                    <span class="material-symbols-outlined text-sm group-hover:-translate-x-2 transition-transform">home</span>
-                    {{ t('Central Hub') }}
+                    <span class="material-symbols-outlined text-sm {{ 'group-hover:translate-x-2' if lang == 'ar' else 'group-hover:-translate-x-2' }} transition-transform">home</span>
+                    {{ t('Central Hub') if lang != 'ar' else 'المركز الرئيسي' }}
                 </a>
             </div>
             
-            <div class="space-y-4">
-                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">{{ t('Curated Collection') }}</span>
-                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none">{{ t(title) }}</h1>
-                <p class="font-body text-on-surface-variant max-w-2xl text-xl italic">{{ t(description) }}</p>
+            <div class="space-y-4 text-start">
+                <span class="font-label text-xs uppercase tracking-[0.6em] text-primary text-start">{{ t('Curated Collection') if lang != 'ar' else 'مجموعة منسقة' }}</span>
+                <h1 class="font-headline text-7xl font-black tracking-tighter text-on-surface leading-none text-start">{{ title }}</h1>
+                <p class="font-body text-on-surface-variant max-w-2xl text-xl italic text-start">{{ description }}</p>
             </div>
         </header>
 
         <!-- Discovery Parameters -->
-        <div class="flex flex-wrap items-center justify-between gap-8 pb-8 border-b border-on-surface/10">
-            <div class="flex items-center gap-px bg-on-surface/5 border border-on-surface/5">
-                <div class="bg-surface px-8 py-4 flex flex-col">
-                    <span class="font-label text-[10px] uppercase font-black text-on-surface/30 leading-none mb-1">Results</span>
-                    <span class="font-headline font-black text-2xl text-primary">{{ books|length }} <span class="text-xs uppercase tracking-widest font-bold text-on-surface/20">Volumes</span></span>
+        <div class="flex flex-wrap items-center justify-between gap-8 pb-8 border-b border-on-surface/10 text-start">
+            <div class="flex items-center gap-px bg-on-surface/5 border border-on-surface/5 text-start">
+                <div class="bg-surface px-8 py-4 flex flex-col text-start">
+                    <span class="font-label text-[10px] uppercase font-black text-on-surface/30 leading-none mb-1 text-start">{{ t('Results') if lang != 'ar' else 'النتائج' }}</span>
+                    <span class="font-headline font-black text-2xl text-primary text-start">{{ books|length }} <span class="text-xs uppercase tracking-widest font-bold text-on-surface/20">{{ t('Volumes') if lang != 'ar' else 'مجلدات' }}</span></span>
                 </div>
             </div>
             
-            <div class="flex items-center gap-4 bg-surface-container-low p-2 border border-on-surface/5">
-                <button class="bg-on-surface text-white px-6 py-3 font-headline font-black text-xs uppercase tracking-widest shadow-2xl">{{ t('Grid Analysis') }}</button>
-                <button class="text-on-surface/20 hover:text-primary px-6 py-3 font-headline font-black text-xs uppercase tracking-widest transition-colors">{{ t('Vertical Ledger') }}</button>
+            <div class="flex items-center gap-4 bg-surface-container-low p-2 border border-on-surface/5 text-start">
+                <button class="bg-on-surface text-white px-6 py-3 font-headline font-black text-xs uppercase tracking-widest shadow-2xl">{{ t('Grid Analysis') if lang != 'ar' else 'عرض شبكي' }}</button>
+                <button class="text-on-surface/20 hover:text-primary px-6 py-3 font-headline font-black text-xs uppercase tracking-widest transition-colors">{{ t('Vertical Ledger') if lang != 'ar' else 'عرض قائمة' }}</button>
             </div>
         </div>
 
         <!-- The Archives Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-12 gap-y-24">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-12 gap-y-24 text-start">
             {% for book in books %}
                 {# Manually rendering book card to ensure Digital Curator style #}
-                <div class="group cursor-pointer space-y-6" onclick="window.location.href='{{ url_for('main.book_detail', book_id=book.id) if book.id else '#' }}';">
+                <div class="group cursor-pointer space-y-6 text-start" onclick="window.location.href='{{ url_for('main.book_detail', book_id=book.id) if book.id else '#' }}';">
                     <div class="aspect-[2/3] overflow-hidden bg-surface-container-highest relative shadow-[0_30px_60px_-15px_rgba(115,92,0,0.1)] group-hover:shadow-[0_50px_100px_-20px_rgba(115,92,0,0.2)] transition-all duration-700">
                         <img src="{{ book.cover_url or 'https://placehold.co/400x600/fbfbe2/a04100?text=Folio' }}" 
                              alt="{{ book.title }}" 
@@ -54,12 +54,12 @@
                         <div class="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors"></div>
                     </div>
                     
-                    <div class="space-y-2">
-                        <h4 class="font-headline font-black text-lg text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                    <div class="space-y-2 text-start">
+                        <h4 class="font-headline font-black text-lg text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-tight text-start">
                             {{ book.title }}
                         </h4>
-                        <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest">
-                            {{ book.author or "Unidentified Creator" }}
+                        <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest text-start">
+                            {{ book.author or (t('Unidentified Creator') if lang != 'ar' else 'مؤلف غير معروف') }}
                         </p>
                     </div>
                 </div>
@@ -69,10 +69,10 @@
                     <span class="material-symbols-outlined text-4xl text-on-surface/10">search_off</span>
                 </div>
                 <div class="space-y-4">
-                    <h3 class="font-headline font-black text-3xl">{{ t('Zero Signal Detected') }}</h3>
-                    <p class="font-body text-on-surface-variant max-w-sm mx-auto">{{ t('No volumes match the current exploration parameters. Try broadening your intellectual scope.') }}</p>
+                    <h3 class="font-headline font-black text-3xl text-center">{{ t('Zero Signal Detected') if lang != 'ar' else 'لم يتم العثور على نتائج' }}</h3>
+                    <p class="font-body text-on-surface-variant max-w-sm mx-auto text-center">{{ t('No volumes match the current exploration parameters. Try broadening your intellectual scope.') if lang != 'ar' else 'لم تطابق أي كتب معلمات الاستكشاف الحالية. حاول توسيع نطاق بحثك.' }}</p>
                 </div>
-                <a href="{{ url_for('main.home') }}" class="inline-flex bg-on-surface text-white font-headline font-black px-12 py-5 text-sm uppercase tracking-widest hover:bg-primary transition-all shadow-2xl">{{ t('Return to Hub') }}</a>
+                <a href="{{ url_for('main.home') }}" class="inline-flex bg-on-surface text-white font-headline font-black px-12 py-5 text-sm uppercase tracking-widest hover:bg-primary transition-all shadow-2xl">{{ t('Return to Hub') if lang != 'ar' else 'العودة للرئيسية' }}</a>
             </div>
             {% endfor %}
         </div>

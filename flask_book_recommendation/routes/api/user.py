@@ -810,7 +810,110 @@ def update_profile():
             'bio': user.bio,
             'reading_goal': user.reading_goal,
             'rank': user.rank,
+            'profile_picture': user.profile_picture,
         }
+    })
+
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@api_user_bp.route('/profile-picture', methods=['POST'])
+@jwt_required()
+def upload_profile_picture():
+    """
+    تحديث صورة الملف الشخصي عبر الـ API
+    POST /api/user/profile-picture
+    Multipart Form Body: profile_picture (file)
+    """
+    import os
+    import uuid
+    from flask import current_app
+    
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({'success': False, 'error': 'المستخدم غير موجود'}), 404
+        
+    if 'profile_picture' not in request.files:
+        return jsonify({'success': False, 'error': 'لم يتم إرسال ملف الصورة'}), 400
+        
+    file = request.files['profile_picture']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'اسم الملف فارغ'}), 400
+        
+    if file and allowed_file(file.filename):
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"{user.id}_{uuid.uuid4().hex[:8]}.{ext}"
+        
+        # Setup folders
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'profiles')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Remove old file if it exists
+        if user.profile_picture:
+            old_path = os.path.join(current_app.root_path, 'static', user.profile_picture.lstrip('/static/'))
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except Exception as e:
+                    print(f"Error removing old avatar: {e}")
+                    
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
+        
+        user.profile_picture = f"/static/uploads/profiles/{filename}"
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم تحديث الصورة الشخصية بنجاح',
+            'profile_picture': user.profile_picture
+        })
+        
+    return jsonify({'success': False, 'error': 'امتداد الملف غير مسموح به'}), 400
+
+
+@api_user_bp.route('/profile-picture', methods=['DELETE'])
+@jwt_required()
+def delete_profile_picture():
+    """
+    حذف صورة الملف الشخصي عبر الـ API
+    DELETE /api/user/profile-picture
+    """
+    import os
+    from flask import current_app
+    
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({'success': False, 'error': 'المستخدم غير موجود'}), 404
+        
+    if user.profile_picture:
+        # حذف ملف الصورة من الخادم
+        filepath = os.path.join(current_app.root_path, 'static', user.profile_picture.lstrip('/static/'))
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except Exception as e:
+                print(f"Error deleting profile picture file: {e}")
+                
+        user.profile_picture = None
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم حذف الصورة الشخصية بنجاح'
+        })
+        
+    return jsonify({
+        'success': True,
+        'message': 'لا توجد صورة شخصية لحذفها'
     })
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/book.dart';
+import '../../config/translations.dart';
 import '../book_detail_screen.dart';
 
 class BookCard extends StatelessWidget {
@@ -70,7 +71,7 @@ class BookCard extends StatelessWidget {
                         Icon(Icons.book_outlined,
                             size: 40, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
                         const SizedBox(height: 8),
-                        Text('No Image', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                        Text(context.t('no_image'), style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       ],
                     ),
                   ),

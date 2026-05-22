@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/translations.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -49,7 +50,7 @@ class SectionHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    'SEE ALL',
+                    context.t('see_all_header'),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
@@ -58,7 +59,7 @@ class SectionHeader extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    Icons.arrow_forward_ios,
+                    context.isRtl ? Icons.arrow_back_ios : Icons.arrow_forward_ios,
                     size: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

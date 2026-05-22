@@ -13,6 +13,7 @@ import '../providers/books_provider.dart';
 import 'widgets/star_rating.dart';
 import 'widgets/review_card.dart';
 import 'assistant_screen.dart';
+import '../config/translations.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
@@ -108,7 +109,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                  icon: Icon(context.isRtl ? Icons.arrow_forward : Icons.arrow_back, color: Colors.white, size: 20),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
                 ),
@@ -185,13 +186,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                   const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
                                   const SizedBox(width: 4),
                                   Text(
-                                    book.averageRating > 0 ? book.averageRating.toStringAsFixed(1) : 'New',
+                                    book.averageRating > 0 ? book.averageRating.toStringAsFixed(1) : context.t('new_rating'),
                                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                                   ),
                                   if (book.ratingsCount > 0) ...[
                                     const SizedBox(width: 8),
                                     Text(
-                                      '(${book.ratingsCount} reviews)',
+                                      '(${book.ratingsCount} ${context.t('reviews')})',
                                       style: const TextStyle(color: Colors.white70, fontSize: 12),
                                     ),
                                   ],
@@ -208,7 +209,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                       children: [
                                         const Icon(Icons.menu_book, color: Colors.white70, size: 14),
                                         const SizedBox(width: 4),
-                                        Text('${book.pageCount} pages', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                        Text('${book.pageCount} ${context.t('pages')}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                                       ],
                                     ),
                                   if (book.publishedDate.isNotEmpty)
@@ -283,10 +284,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           _buildReadButton(context),
 
           // ─── Synopsis ───
-          Text('Synopsis & Analysis', style: tt.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.w900, letterSpacing: 2)),
+          Text(context.t('synopsis_title'), style: tt.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.w900, letterSpacing: 2)),
           const SizedBox(height: 8),
           Text(
-            book.description.isNotEmpty ? book.description : 'No synopsis available for this volume.',
+            book.description.isNotEmpty ? book.description : context.t('no_synopsis'),
             style: tt.bodyLarge?.copyWith(height: 1.7, color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 32),
@@ -322,7 +323,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Book Details', style: tt.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.w900, letterSpacing: 2)),
+        Text(context.t('book_details'), style: tt.labelSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.w900, letterSpacing: 2)),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(20),
@@ -333,26 +334,26 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ),
           child: Column(
             children: [
-              _detailRow('Author', book.author),
+              _detailRow(context.t('author_label'), book.author),
               if (book.publisher.isNotEmpty) ...[
                 const Divider(height: 24),
-                _detailRow('Publisher', book.publisher),
+                _detailRow(context.t('publisher_label'), book.publisher),
               ],
               if (book.publishedDate.isNotEmpty) ...[
                 const Divider(height: 24),
-                _detailRow('Publication Date', book.publishedDate),
+                _detailRow(context.t('publication_date'), book.publishedDate),
               ],
               if (book.pageCount > 0) ...[
                 const Divider(height: 24),
-                _detailRow('Pages', '${book.pageCount} pages'),
+                _detailRow(context.t('pages'), '${book.pageCount} ${context.t('pages')}'),
               ],
               if (book.language.isNotEmpty) ...[
                 const Divider(height: 24),
-                _detailRow('Language', book.language.toUpperCase()),
+                _detailRow(context.t('language'), book.language.toUpperCase()),
               ],
               if (book.categories.isNotEmpty) ...[
                 const Divider(height: 24),
-                _detailRow('Categories', book.categories.join(', ')),
+                _detailRow(context.t('categories_label'), book.categories.join(', ')),
               ],
             ],
           ),
@@ -377,7 +378,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           child: Text(
             value,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-            textAlign: TextAlign.right,
+            textAlign: context.isRtl ? TextAlign.left : TextAlign.right,
           ),
         ),
       ],
@@ -392,7 +393,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       readingUrl = book.infoLink;
     }
     
-    String label = 'Read Now';
+    String label = context.t('read_now');
     IconData icon = Icons.menu_book_rounded;
 
     // Fallback for Gutenberg if link is missing
@@ -415,7 +416,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     // If still no URL, fallback to Google Books search for the book title
     if (readingUrl == null || readingUrl.isEmpty) {
       readingUrl = 'https://www.google.com/search?tbm=bks&q=${Uri.encodeComponent(book.title + ' ' + book.author)}';
-      label = 'Find on Google Books';
+      label = context.t('find_on_google_books');
       icon = Icons.search;
     }
 
@@ -455,7 +456,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Be Vietnam Pro',
                   ),
                 ),
               ],
@@ -469,10 +469,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Widget _buildMetaRow(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final items = <MapEntry<String, String>>[
-      if (book.pageCount > 0) MapEntry('Pages', '${book.pageCount}'),
-      if (book.publishedDate.isNotEmpty) MapEntry('Year', book.publishedDate.length >= 4 ? book.publishedDate.substring(0, 4) : book.publishedDate),
-      if (book.language.isNotEmpty) MapEntry('Language', book.language.toUpperCase()),
-      if (book.pageCount > 0) MapEntry('Read Time', '~${(book.pageCount / 25).round()}h'),
+      if (book.pageCount > 0) MapEntry(context.t('pages'), '${book.pageCount}'),
+      if (book.publishedDate.isNotEmpty) MapEntry(context.t('year'), book.publishedDate.length >= 4 ? book.publishedDate.substring(0, 4) : book.publishedDate),
+      if (book.language.isNotEmpty) MapEntry(context.t('language'), book.language.toUpperCase()),
+      if (book.pageCount > 0) MapEntry(context.t('read_time'), '~${(book.pageCount / 25).round()}${context.t('hours_short')}'),
     ];
 
     return Row(
@@ -516,7 +516,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     children: [
                       Icon(s['icon'] as IconData, size: 22, color: isActive ? color : cs.onSurfaceVariant),
                       const SizedBox(height: 4),
-                      Text(s['label'] as String, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isActive ? color : cs.onSurfaceVariant)),
+                      Text(context.t('library_status_${s['key']}'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isActive ? color : cs.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -536,14 +536,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         Row(children: [
           Icon(Icons.psychology, color: cs.primary, size: 20),
           const SizedBox(width: 8),
-          Text('Interactive Features', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(context.t('interactive_features'), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
         ]),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _aiButton(context, Icons.chat_bubble_outline, 'Chat', 'Ask about this book', cs.primary, _openChat)),
+            Expanded(child: _aiButton(context, Icons.chat_bubble_outline, context.t('chat'), context.t('ask_about_book'), cs.primary, _openChat)),
             const SizedBox(width: 8),
-            Expanded(child: _aiButton(context, Icons.summarize_outlined, 'Summary', 'AI-generated summary', cs.secondary, _generateSummary)),
+            Expanded(child: _aiButton(context, Icons.summarize_outlined, context.t('summary'), context.t('ai_generated_summary'), cs.secondary, _generateSummary)),
           ],
         ),
       ],
@@ -583,15 +583,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Community Reviews', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2, color: cs.tertiary)),
-            if (_reviews.isNotEmpty) Text('${_reviews.length} reviews', style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+            Text(context.t('community_reviews'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2, color: cs.tertiary)),
+            if (_reviews.isNotEmpty) Text('${_reviews.length} ${context.t('reviews')}', style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
           ],
         ),
         const SizedBox(height: 12),
         if (_loadingReviews)
           const Center(child: CircularProgressIndicator())
         else if (_reviews.isEmpty)
-          _emptyState(context, Icons.forum_outlined, 'No reviews yet', 'Be the first to write a review')
+          _emptyState(context, Icons.forum_outlined, context.t('no_reviews_yet'), context.t('be_first_review'))
         else
           ...List.generate(
             _reviews.length > 3 ? 3 : _reviews.length,
@@ -611,9 +611,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(48)),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [Icon(Icons.edit_note, size: 20), SizedBox(width: 8), Text('Write a Review', style: TextStyle(fontWeight: FontWeight.bold))],
+              children: [const Icon(Icons.edit_note, size: 20), const SizedBox(width: 8), Text(context.t('write_review'), style: const TextStyle(fontWeight: FontWeight.bold))],
             ),
           ),
         ),
@@ -626,7 +626,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Personal Notes', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2, color: cs.secondary)),
+        Text(context.t('personal_notes'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2, color: cs.secondary)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(4),
@@ -638,7 +638,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             controller: _noteController,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: 'Write your private notes here...',
+              hintText: context.t('write_notes_placeholder'),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
               suffixIcon: IconButton(
@@ -657,7 +657,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Similar Books', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(context.t('similar_books'), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         SizedBox(
           height: 200,
@@ -746,7 +746,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not open book preview'), behavior: SnackBarBehavior.floating),
+            SnackBar(content: Text(context.t('could_not_open_preview')), behavior: SnackBarBehavior.floating),
           );
         }
       }
@@ -760,12 +760,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   void _shareBook() {
-    Share.share('Check out "${book.title}" by ${book.author} on Elham!');
+    final template = context.t('share_book_text');
+    final shareText = template.replaceAll('{title}', book.title).replaceAll('{author}', book.author);
+    Share.share(shareText);
   }
 
   void _saveNote() async {
     final ok = await UserService.saveNote(book.uniqueId, _noteController.text);
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Note saved!' : 'Failed to save'), behavior: SnackBarBehavior.floating));
+    if (mounted) {
+      final msg = ok ? context.t('note_saved') : context.t('failed_to_save_note');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
+    }
   }
 
   void _openChat() {
@@ -794,9 +799,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
-              Text('AI Summary', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text(context.t('ai_summary'), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              Text(result['summary'] ?? result['error'] ?? 'No summary available.', style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.7)),
+              Text(result['summary'] ?? result['error'] ?? context.t('no_summary_available'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.7)),
             ],
           ),
         ),
@@ -820,7 +825,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
-              const Text('Your Review', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 2)),
+              Text(context.t('your_review'), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 2)),
               const SizedBox(height: 16),
               StarRating(rating: selectedRating, size: 40, onRatingChanged: (r) => setSheetState(() => selectedRating = r)),
               const SizedBox(height: 16),
@@ -828,7 +833,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 controller: textController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'Share your thoughts about this book...',
+                  hintText: context.t('share_thoughts_placeholder'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                 ),
               ),
@@ -842,7 +847,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     if (ok) {
                       final reviews = await BooksService.getBookReviews(book.uniqueId);
                       if (mounted) setState(() => _reviews = reviews);
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review submitted!'), behavior: SnackBarBehavior.floating));
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.t('review_submitted')), behavior: SnackBarBehavior.floating));
                       
                       // Refresh recommendations silently in the background so HomeScreen reflects this change
                       if (mounted) {
@@ -853,7 +858,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     }
                   },
                   style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                  child: const Text('Submit Review', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(context.t('submit_review'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 24),

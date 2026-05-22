@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../config/translations.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
@@ -29,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     while (authProvider.isLoading) {
       await Future.delayed(const Duration(milliseconds: 100));
     }
-
+ 
     if (!mounted) return;
 
     if (authProvider.isAuthenticated) {
@@ -77,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Your AI Book Companion',
+              context.t('your_ai_book_companion'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white70,
                 letterSpacing: 2,

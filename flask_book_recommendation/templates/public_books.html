@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}{% if q %}Search: {{ q }}{% elif cat %}{{ cat }}{% else %}Library Collective{% endif %} | Elham{% endblock %}
+{% block title %}{% if q %}{{ t('Search') }}: {{ q }}{% elif cat %}{{ t(cat) }}{% else %}{{ t('Library Collective') if lang != 'ar' else 'مجموعة المكتبة' }}{% endif %} | Elham{% endblock %}
 
 {% block content %}
-<main class="pt-24 pb-20 max-w-full mx-auto px-8" dir="ltr">
+<main class="pt-24 pb-20 max-w-full mx-auto px-8" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <!-- Hero Section -->
     <header class="relative overflow-hidden rounded-[2.5rem] mb-16 min-h-[350px] flex items-center bg-gradient-to-br from-primary to-primary-container p-12 md:p-20 shadow-2xl shadow-primary/20">
         <div class="relative z-10 max-w-3xl">
             <h1 class="text-5xl md:text-7xl font-black text-on-primary font-headline mb-8 leading-tight tracking-tighter">
-                {% if q %}{{ t('Search') }}: {{ q }}{% elif cat %}{{ cat }}{% else %}{{ t('Public Library') }}{% endif %}
+                {% if q %}{{ t('Search') }}: {{ q }}{% elif cat %}{{ t(cat) }}{% else %}{{ t('Public Library') }}{% endif %}
             </h1>
             <p class="text-xl md:text-2xl text-on-primary/80 font-medium leading-relaxed max-w-2xl opacity-90">
                 {% if q %}
-                Found {{ total or 0 }} volumes matching your current search criteria in our curated intellectual archive.
+                {{ t('Found') }} {{ total or 0 }} {{ t('volumes matching your current search criteria in our curated intellectual archive.') if lang != 'ar' else 'مجلدات مطابقة لمعايير البحث الخاصة بك في أرشيفنا الفكري المنسق.' }}
                 {% else %}
-                Discover a universe of knowledge through our carefully curated collective. From literary fiction to the depths of structural philosophy, we offer only the most refined selections.
+                {{ t('Discover a universe of knowledge through our carefully curated collective. From literary fiction to the depths of structural philosophy, we offer only the most refined selections.') if lang != 'ar' else 'اكتشف كوناً من المعرفة من خلال مجموعتنا المنسقة بعناية. من الأدب الروائي إلى أعماق الفلسفة البنيوية، نقدم فقط الخيارات الأكثر رقيًا.' }}
                 {% endif %}
             </p>
         </div>
@@ -25,7 +25,7 @@
 
     <div class="flex flex-col lg:flex-row gap-16">
         <!-- Sidebar Filters -->
-        <aside class="w-full lg:w-96 flex-shrink-0 space-y-12 sticky top-32 self-start h-fit max-h-[calc(100vh-10rem)] overflow-y-auto no-scrollbar pb-10 text-left">
+        <aside class="w-full lg:w-96 flex-shrink-0 space-y-12 sticky top-32 self-start h-fit max-h-[calc(100vh-10rem)] overflow-y-auto no-scrollbar pb-10 text-start">
             <section>
                 <div class="flex items-center gap-4 mb-8">
                     <div class="h-10 w-2 bg-primary rounded-full"></div>
@@ -45,7 +45,7 @@
                     {% for cat_en in cat_list %}
                     <a href="{{ url_for('public.list_books', cat=cat_en, q=q) }}" 
                        class="flex items-center justify-between px-7 py-5 {% if cat == cat_en %}bg-primary text-on-primary shadow-2xl scale-[1.02] ring-8 ring-primary/5{% else %}bg-surface-container-low text-on-surface-variant hover:bg-primary/5 hover:text-primary{% endif %} rounded-[1.5rem] font-bold text-xl transition-all duration-500 group">
-                        <span class="group-hover:translate-x-2 transition-transform">{{ cat_en }}</span>
+                        <span class="group-hover:translate-x-2 transition-transform">{{ t(cat_en) }}</span>
                         <span class="material-symbols-outlined text-lg opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all">chevron_right</span>
                     </a>
                     {% endfor %}
@@ -172,15 +172,15 @@
                                     container.innerHTML = `
                                         <div class="py-40 text-center bg-surface-container-low rounded-[3rem] border-4 border-dashed border-outline-variant/10 flex flex-col justify-center items-center">
                                             <span class="material-symbols-outlined text-[10rem] text-outline-variant/20 mb-10">auto_stories</span>
-                                            <h3 class="text-4xl font-black text-on-surface mb-6 font-headline tracking-tighter uppercase">No matching results found</h3>
+                                            <h3 class="text-4xl font-black text-on-surface mb-6 font-headline tracking-tighter uppercase">{{ t('No matching results found') if lang != 'ar' else 'لم يتم العثور على نتائج مطابقة' }}</h3>
                                             <p class="text-lg text-on-surface-variant max-w-md mx-auto font-medium opacity-60">
-                                                We couldn't find any matches for your selection in our archive. Please try different keywords.
+                                                {{ t("We couldn't find any matches for your selection in our archive. Please try different keywords.") if lang != 'ar' else 'لم نتمكن من العثور على أي تطابقات لاختيارك في أرشيفنا. يرجى تجربة كلمات رئيسية مختلفة.' }}
                                             </p>
                                         </div>
                                     `;
                                     spinner.classList.add('hidden');
                                 } else {
-                                    spinner.innerHTML = '<div class="h-px bg-outline/10 w-32 mx-auto mb-8"></div><p class="text-outline/30 font-black text-xs uppercase tracking-[0.5em]">Horizon Reached</p>';
+                                    spinner.innerHTML = '<div class="h-px bg-outline/10 w-32 mx-auto mb-8"></div><p class="text-outline/30 font-black text-xs uppercase tracking-[0.5em]">' + "{{ t('Horizon Reached') if lang != 'ar' else 'تم الوصول إلى النهاية' }}" + '</p>';
                                     spinner.classList.remove('hidden');
                                 }
                             } else {

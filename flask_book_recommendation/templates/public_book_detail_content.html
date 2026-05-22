@@ -13,7 +13,7 @@
                     <img alt="{{ book.title }}" class="rounded-lg shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] w-full max-w-md mx-auto aspect-[2/3] object-cover border-4 border-white/10" src="https://placehold.co/400x600/f8fafc/ea580c?text=Book">
                     {% endif %}
                     <div class="absolute bottom-6 right-[-20px] bg-secondary px-6 py-3 rounded-xl shadow-xl animate-bounce">
-                        <p class="text-xs font-bold uppercase tracking-widest text-on-secondary">Digital Edition</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-on-secondary">{{ t('Digital Edition') }}</p>
                     </div>
                 </div>
             </div>
@@ -36,35 +36,35 @@
                             </div>
                             <span class="text-white font-bold text-lg">{{ "%.1f"|format(display_rating|float) }}</span>
                             {% if reviews %}
-                            <span class="text-white/60 text-sm">({{ reviews|length }} user review{{ 's' if reviews|length > 1 }})</span>
+                            <span class="text-white/60 text-sm">({{ reviews|length }} {{ t('user reviews') if reviews|length > 1 else t('user review') }})</span>
                             {% elif book.ratings_count %}
-                            <span class="text-white/60 text-sm">({{ book.ratings_count }} ratings)</span>
+                            <span class="text-white/60 text-sm">({{ book.ratings_count }} {{ t('ratings') }})</span>
                             {% endif %}
                             {% if source_rating > 0 and reviews %}
-                            <span class="text-white/40 text-xs">· Source: ★ {{ "%.1f"|format(source_rating) }}</span>
+                            <span class="text-white/40 text-xs">· {{ t('Source') }}: ★ {{ "%.1f"|format(source_rating) }}</span>
                             {% endif %}
                         </div>
                     </div>
                     <h1 class="text-6xl md:text-8xl font-black tracking-tighter leading-none">{{ book.title }}</h1>
-                    <p class="text-2xl text-primary-fixed font-medium">by {{ book.author or 'Unidentified' }}</p>
+                    <p class="text-2xl text-primary-fixed font-medium">{{ t('by') }} {{ book.author or t('Unidentified') }}</p>
                 </div>
                 <div class="text-xl text-slate-300 max-w-2xl leading-relaxed line-clamp-3">
-                    {{ book.desc|striptags|truncate(250) if book.desc else 'A curated volume from the Digital Archive.' }}
+                    {{ book.desc|striptags|truncate(250) if book.desc else t('A curated volume from the Digital Archive.') }}
                 </div>
                 <div class="flex items-center gap-8 py-4">
                     <div>
-                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Volume</p>
-                        <p class="text-4xl font-black">{{ book.pageCount or book.page_count or 'N/A' }} <span class="text-lg opacity-50">Pgs</span></p>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">{{ t('Volume') }}</p>
+                        <p class="text-4xl font-black">{{ book.pageCount or book.page_count or 'N/A' }} <span class="text-lg opacity-50">{{ t('Pgs') }}</span></p>
                     </div>
                     <div class="h-12 w-[1px] bg-white/20"></div>
                     <div>
-                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Release</p>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">{{ t('Release') }}</p>
                         <p class="text-4xl font-black text-primary-fixed">{{ (book.publishedDate or book.published_date or 'N/A')[:4] }}</p>
                     </div>
                     {% if display_rating > 0 %}
                     <div class="h-12 w-[1px] bg-white/20"></div>
                     <div>
-                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">Rating</p>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest font-bold">{{ t('Rating') }}</p>
                         <p class="text-4xl font-black text-tertiary-fixed">{{ "%.1f"|format(display_rating|float) }} <span class="text-lg opacity-50">/ 5</span></p>
                     </div>
                     {% endif %}
@@ -113,37 +113,36 @@
                     {{ t('About this Book') }}
                 </h2>
                 <div class="prose prose-lg text-on-surface-variant space-y-6 leading-relaxed selection:bg-primary/10">
-                    {{ book.desc|safe if book.desc else 'No description available for this book yet.' }}
+                    {{ book.desc|safe if book.desc else t('No description available for this book yet.') }}
                 </div>
                 
                 <!-- AI HUB Interface -->
                 <div class="mt-16 pt-16 border-t border-slate-100">
                     <h3 class="text-xl font-bold mb-8 flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">psychology</span>
-                        Interactive Features
+                        {{ t('Interactive Features') }}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <button onclick="openChatModal()" class="flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high rounded-xl transition-all group">
-                            <div class="text-left">
+                            <div class="text-start">
                                 <p class="font-bold text-on-surface">{{ t('Chat with Book') }}</p>
-                                <p class="text-xs text-on-surface-variant">Ask questions about this book</p>
+                                <p class="text-xs text-on-surface-variant">{{ t('Ask questions about this book') }}</p>
                             </div>
                             <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">chat_bubble</span>
                         </button>
                         <button onclick="generateSummary()" class="flex items-center justify-between p-6 bg-surface-container-low hover:bg-surface-container-high rounded-xl transition-all group">
-                            <div class="text-left">
-                                <p class="font-bold text-on-surface">Book Summary</p>
-                                <p class="text-xs text-on-surface-variant">Read a quick AI-generated summary</p>
+                            <div class="text-start">
+                                <p class="font-bold text-on-surface">{{ t('Book Summary') }}</p>
+                                <p class="text-xs text-on-surface-variant">{{ t('Read a quick AI-generated summary') }}</p>
                             </div>
                             <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">summarize</span>
                         </button>
                         <button onclick="openCoachModal()" class="md:col-span-2 flex items-center justify-between p-6 bg-primary/5 hover:bg-primary/10 rounded-xl transition-all group border border-primary/10">
-                            <div class="text-left">
-                                <p class="font-bold text-primary">Reading Coach</p>
-                                <p class="text-xs text-primary/60">Create a personalized reading schedule</p>
+                            <div class="text-start">
+                                <p class="font-bold text-primary">{{ t('Reading Coach') }}</p>
+                                <p class="text-xs text-primary/60">{{ t('Create a personalized reading schedule') }}</p>
                             </div>
                             <span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">auto_graph</span>
-                        </button>
                         </button>
                     </div>
                 </div>
@@ -153,27 +152,27 @@
             <div class="space-y-8">
                 <!-- Stats Grid -->
                 <div class="bg-primary text-on-primary rounded-xl p-8 shadow-lg">
-                    <h3 class="text-xl font-bold mb-6">Details</h3>
+                    <h3 class="text-xl font-bold mb-6">{{ t('Details') }}</h3>
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Category</p>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">{{ t('Category') }}</p>
                             {% if book.categories %}
                             {% set cats = book.categories if book.categories is iterable and book.categories is not string else [book.categories] %}
                             <p class="text-lg font-bold leading-tight">{{ cats[0]|truncate(20) }}</p>
                             {% else %}
-                            <p class="text-xl font-bold">Book</p>
+                            <p class="text-xl font-bold">{{ t('Book') }}</p>
                             {% endif %}
                         </div>
                         <div>
-                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Language</p>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">{{ t('Language') }}</p>
                             <p class="text-xl font-bold">{{ book.language|upper if book.language else 'EN' }}</p>
                         </div>
                         <div>
-                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Source</p>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">{{ t('Source') }}</p>
                             <p class="text-lg font-bold leading-tight uppercase">{{ book.source or 'Google' }}</p>
                         </div>
                         <div>
-                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">Rating</p>
+                            <p class="text-primary-fixed text-xs font-bold uppercase tracking-widest">{{ t('Rating') }}</p>
                             {% set src_rating = (book.rating or 0)|float %}
                             {% if src_rating > 0 %}
                             <div class="flex items-center gap-2">
@@ -187,7 +186,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-tertiary-fixed text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
                                 <span class="text-xl font-bold">{{ "%.1f"|format(avg_rating) }}</span>
-                                <span class="text-primary-fixed/60 text-[10px]">(users)</span>
+                                <span class="text-primary-fixed/60 text-[10px]">({{ t('users') }})</span>
                             </div>
                             {% else %}
                             <p class="text-lg font-bold leading-tight opacity-60">N/A</p>
@@ -203,8 +202,8 @@
                             <span class="material-symbols-outlined text-3xl">person</span>
                         </div>
                         <div>
-                            <h4 class="font-bold">{{ book.author or 'Unknown author' }}</h4>
-                            <p class="text-sm text-slate-500">Author</p>
+                            <h4 class="font-bold">{{ book.author or t('Unknown author') }}</h4>
+                            <p class="text-sm text-slate-500">{{ t('Author') }}</p>
                         </div>
                     </div>
                 </div>
@@ -213,13 +212,13 @@
                 <div class="bg-surface-container-low rounded-xl p-8 border border-outline-variant/5">
                     <h3 class="font-bold text-on-surface mb-6 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            Reviews
+                            {{ t('Reviews') }}
                             {% if reviews %}
                             <span class="text-xs font-normal text-on-surface-variant bg-surface-container px-2 py-1 rounded">{{ reviews|length }}</span>
                             {% endif %}
                         </div>
                         {% if reviews|length > 0 %}
-                        <button onclick="openReviewsModal()" class="text-[10px] uppercase tracking-widest font-black text-primary hover:underline">View All</button>
+                        <button onclick="openReviewsModal()" class="text-[10px] uppercase tracking-widest font-black text-primary hover:underline">{{ t('View All') }}</button>
                         {% endif %}
                     </h3>
                     
@@ -227,12 +226,12 @@
                         {% if reviews %}
                             {% for review in reviews %}
                             <div class="space-y-2 border-b border-on-surface/5 pb-6 last:border-0">
-                                <div class="flex text-secondary scale-75 origin-left mb-1">
+                                <div class="flex text-secondary scale-75 {{ 'origin-right' if lang == 'ar' else 'origin-left' }} mb-1">
                                     {% for i in range(5) %}
                                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {{ 1 if review.rating > i else 0 }};">star</span>
                                     {% endfor %}
                                 </div>
-                                <p class="text-sm italic text-on-surface-variant leading-relaxed">"{{ review.review_text }}"</p>
+                                <p class="text-sm italic text-on-surface-variant leading-relaxed text-start">"{{ review.review_text }}"</p>
                                 <div class="flex items-center justify-between mt-4">
                                     <div class="flex items-center gap-2">
                                         <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
@@ -265,7 +264,7 @@
                         {% else %}
                             <div class="text-center py-12 opacity-40">
                                 <span class="material-symbols-outlined text-4xl mb-2">rate_review</span>
-                                <p class="text-xs italic">{{ t('No reviews yet') }}. Be the first to share your thoughts.</p>
+                                <p class="text-xs italic">{{ t('No reviews yet') }}. {{ t('Be the first to share your thoughts.') }}</p>
                             </div>
                         {% endif %}
                     </div>
@@ -275,10 +274,10 @@
                         {% if current_user.is_authenticated %}
                             <button onclick="toggleReviewForm()" class="w-full py-4 bg-on-surface text-surface rounded-xl font-bold text-sm hover:bg-primary transition-all flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-sm">edit_note</span>
-                                {{ 'Edit {{ t('Your Review') }}' if user_review else '{{ t('Write a Review') }}' }}
+                                {{ (t('Edit') ~ ' ' ~ t('Your Review')) if user_review else t('Write a Review') }}
                             </button>
                         {% else %}
-                            <a href="{{ url_for('auth.login') }}" class="text-primary text-xs font-bold hover:underline">Log in to write a review</a>
+                            <a href="{{ url_for('auth.login') }}" class="text-primary text-xs font-bold hover:underline">{{ t('Log in to write a review') }}</a>
                         {% endif %}
                     </div>
                 </div>
@@ -299,7 +298,7 @@
                             </label>
                             {% endfor %}
                         </div>
-                        <textarea name="review_text" rows="4" class="w-full bg-surface-container border-none p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-primary outline-none" placeholder="Share your thoughts about this book...">{{ user_review.review_text if user_review else '' }}</textarea>
+                        <textarea name="review_text" rows="4" class="w-full bg-surface-container border-none p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-primary outline-none text-start" placeholder="{{ t('Share your thoughts about this book...') }}">{{ user_review.review_text if user_review else '' }}</textarea>
                         <button type="submit" class="w-full py-5 bg-primary text-on-primary rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95">
                             {{ t('Submit Review') }}
                         </button>
@@ -314,8 +313,8 @@
     <section class="max-w-[1440px] mx-auto px-8 py-24">
         <div class="flex items-center justify-between mb-12">
             <div>
-                <h2 class="text-4xl font-black tracking-tight">{{ t('Similar Books') }}</h2>
-                <p class="text-slate-500">You might also like these</p>
+                <h2 class="text-4xl font-black tracking-tight text-start">{{ t('Similar Books') }}</h2>
+                <p class="text-slate-500 text-start">{{ t('You might also like these') }}</p>
             </div>
         </div>
         <div class="flex overflow-x-auto gap-8 pb-8 scrollbar-premium snap-x snap-mandatory">
@@ -325,8 +324,8 @@
                     <img alt="{{ b.title }}" class="w-full h-full object-cover" src="{{ b.cover or b.cover_url or 'https://placehold.co/300x450/fbfbe2/a04100?text=Node' }}">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
-                <h4 class="font-bold group-hover:text-primary transition-colors truncate text-sm">{{ b.title }}</h4>
-                <p class="text-xs text-slate-500 truncate">{{ b.author or 'Unknown' }}</p>
+                <h4 class="font-bold group-hover:text-primary transition-colors truncate text-sm text-start">{{ b.title }}</h4>
+                <p class="text-xs text-slate-500 truncate text-start">{{ b.author or (t('Unknown') if lang != 'ar' else 'غير معروف') }}</p>
             </a>
             {% endfor %}
         </div>
@@ -352,14 +351,14 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <div class="p-8">
+            <div class="p-8 text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
                 <p class="text-xs text-slate-500 mb-4 bg-tertiary/5 p-3 rounded-lg border border-tertiary/10">
-                    <span class="font-bold">Note:</span> These notes are <span class="text-tertiary font-bold">private</span> and visible only to you. Use them to remember specific details or tasks related to this book.
+                    <span class="font-bold">{{ t('Note:') }}</span> {{ t('These notes are private and visible only to you. Use them to remember specific details or tasks related to this book.') }}
                 </p>
                 <textarea id="personalNoteText" rows="8" class="w-full bg-slate-50 border-2 border-slate-100 p-6 rounded-xl font-body text-sm italic focus:ring-2 focus:ring-tertiary focus:border-tertiary outline-none transition-all" placeholder="{{ t('Write your personal notes here...') }}"></textarea>
                 <div class="mt-8 flex gap-3">
                     <button onclick="closeNotesModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
-                        Cancel
+                        {{ t('Cancel') }}
                     </button>
                     <button id="saveNoteBtn" onclick="saveNote()" class="flex-[2] py-4 bg-tertiary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-sm">save</span>
@@ -377,58 +376,58 @@
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-primary/5">
                 <h3 class="font-black text-primary flex items-center gap-2">
                     <span class="material-symbols-outlined">edit</span>
-                    تعديل تفاصيل الكتاب ورفع ملف القراءة
+                    {{ t('Edit Book Details & Upload PDF') if lang != 'ar' else 'تعديل تفاصيل الكتاب ورفع ملف القراءة' }}
                 </h3>
                 <button onclick="closeEditBookModal()" class="text-slate-400 hover:text-on-surface transition-colors">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <form action="{{ url_for('main.update_book', book_id=local_book.id) }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-4 text-left" dir="rtl">
+            <form action="{{ url_for('main.update_book', book_id=local_book.id) }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-4 text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">عنوان الكتاب</label>
-                    <input type="text" name="u_title" value="{{ local_book.title }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Book Title') if lang != 'ar' else 'عنوان الكتاب' }}</label>
+                    <input type="text" name="u_title" value="{{ local_book.title }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">المؤلف</label>
-                    <input type="text" name="u_author" value="{{ local_book.author }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Author') }}</label>
+                    <input type="text" name="u_author" value="{{ local_book.author }}" required class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">الوصف</label>
-                    <textarea name="u_description" rows="4" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-right">{{ local_book.description }}</textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Description') }}</label>
+                    <textarea name="u_description" rows="4" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">{{ local_book.description }}</textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">رابط صورة الغلاف (اختياري)</label>
-                    <input type="url" name="u_cover_url" value="{{ local_book.cover_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-left">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Cover Image URL') }} ({{ t('Optional') if lang != 'ar' else 'اختياري' }})</label>
+                    <input type="url" name="u_cover_url" value="{{ local_book.cover_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right">رابط ملف القراءة المباشر (PDF/EPUB) (اختياري)</label>
-                    <input type="url" name="u_file_url" value="{{ local_book.file_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-left" placeholder="https://example.com/book.pdf">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start">{{ t('Reading File URL (PDF/EPUB)') }} ({{ t('Optional') if lang != 'ar' else 'اختياري' }})</label>
+                    <input type="url" name="u_file_url" value="{{ local_book.file_url or '' }}" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-start" placeholder="https://example.com/book.pdf">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-right font-black">أو قم برفع ملف الكتاب من جهازك (PDF/EPUB/TXT)</label>
-                    <input type="file" name="u_file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:ml-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all text-right">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-start font-black">{{ t('Or Upload Book File (PDF/EPUB/TXT)') if lang != 'ar' else 'أو قم برفع ملف الكتاب من جهازك (PDF/EPUB/TXT)' }}</label>
+                    <input type="file" name="u_file" accept=".pdf,.epub,.txt" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all text-start">
                     {% if local_book.file_url %}
-                        <p class="text-xs text-green-600 mt-2 flex items-center gap-1 justify-end">
+                        <p class="text-xs text-green-600 mt-2 flex items-center gap-1 justify-start">
                             <span class="material-symbols-outlined text-sm">check_circle</span>
-                            يوجد ملف قراءة محفوظ بالفعل لهذا الكتاب.
+                            {{ t('A reading file is already saved for this book.') if lang != 'ar' else 'يوجد ملف قراءة محفوظ بالفعل لهذا الكتاب.' }}
                         </p>
                     {% endif %}
                 </div>
 
                 <div class="mt-8 flex gap-3 pt-4 border-t border-slate-100">
                     <button type="button" onclick="closeEditBookModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
-                        إلغاء
+                        {{ t('Cancel') }}
                     </button>
                     <button type="submit" class="flex-[2] py-4 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-sm">save</span>
-                        حفظ التغييرات
+                        {{ t('Save Changes') if lang != 'ar' else 'حفظ التغييرات' }}
                     </button>
                 </div>
             </form>

@@ -35,9 +35,9 @@
         openModal(`
             <div class="flex flex-col h-full min-h-0 bg-surface">
                 <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
-                    <div class="space-y-2">
-                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">AI Chat Connected</span>
-                        <h3 class="font-headline font-black text-2xl text-on-surface tracking-tighter uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[400px]">Chat: ${bookTitle}</h3>
+                    <div class="space-y-2 text-start">
+                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">{{ t('AI Chat Connected') if lang != 'ar' else 'تم الاتصال بالدردشة الذكية' }}</span>
+                        <h3 class="font-headline font-black text-2xl text-on-surface tracking-tighter uppercase whitespace-nowrap overflow-hidden text-ellipsis max-w-[400px]">{{ t('Chat:') if lang != 'ar' else 'محادثة:' }} ${bookTitle}</h3>
                     </div>
                     <button onclick="closeModal()" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
                         <span class="material-symbols-outlined">close</span>
@@ -47,16 +47,16 @@
                 <div id="chatMessages" class="flex-grow min-h-0 overflow-y-auto p-12 space-y-8 bg-surface scrollbar-premium">
                     <div class="flex justify-start">
                         <div class="bg-surface-container-high p-8 max-w-[85%] border-r-4 border-primary">
-                            <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4">Elham AI</p>
-                            <p class="font-body text-lg text-on-surface/70 leading-relaxed italic">Hi! I'm ready to answer any questions you have about "${bookTitle}". What would you like to know?</p>
+                            <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4 text-start">{{ t('Elham AI') if lang != 'ar' else 'مساعد إلهام الذكي' }}</p>
+                            <p class="font-body text-lg text-on-surface/70 leading-relaxed italic text-start">{{ t("Hi! I'm ready to answer any questions you have about") if lang != 'ar' else 'مرحباً! أنا مستعد للإجابة على أي أسئلة لديك حول' }} "${bookTitle}". {{ t("What would you like to know?") if lang != 'ar' else 'ما الذي ترغب في معرفته؟' }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="p-8 bg-surface-container-high border-t border-on-surface/5">
                     <div class="relative flex items-center gap-6">
-                        <input type="text" id="chatInput" placeholder="Ask a question..." 
-                            class="flex-grow bg-surface border-none p-6 font-headline font-black text-xs uppercase tracking-widest focus:ring-2 focus:ring-primary outline-none shadow-inner"/>
+                        <input type="text" id="chatInput" placeholder="{{ t('Ask a question...') if lang != 'ar' else 'اسأل سؤالاً...' }}" 
+                            class="flex-grow bg-surface border-none p-6 font-headline font-black text-xs uppercase tracking-widest focus:ring-2 focus:ring-primary outline-none shadow-inner text-start"/>
                         <button onclick="sendChatMessage()" class="w-16 h-16 bg-on-surface text-white flex items-center justify-center transition-all shadow-2xl hover:bg-primary">
                             <span class="material-symbols-outlined transform -scale-x-100">keyboard_arrow_left</span>
                         </button>
@@ -89,7 +89,7 @@
             <div id="${typingId}" class="flex justify-start">
                 <div class="bg-surface-container-low p-8 flex items-center gap-4 border border-on-surface/5">
                     <span class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
-                    <span class="font-label text-[8px] uppercase tracking-widest text-on-surface/30">Thinking...</span>
+                    <span class="font-label text-[8px] uppercase tracking-widest text-on-surface/30">{{ t('Thinking...') if lang != 'ar' else 'جاري التفكير...' }}</span>
                 </div>
             </div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -109,8 +109,8 @@
             chatBox.innerHTML += `
                 <div class="flex justify-start">
                     <div class="bg-surface-container-high p-8 max-w-[85%] border-r-4 border-primary">
-                        <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4">Elham AI</p>
-                        <p class="font-body text-lg text-on-surface/70 leading-relaxed italic">${(data.reply || '').replace(/\n/g, '<br>')}</p>
+                        <p class="font-headline font-black text-[9px] uppercase tracking-widest text-primary mb-4 text-start">{{ t('Elham AI') if lang != 'ar' else 'مساعد إلهام الذكي' }}</p>
+                        <p class="font-body text-lg text-on-surface/70 leading-relaxed italic text-start">${(data.reply || '').replace(/\n/g, '<br>')}</p>
                     </div>
                 </div>`;
             
@@ -118,7 +118,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         } catch(e) { 
             document.getElementById(typingId).remove();
-            chatBox.innerHTML += `<div class="p-6 bg-primary/10 text-primary font-headline font-black text-[9px] uppercase tracking-widest text-center">Error: Please try again.</div>`;
+            chatBox.innerHTML += `<div class="p-6 bg-primary/10 text-primary font-headline font-black text-[9px] uppercase tracking-widest text-center">{{ t('Error: Please try again.') if lang != 'ar' else 'خطأ: يرجى المحاولة مرة أخرى.' }}</div>`;
         }
     }
 
@@ -132,9 +132,9 @@
                     <div class="absolute inset-0 bg-primary/10 rounded-full animate-ping"></div>
                     <div class="relative w-24 h-24 border-[12px] border-on-surface/5 border-t-primary rounded-full animate-spin"></div>
                 </div>
-                <div class="space-y-4">
-                    <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase font-black">Generating Summary</h3>
-                    <p class="font-label text-[10px] text-on-surface/30 uppercase tracking-[0.5em] font-black">Reading Book Contents...</p>
+                <div class="space-y-4 text-center">
+                    <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase font-black">{{ t('Generating Summary') if lang != 'ar' else 'جاري إنشاء الملخص...' }}</h3>
+                    <p class="font-label text-[10px] text-on-surface/30 uppercase tracking-[0.5em] font-black">{{ t('Reading Book Contents...') if lang != 'ar' else 'جاري قراءة محتوى الكتاب...' }}</p>
                 </div>
             </div>
         `);
@@ -151,16 +151,16 @@
                 ? `<p class="font-body text-xl text-on-surface/80 leading-relaxed">${data.summary.replace(/\n/g, '<br>')}</p>`
                 : `<div class="p-12 bg-primary/5 text-center">
                     <span class="material-symbols-outlined text-4xl text-primary mb-4">error</span>
-                    <p class="font-headline font-black text-xs uppercase tracking-widest text-primary mb-2">Error</p>
-                    <p class="font-body text-on-surface/60">${data.error || 'Failed to generate summary. Please try again later.'}</p>
+                    <p class="font-headline font-black text-xs uppercase tracking-widest text-primary mb-2">{{ t('Error') if lang != 'ar' else 'خطأ' }}</p>
+                    <p class="font-body text-on-surface/60">${data.error || "{{ t('Failed to generate summary. Please try again later.') if lang != 'ar' else 'فشل في إنشاء الملخص. يرجى المحاولة لاحقاً.' }}"}</p>
                    </div>`;
 
             openModal(`
                 <div class="flex flex-col h-full min-h-0 bg-surface">
                     <div class="p-12 border-b border-on-surface/5 flex justify-between items-center">
                         <div>
-                            <p class="font-headline font-black text-[10px] uppercase tracking-[0.2em] text-primary/60 mb-2">Exclusive AI Insight</p>
-                            <h2 class="font-headline font-black text-3xl text-on-surface">Book Deep-Dive</h2>
+                            <p class="font-headline font-black text-[10px] uppercase tracking-[0.2em] text-primary/60 mb-2 text-start">{{ t('Exclusive AI Insight') if lang != 'ar' else 'رؤية حصرية بالذكاء الاصطناعي' }}</p>
+                            <h2 class="font-headline font-black text-3xl text-on-surface text-start">{{ t('Book Deep-Dive') if lang != 'ar' else 'تحليل الكتاب العميق' }}</h2>
                         </div>
                         <button onclick="closeModal()" class="w-12 h-12 bg-on-surface/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all">
                             <span class="material-symbols-outlined">close</span>
@@ -176,7 +176,7 @@
             `);
         } catch(e) { 
             closeModal();
-            alert('Error generating summary.'); 
+            alert("{{ t('Error generating summary.') if lang != 'ar' else 'خطأ في إنشاء الملخص.' }}"); 
         }
     }
 
@@ -184,26 +184,26 @@
         openModal(`
             <div class="flex flex-col h-full min-h-0 bg-surface">
                 <div class="p-10 border-b border-on-surface/5 bg-surface-container-low">
-                    <div class="space-y-2">
-                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Reading Coach Setup</span>
-                        <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">Choose Your Pace</h3>
+                    <div class="space-y-2 text-start">
+                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">{{ t('Reading Coach Setup') if lang != 'ar' else 'إعداد مدرب القراءة' }}</span>
+                        <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">{{ t('Choose Your Pace') if lang != 'ar' else 'اختر وتيرتك' }}</h3>
                     </div>
                 </div>
                 
                 <div class="flex-1 min-h-0 overflow-y-auto p-10 space-y-10 scrollbar-premium">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        ${[{d:7,l:'Rapid'}, {d:14,l:'Standard'}, {d:30,l:'Measured'}].map(p=>`
+                        ${[{d:7,l:"{{ t('Rapid') if lang != 'ar' else 'سريع' }}"}, {d:14,l:"{{ t('Standard') if lang != 'ar' else 'قياسي' }}"}, {d:30,l:"{{ t('Measured') if lang != 'ar' else 'متأنٍّ' }}"}].map(p=>`
                         <button onclick="generateReadingPlan(${p.d})" class="group bg-surface-container-high border-2 border-transparent p-8 transition-all hover:bg-on-surface hover:text-white flex flex-col items-center gap-2 shadow-2xl">
                             <span class="font-headline font-black text-4xl group-hover:text-primary transition-colors">${p.d}</span>
-                            <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40 group-hover:opacity-100">${p.l} Pace</span>
+                            <span class="font-label text-[10px] uppercase font-black tracking-widest opacity-40 group-hover:opacity-100">${p.l} {{ t('Pace') if lang != 'ar' else 'وتيرة' }}</span>
                         </button>`).join('')}
                     </div>
                     
                     <div class="pt-8 border-t border-on-surface/5 space-y-6">
-                        <span class="font-label text-[9px] font-black text-on-surface/20 uppercase tracking-[0.4em]">Custom Number of Days:</span>
+                        <span class="font-label text-[9px] font-black text-on-surface/20 uppercase tracking-[0.4em]">{{ t('Custom Number of Days:') if lang != 'ar' else 'عدد الأيام المخصص:' }}</span>
                         <div class="flex gap-4">
                             <input type="number" id="customDays" placeholder="7" class="w-28 bg-surface-container-high border-none p-5 font-headline font-black text-lg text-center outline-none focus:ring-2 focus:ring-primary shadow-inner"/>
-                            <button onclick="generateReadingPlan(document.getElementById('customDays').value)" class="flex-grow bg-on-surface text-white py-5 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">Create Schedule</button>
+                            <button onclick="generateReadingPlan(document.getElementById('customDays').value)" class="flex-grow bg-on-surface text-white py-5 font-headline font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all">{{ t('Create Schedule') if lang != 'ar' else 'إنشاء جدول زمني' }}</button>
                         </div>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
         openModal(`
             <div class="p-24 text-center space-y-12">
                 <div class="w-16 h-16 border-[8px] border-on-surface/5 border-t-primary rounded-full animate-spin mx-auto"></div>
-                <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">Creating Schedule</h3>
+                <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">{{ t('Creating Schedule') if lang != 'ar' else 'جاري إنشاء الجدول الزمني...' }}</h3>
             </div>
         `);
         try {
@@ -238,22 +238,22 @@
             if(data.schedule && data.schedule.length > 0) {
                 milestonesHTML = data.schedule.map(m=>`
                     <div class="flex items-start gap-8 p-8 bg-surface-container-low border border-on-surface/5 group hover:bg-surface-container-high transition-all">
-                        <div class="w-16 h-16 bg-surface-container-high font-headline font-black text-xs flex items-center justify-center text-primary border border-on-surface/5 group-hover:bg-primary group-hover:text-white transition-all">DAY ${m.day}</div>
+                        <div class="w-16 h-16 bg-surface-container-high font-headline font-black text-xs flex items-center justify-center text-primary border border-on-surface/5 group-hover:bg-primary group-hover:text-white transition-all">${'{{ t("DAY") if lang != "ar" else "اليوم" }}'} ${m.day}</div>
                         <div class="flex-1 pt-2">
                              <p class="font-body text-lg italic text-on-surface/70 leading-relaxed">${m.task}</p>
                         </div>
                     </div>
                 `).join('');
             } else {
-                milestonesHTML = `<div class="p-12 bg-surface-container-low text-on-surface/40 font-body text-xl italic text-center">Failed to generate a custom schedule.</div>`;
+                milestonesHTML = `<div class="p-12 bg-surface-container-low text-on-surface/40 font-body text-xl italic text-center">{{ t('Failed to generate a custom schedule.') if lang != 'ar' else 'فشل في إنشاء جدول زمني مخصص.' }}</div>`;
             }
             
             openModal(`
                 <div class="flex flex-col h-full min-h-0 bg-surface">
                     <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
                         <div class="space-y-2">
-                            <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Your Reading Schedule</span>
-                            <h3 class="font-headline font-black text-2xl text-on-surface tracking-tighter uppercase">Goal: ${days} Days</h3>
+                            <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">{{ t('Your Reading Schedule') if lang != 'ar' else 'جدول القراءة الخاص بك' }}</span>
+                            <h3 class="font-headline font-black text-2xl text-on-surface tracking-tighter uppercase">${'{{ t("Goal") if lang != "ar" else "الهدف" }}'}: ${days} ${'{{ t("Days") if lang != "ar" else "أيام" }}'}</h3>
                         </div>
                         <button onclick="closeModal()" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
                             <span class="material-symbols-outlined">close</span>
@@ -271,7 +271,7 @@
                     </div>` : ''}
                 </div>
             `);
-        } catch(e) { closeModal(); alert('Failed to create schedule.'); }
+        } catch(e) { closeModal(); alert("{{ t('Failed to create schedule.') if lang != 'ar' else 'فشل إنشاء الجدول الزمني.' }}"); }
     }
 
     async function updateShelf(btn, status) {
@@ -280,7 +280,7 @@
         
         const originalHTML = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-4">sync</span> Saving...';
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-4">sync</span> ' + "{{ t('Saving...') if lang != 'ar' else 'جاري الحفظ...' }}";
         
         try {
             const res = await fetch(`{{ url_for('public.add_to_shelf', gid=book.id if book else '', status='') }}${status}`, {
@@ -298,12 +298,12 @@
             if(data.success) {
                 window.location.reload();
             } else { 
-                alert('Failed to update library.'); 
+                alert("{{ t('Failed to update library.') if lang != 'ar' else 'فشل تحديث المكتبة.' }}"); 
                 btn.disabled=false; 
                 btn.innerHTML = originalHTML;
             }
         } catch(e) { 
-            alert('Error updating library.'); 
+            alert("{{ t('Error updating library.') if lang != 'ar' else 'خطأ في تحديث المكتبة.' }}"); 
             btn.disabled=false; 
             btn.innerHTML = originalHTML;
         }
@@ -322,8 +322,8 @@
             <div class="flex flex-col h-full min-h-0 bg-surface">
                 <div class="p-12 border-b border-on-surface/5 flex justify-between items-center bg-surface-container-low">
                     <div class="space-y-2">
-                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">Community Reviews</span>
-                        <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">Reader Feedback</h3>
+                        <span class="font-label text-[8px] uppercase tracking-[0.6em] text-primary font-black">{{ t('Community Reviews') if lang != 'ar' else 'آراء المجتمع' }}</span>
+                        <h3 class="font-headline font-black text-3xl text-on-surface tracking-tighter uppercase">{{ t('Reader Feedback') if lang != 'ar' else 'ملاحظات القراء' }}</h3>
                     </div>
                     <button onclick="closeModal()" class="w-12 h-12 bg-on-surface text-white flex items-center justify-center hover:bg-primary transition-all shadow-2xl">
                         <span class="material-symbols-outlined">close</span>
@@ -333,9 +333,9 @@
                 <div class="flex-grow overflow-y-auto p-12 space-y-12 bg-surface scrollbar-premium">
                     {% if reviews %}
                         {% for review in reviews %}
-                        <div class="space-y-6 pb-12 border-b border-on-surface/5 last:border-0">
+                        <div class="space-y-6 pb-12 border-b border-on-surface/5 last:border-0 text-start" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
                             <div class="flex items-center justify-between">
-                                <div class="flex text-secondary scale-110 origin-left">
+                                <div class="flex text-secondary scale-110 {{ 'origin-right' if lang == 'ar' else 'origin-left' }}">
                                     {% for i in range(5) %}
                                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {{ 1 if review.rating > i else 0 }};">star</span>
                                     {% endfor %}
@@ -343,16 +343,16 @@
                                 <span class="text-[10px] font-black text-on-surface/20 uppercase tracking-widest">{{ review.created_at.strftime('%b %d, %Y') }}</span>
                             </div>
                             
-                            <p class="font-body text-xl text-on-surface/80 leading-relaxed italic">"{{ review.review_text }}"</p>
+                            <p class="font-body text-xl text-on-surface/80 leading-relaxed italic text-start">"{{ review.review_text }}"</p>
                             
                             <div class="flex items-center justify-between pt-4">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/5">
                                         {{ review.user.name[0]|upper if review.user.name else '?' }}
                                     </div>
-                                    <div>
-                                        <p class="font-headline font-black text-xs uppercase tracking-tight">{{ review.user.name }}</p>
-                                        <p class="text-[10px] text-on-surface/40 uppercase font-black tracking-widest">Verified Reader</p>
+                                    <div class="text-start">
+                                        <p class="font-headline font-black text-xs uppercase tracking-tight text-start">{{ review.user.name }}</p>
+                                        <p class="text-[10px] text-on-surface/40 uppercase font-black tracking-widest text-start">{{ t('Verified Reader') if lang != 'ar' else 'قارئ معتمد' }}</p>
                                     </div>
                                 </div>
                                 
@@ -372,7 +372,7 @@
                 </div>
                 
                 <div class="p-8 bg-surface-container-low border-t border-on-surface/5 text-center">
-                    <p class="font-label text-[10px] text-on-surface/30 uppercase tracking-[0.4em] font-black italic">Sharing inspiration through connection</p>
+                    <p class="font-label text-[10px] text-on-surface/30 uppercase tracking-[0.4em] font-black italic">{{ t('Sharing inspiration through connection') if lang != 'ar' else 'مشاركة الإلهام من خلال التواصل' }}</p>
                 </div>
             </div>
         `);
@@ -431,7 +431,7 @@
         const originalBtnHTML = targetBtn.innerHTML;
         
         targetBtn.disabled = true;
-        targetBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Saving...';
+        targetBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> ' + "{{ t('Saving...') if lang != 'ar' else 'جاري الحفظ...' }}";
         
         try {
             const res = await fetch(`/public/books/${bookId}/note`, {
@@ -445,7 +445,7 @@
             const data = await res.json();
             
             if (data.success) {
-                targetBtn.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> Saved!';
+                targetBtn.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> ' + "{{ t('Saved!') if lang != 'ar' else 'تم الحفظ!' }}";
                 const originalBg = targetBtn.style.backgroundColor;
                 targetBtn.style.backgroundColor = '#10b981'; // Green
                 
@@ -460,13 +460,13 @@
                     if (!sourceId) closeNotesModal(); // Only close if from modal
                 }, 1000);
             } else {
-                alert("Failed to save note: " + (data.error || "Unknown error"));
+                alert("{{ t('Failed to save note: ') if lang != 'ar' else 'فشل حفظ الملاحظة: ' }}" + (data.error || "{{ t('Unknown error') if lang != 'ar' else 'خطأ غير معروف' }}"));
                 targetBtn.disabled = false;
                 targetBtn.innerHTML = originalBtnHTML;
             }
         } catch (err) {
             console.error("Error saving note:", err);
-            alert("An error occurred while saving your note.");
+            alert("{{ t('An error occurred while saving your note.') if lang != 'ar' else 'حدث خطأ أثناء حفظ ملاحظتك.' }}");
             targetBtn.disabled = false;
             targetBtn.innerHTML = originalBtnHTML;
         }

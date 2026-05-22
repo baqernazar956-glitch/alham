@@ -1,5 +1,5 @@
 <!-- AI Chat Widget -->
-<div id="ai-chat-widget" class="fixed bottom-8 right-8 z-[100] font-sans" dir="ltr">
+<div id="ai-chat-widget" class="fixed bottom-8 {{ 'left-8' if lang == 'ar' else 'right-8' }} z-[100] font-sans" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <!-- Chat Button -->
     <button id="ai-chat-toggle" onclick="window.toggleAiChat()" class="w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all focus:outline-none relative group">
         <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
@@ -9,24 +9,24 @@
         
         <!-- Tooltip -->
         <div class="absolute -top-12 right-0 bg-surface-container-highest text-on-surface text-sm font-bold px-4 py-2 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
-            Ask me about books!
+            {{ t('Ask me about books!') if lang != 'ar' else 'اسألني عن الكتب!' }}
         </div>
     </button>
 
     <!-- Chat Window -->
-    <div id="ai-chat-window" class="hidden absolute bottom-24 right-0 w-[380px] sm:w-[450px] h-[800px] max-h-[90vh] bg-surface-container-lowest rounded-[2rem] shadow-2xl border border-surface-container flex-col overflow-hidden transition-all origin-bottom-right scale-95 opacity-0">
+    <div id="ai-chat-window" class="hidden absolute bottom-24 {{ 'left-0' if lang == 'ar' else 'right-0' }} w-[380px] sm:w-[450px] h-[800px] max-h-[90vh] bg-surface-container-lowest rounded-[2rem] shadow-2xl border border-surface-container flex-col overflow-hidden transition-all {{ 'origin-bottom-left' if lang == 'ar' else 'origin-bottom-right' }} scale-95 opacity-0">
         
         <!-- Header -->
-        <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-4 flex justify-between items-center text-white shadow-md relative z-10">
+        <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-4 flex justify-between items-center text-white shadow-md relative z-10 text-start">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
                     <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
                 </div>
                 <div>
-                    <h3 class="font-black text-lg leading-tight tracking-wide">Kutub AI</h3>
+                    <h3 class="font-black text-lg leading-tight tracking-wide">{{ t('Kutub AI') if lang != 'ar' else 'كتب الذكي' }}</h3>
                     <div class="flex items-center gap-1.5 mt-0.5">
                         <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                        <p class="text-[11px] font-medium opacity-90">Online - Ready to suggest books</p>
+                        <p class="text-[11px] font-medium opacity-90">{{ t('Online - Ready to suggest books') if lang != 'ar' else 'نشط - جاهز لاقتراح الكتب' }}</p>
                     </div>
                 </div>
             </div>
@@ -36,7 +36,7 @@
         </div>
 
         <!-- Messages Area -->
-        <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-5 bg-surface-container-lowest scroll-smooth relative">
+        <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-5 bg-surface-container-lowest scroll-smooth relative text-start">
             <!-- Background Watermark -->
             <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
                 <span class="material-symbols-outlined text-[10rem]">menu_book</span>
@@ -48,14 +48,19 @@
                     <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
                 </div>
                 <div class="bg-surface-container-low p-4 rounded-2xl rounded-tl-none text-on-surface text-sm leading-relaxed shadow-sm border border-surface-container">
+                    {% if lang == 'ar' %}
+                    أهلاً بك! 👋<br><br>
+                    أنا مساعدك الذكي <strong>"كُتُب"</strong>. يمكنك أن تطلب مني اقتراح أي كتاب تريده، أو السؤال عن مجال معين وسأقوم بالبحث في ملايين الكتب من أجلك! 📚✨
+                    {% else %}
                     Welcome! 👋<br><br>
                     I am your smart assistant <strong>"Kutub"</strong>. You can ask me to suggest any book you want, or ask about a specific field and I will search millions of books for you! 📚✨
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Typing Indicator (Hidden by default) -->
-        <div id="ai-chat-typing" class="hidden px-5 pb-3 relative z-10">
+        <div id="ai-chat-typing" class="hidden px-5 pb-3 relative z-10 text-start">
             <div class="flex gap-3 max-w-[85%] items-center animate-in fade-in duration-300">
                 <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
@@ -71,7 +76,7 @@
         <!-- Input Area -->
         <div class="p-4 bg-white border-t border-surface-container relative z-10 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
             <form id="ai-chat-form" class="flex gap-2 relative" onsubmit="event.preventDefault(); return false;">
-                <input type="text" id="ai-chat-input" placeholder="Example: Suggest a short sci-fi novel..." 
+                <input type="text" id="ai-chat-input" placeholder="{{ t('Example: Suggest a short sci-fi novel...') if lang != 'ar' else 'مثال: اقترح رواية خيال علمي قصيرة...' }}" 
                        class="w-full bg-surface-container-lowest text-on-surface text-sm font-medium rounded-full pl-5 pr-14 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all border border-outline/20 focus:border-primary/50 shadow-inner"
                        autocomplete="off" onkeydown="if(event.key === 'Enter') { event.preventDefault(); window.handleAiChatSubmit(); return false; }">
                 <button type="button" onclick="window.handleAiChatSubmit()" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md focus:outline-none group">
@@ -79,7 +84,7 @@
                 </button>
             </form>
             <div class="text-center mt-2">
-                <span class="text-[10px] text-on-surface-variant opacity-70">Powered by Elham AI</span>
+                <span class="text-[10px] text-on-surface-variant opacity-70">{{ t('Powered by Elham AI') if lang != 'ar' else 'بدعم من إلهام للذكاء الاصطناعي' }}</span>
             </div>
         </div>
     </div>
@@ -138,7 +143,11 @@
             if (!messagesArea) return;
 
             const wrapper = document.createElement('div');
-            wrapper.className = `flex gap-3 max-w-[90%] relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? 'mr-auto flex-row-reverse' : ''}`;
+            const isRtl = "{{ 'true' if lang == 'ar' else 'false' }}" === "true";
+            const alignmentClass = isUser 
+                ? (isRtl ? 'mr-auto' : 'ml-auto') 
+                : (isRtl ? 'ml-auto' : 'mr-auto');
+            wrapper.className = `flex gap-3 max-w-[90%] relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300 ${alignmentClass}`;
             
             let avatarHtml = '';
             if (!isUser) {
@@ -158,14 +167,14 @@
                 booksHtml = '<div class="mt-4 flex flex-col gap-2">';
                 books.forEach(book => {
                     booksHtml += `
-                        <a href="/public/books/${book.id}" target="_blank" class="flex gap-3 bg-white p-2.5 rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all group border border-surface-container shadow-sm">
+                        <a href="/public/books/${book.id}" target="_blank" class="flex gap-3 bg-white p-2.5 rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all group border border-surface-container shadow-sm text-start">
                             <img src="${book.cover || 'https://via.placeholder.com/60x90'}" class="w-12 h-[72px] object-cover rounded-lg shadow-sm" alt="Cover">
                             <div class="flex-1 min-w-0 flex flex-col justify-center">
                                 <h4 class="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors leading-tight mb-1">${book.title}</h4>
                                 <p class="text-xs text-on-surface-variant truncate">${book.author}</p>
                                 <div class="mt-1 flex items-center text-[10px] text-primary font-bold">
-                                    <span class="material-symbols-outlined text-[14px] mr-1">visibility</span>
-                                    View Details
+                                    <span class="material-symbols-outlined text-[14px] mx-1">visibility</span>
+                                    ${isRtl ? 'عرض التفاصيل' : 'View Details'}
                                 </div>
                             </div>
                         </a>
@@ -235,15 +244,16 @@
                 if (data.success && data.response) {
                     window.addAiMessage(data.response.reply, false, data.response.books);
                 } else {
-                    window.addAiMessage(data.error || 'Sorry, an error occurred while connecting to the server.', false);
+                    window.addAiMessage(data.error || "{{ t('Sorry, an error occurred while connecting to the server.') if lang != 'ar' else 'عذراً، حدث خطأ أثناء الاتصال بالخادم.' }}", false);
                 }
             } catch (error) {
                 const currentTypingIndicator = document.getElementById('ai-chat-typing');
                 if (currentTypingIndicator) currentTypingIndicator.classList.add('hidden');
-                window.addAiMessage('Sorry, cannot connect to AI servers right now.', false);
+                window.addAiMessage("{{ t('Sorry, cannot connect to AI servers right now.') if lang != 'ar' else 'عذراً، لا يمكن الاتصال بخوادم الذكاء الاصطناعي الآن.' }}", false);
             }
             
             return false;
         };
     }
 </script>
+

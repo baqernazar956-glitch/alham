@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Profile | {{ current_user.name }}{% endblock %}
+{% block title %}{{ t('Profile') }} | {{ current_user.name }}{% endblock %}
 
 {% block content %}
 <main class="pt-24 pb-32 bg-background min-h-screen">
@@ -26,17 +26,17 @@
                     </div>
                     
                     <!-- Camera overlay for upload -->
-                    <button onclick="document.getElementById('profilePicInput').click()" 
-                            class="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-90 cursor-pointer z-10">
-                        <span class="material-symbols-outlined text-lg">photo_camera</span>
+                    <button type="button" onclick="document.getElementById('profilePicInput').click()" 
+                            class="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all duration-300">
+                        <span class="material-symbols-outlined text-sm">photo_camera</span>
                     </button>
                     
                     {% if current_user.profile_picture %}
                     <!-- Remove photo button -->
                     <form method="POST" action="{{ url_for('auth.remove_profile_picture') }}" class="absolute top-1 right-1 z-10">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" onclick="return confirm('Remove your profile picture?')"
-                                class="w-8 h-8 bg-red-500/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center text-white hover:bg-red-600 transition-all active:scale-90 opacity-0 group-hover:opacity-100">
+                        <button type="submit" onclick="return confirm('{{ t("Remove your profile picture?") }}')"
+                                class="w-8 h-8 bg-red-500/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center text-white hover:bg-red-600 transition-all active:scale-95 opacity-100 md:opacity-0 md:group-hover:opacity-100">
                             <span class="material-symbols-outlined text-sm">close</span>
                         </button>
                     </form>
@@ -44,47 +44,58 @@
                 </div>
                 
                 <!-- User Info -->
-                <div class="flex-1 text-center md:text-left text-white">
+                <div class="flex-1 text-center md:text-start text-white">
                     <h1 class="text-4xl md:text-5xl font-black font-headline tracking-tight mb-1">{{ current_user.name }}</h1>
                     <p class="text-white/60 text-lg mb-4">{{ current_user.email }}</p>
                     <div class="flex flex-wrap justify-center md:justify-start gap-3">
                         <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/10">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
-                            Member for {{ stats.days_member }} days
+                            {{ t('Member for') }} {{ stats.days_member }} {{ t('days') }}
                         </span>
                         <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#fed07f] text-[#4b3400] rounded-full text-sm font-black border border-[#fed07f]/50 shadow-lg">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
-                            {{ current_user.rank }}
+                            {{ t(current_user.rank) }}
                         </span>
                         {% if stats.streak > 1 %}
                         <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-orange-500/20 text-orange-200 rounded-full text-sm font-black border border-orange-500/30">
                             <span class="material-symbols-outlined text-sm animate-pulse" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-                            {{ stats.streak }} Day Streak
+                            {{ stats.streak }} {{ t('Day Streak') }}
                         </span>
                         {% endif %}
                         {% if stats.books_finished > 0 %}
                         <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold border border-white/10">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">library_add_check</span>
-                            {{ stats.books_finished }} Books Completed
+                            {{ stats.books_finished }} {{ t('Books Completed') }}
                         </span>
                         {% endif %}
                     </div>
                     {% if current_user.bio %}
-                    <p class="mt-4 text-white/80 text-base max-w-2xl leading-relaxed italic border-l-2 border-white/20 pl-4">
+                    <p class="mt-4 text-white/80 text-base max-w-2xl leading-relaxed italic border-s-2 border-white/20 ps-4">
                         "{{ current_user.bio }}"
                     </p>
                     {% endif %}
                 </div>
                 
                 <!-- Quick Actions -->
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                     <a href="{{ url_for('main.books') }}" class="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-2">
                         <span class="material-symbols-outlined text-sm">library_books</span>
-                        My Library
+                        {{ t('My Library') }}
                     </a>
+                    {% if lang == 'ar' %}
+                    <a href="{{ url_for('public.change_language', language='en') }}" class="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-5 py-3 rounded-xl font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">language</span>
+                        English
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('public.change_language', language='ar') }}" class="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-5 py-3 rounded-xl font-bold hover:bg-white/20 transition-all active:scale-95 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">language</span>
+                        العربية
+                    </a>
+                    {% endif %}
                     <a href="{{ url_for('auth.logout') }}" class="bg-white/10 backdrop-blur-sm border border-white/20 text-white/70 px-5 py-3 rounded-xl font-bold hover:bg-red-500/20 hover:text-red-200 hover:border-red-400/30 transition-all active:scale-95 flex items-center gap-2">
                         <span class="material-symbols-outlined text-sm">logout</span>
-                        Logout
+                        {{ t('Logout') }}
                     </a>
                 </div>
             </div>
@@ -108,21 +119,21 @@
                     <span class="material-symbols-outlined text-green-600 text-2xl" style="font-variation-settings: 'FILL' 1;">task_alt</span>
                 </div>
                 <p class="text-3xl font-black text-on-surface font-headline">{{ stats.books_finished }}</p>
-                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Completed</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">{{ t('Completed') }}</p>
             </div>
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div class="w-12 h-12 mx-auto bg-secondary/10 rounded-xl flex items-center justify-center mb-3">
                     <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">rate_review</span>
                 </div>
                 <p class="text-3xl font-black text-on-surface font-headline">{{ stats.total_reviews }}</p>
-                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Reviews</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">{{ t('Reviews') }}</p>
             </div>
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div class="w-12 h-12 mx-auto bg-blue-500/10 rounded-xl flex items-center justify-center mb-3">
                     <span class="material-symbols-outlined text-blue-600 text-2xl" style="font-variation-settings: 'FILL' 1;">visibility</span>
                 </div>
                 <p class="text-3xl font-black text-on-surface font-headline">{{ stats.total_views }}</p>
-                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Books Explored</p>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">{{ t('Books Explored') }}</p>
             </div>
         </div>
     </section>
@@ -168,9 +179,9 @@
                         <div class="space-y-2">
                             <label class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider">
                                 <span class="material-symbols-outlined text-sm">history_edu</span>
-                                About Me / Bio
+                                {{ t('About Me / Bio') }}
                             </label>
-                            <textarea name="bio" rows="3" placeholder="Tell the community about your reading journey..."
+                            <textarea name="bio" rows="3" placeholder="{{ t('Tell the community about your reading journey...') }}"
                                       class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base font-medium focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container resize-none">{{ current_user.bio or '' }}</textarea>
                         </div>
 
@@ -178,12 +189,12 @@
                         <div class="space-y-2">
                             <label class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-wider">
                                 <span class="material-symbols-outlined text-sm">flag</span>
-                                Annual {{ t('Reading Goal') }}
+                                {{ t('Annual Reading Goal') }}
                             </label>
                             <div class="flex items-center gap-4">
                                 <input type="number" name="reading_goal" value="{{ current_user.reading_goal or 0 }}" min="0" max="1000"
                                        class="w-24 bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base font-bold text-center focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
-                                <span class="text-sm font-semibold text-on-surface-variant">books this year</span>
+                                <span class="text-sm font-semibold text-on-surface-variant">{{ t('books this year') }}</span>
                             </div>
                         </div>
 
@@ -191,18 +202,18 @@
                         <details class="group">
                             <summary class="flex items-center gap-2 cursor-pointer text-sm font-bold text-on-surface-variant uppercase tracking-wider py-3 border-t border-outline-variant/10 mt-2 select-none">
                                 <span class="material-symbols-outlined text-sm">lock</span>
-                                Change Password
-                                <span class="material-symbols-outlined text-sm ml-auto transition-transform group-open:rotate-180">expand_more</span>
+                                {{ t('Change Password') }}
+                                <span class="material-symbols-outlined text-sm ms-auto transition-transform group-open:rotate-180">expand_more</span>
                             </summary>
                             <div class="space-y-4 pt-2 pb-2 animate-fade-in">
                                 <div class="space-y-2">
-                                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-wider">Current Password</label>
-                                    <input type="password" name="current_password" placeholder="Enter current password" autocomplete="current-password"
+                                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-wider">{{ t('Current Password') }}</label>
+                                    <input type="password" name="current_password" placeholder="{{ t('Enter current password') }}" autocomplete="current-password"
                                            class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-wider">New Password</label>
-                                    <input type="password" name="new_password" placeholder="Enter new password" autocomplete="new-password"
+                                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-wider">{{ t('New Password') }}</label>
+                                    <input type="password" name="new_password" placeholder="{{ t('Enter new password') }}" autocomplete="new-password"
                                            class="w-full bg-surface-container-low border-2 border-transparent rounded-xl px-4 py-3 text-base focus:ring-0 focus:border-primary outline-none transition-all hover:bg-surface-container">
                                 </div>
                             </div>
@@ -223,8 +234,8 @@
                             {{ t('Library Breakdown') }}
                         </h3>
                         {% if current_user.reading_goal > 0 %}
-                        <div class="text-right">
-                            <span class="text-[10px] font-black uppercase tracking-tighter text-on-surface-variant/40 block">Goal Progress</span>
+                        <div class="text-end">
+                            <span class="text-[10px] font-black uppercase tracking-tighter text-on-surface-variant/40 block">{{ t('Goal Progress') }}</span>
                             <span class="text-sm font-black text-primary">{{ stats.books_finished }}/{{ current_user.reading_goal }}</span>
                         </div>
                         {% endif %}
@@ -243,9 +254,9 @@
                             <p class="text-[10px] text-on-surface-variant/60 mt-2 italic text-center">
                                 {% set rem = current_user.reading_goal - stats.books_finished %}
                                 {% if rem > 0 %}
-                                Only {{ rem }} more books to reach your goal! Keep it up.
+                                {{ t('Only') }} {{ rem }} {{ t('more books to reach your goal! Keep it up.') }}
                                 {% else %}
-                                🏆 Goal Achieved! You're a reading champion.
+                                {{ t('🏆 Goal Achieved! You\'re a reading champion.') }}
                                 {% endif %}
                             </p>
                         </div>
@@ -270,7 +281,7 @@
                             <span class="material-symbols-outlined text-green-500" style="font-variation-settings: 'FILL' 1;">check_circle</span>
                             <div class="flex-1">
                                 <div class="flex justify-between text-sm font-semibold mb-1">
-                                    <span>Completed</span>
+                                    <span>{{ t('Completed') }}</span>
                                     <span class="text-green-600">{{ stats.books_finished }}</span>
                                 </div>
                                 <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
@@ -296,7 +307,7 @@
                             <span class="material-symbols-outlined text-red-400" style="font-variation-settings: 'FILL' 1;">favorite</span>
                             <div class="flex-1">
                                 <div class="flex justify-between text-sm font-semibold mb-1">
-                                    <span>Favorites</span>
+                                    <span>{{ t('Favorites') }}</span>
                                     <span class="text-red-500">{{ stats.books_favorite }}</span>
                                 </div>
                                 <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
@@ -312,19 +323,19 @@
                     <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50">
                         <h3 class="text-lg font-bold flex items-center gap-3">
                             <span class="material-symbols-outlined text-on-surface-variant">info</span>
-                            Account Information
+                            {{ t('Account Information') }}
                         </h3>
                     </div>
                     <div class="p-8 space-y-5">
                         <div class="flex items-center justify-between py-2">
                             <span class="text-sm text-on-surface-variant font-medium">{{ t('Member Since') }}</span>
-                            <span class="text-sm font-bold text-on-surface">{{ stats.member_since.strftime('%B %d, %Y') }}</span>
+                            <span class="text-sm font-bold text-on-surface">{{ stats.member_since.strftime('%Y-%m-%d') }}</span>
                         </div>
                         <div class="flex items-center justify-between py-2 border-t border-outline-variant/10">
-                            <span class="text-sm text-on-surface-variant font-medium">Account Status</span>
+                            <span class="text-sm text-on-surface-variant font-medium">{{ t('Account Status') }}</span>
                             <span class="inline-flex items-center gap-1 text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">
                                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                Active
+                                {{ t('Active') }}
                             </span>
                         </div>
                         {% if stats.avg_rating %}
@@ -337,10 +348,10 @@
                         </div>
                         {% endif %}
                         <div class="flex items-center justify-between py-2 border-t border-outline-variant/10">
-                            <span class="text-sm text-on-surface-variant font-medium">Email Verified</span>
+                            <span class="text-sm text-on-surface-variant font-medium">{{ t('Email Verified') }}</span>
                             <span class="inline-flex items-center gap-1 text-sm font-bold text-primary">
                                 <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
-                                Verified
+                                {{ t('Verified') }}
                             </span>
                         </div>
                     </div>
@@ -357,9 +368,9 @@
                     <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50 flex items-center justify-between">
                         <h3 class="text-lg font-bold flex items-center gap-3">
                             <span class="material-symbols-outlined text-blue-500">history</span>
-                            Recently Viewed
+                            {{ t('Recently Viewed') }}
                         </h3>
-                        <span class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider">Last {{ recent_views|length }} books</span>
+                        <span class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider">{{ t('Last') }} {{ recent_views|length }} {{ t('books') }}</span>
                     </div>
                     <div class="p-6">
                         <div class="grid grid-cols-4 md:grid-cols-8 gap-3">
@@ -390,9 +401,9 @@
                     <div class="px-8 py-6 border-b border-outline-variant/10 bg-surface-container-low/50 flex items-center justify-between">
                         <h3 class="text-lg font-bold flex items-center gap-3">
                             <span class="material-symbols-outlined text-secondary">reviews</span>
-                            My Reviews
+                            {{ t('My Reviews') }}
                         </h3>
-                        <span class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider">{{ stats.total_reviews }} total</span>
+                        <span class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider">{{ stats.total_reviews }} {{ t('total') }}</span>
                     </div>
                     
                     <div class="p-6">
@@ -402,7 +413,7 @@
                             <div class="flex gap-5 p-4 rounded-xl hover:bg-surface-container-low/50 transition-all group">
                                 <a href="{{ url_for('public.book_detail', gid=br.google_id if br and br.google_id else review.google_id) }}" class="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0 shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 bg-surface-container block">
                                     {% if br and br.cover_url %}
-                                        <img alt="{{ br.title }}" class="w-full h-full object-cover" src="{{ br.cover_url }}">
+                                         <img alt="{{ br.title }}" class="w-full h-full object-cover" src="{{ br.cover_url }}">
                                     {% else %}
                                         <div class="w-full h-full flex items-center justify-center bg-surface-container-highest text-on-surface/20">
                                             <span class="material-symbols-outlined">book</span>
@@ -411,7 +422,7 @@
                                 </a>
                                 <div class="flex flex-col justify-center flex-1 min-w-0">
                                     <a href="{{ url_for('public.book_detail', gid=br.google_id if br and br.google_id else review.google_id) }}" class="font-bold text-sm mb-1 truncate text-on-surface hover:text-primary transition-colors block">
-                                        {{ br.title if br else 'Unknown Book' }}
+                                        {{ br.title if br else t('Unknown Book') }}
                                     </a>
                                     <div class="flex items-center gap-2 mb-2">
                                         <div class="flex text-amber-500">
@@ -419,7 +430,7 @@
                                             <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' {{ 1 if review.rating > i else 0 }};">star</span>
                                             {% endfor %}
                                         </div>
-                                        <span class="text-xs text-on-surface-variant/50">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+                                        <span class="text-xs text-on-surface-variant/50">{{ review.created_at.strftime('%Y-%m-%d') }}</span>
                                     </div>
                                     {% if review.review_text %}
                                     <p class="text-xs text-on-surface-variant leading-relaxed line-clamp-2 italic">"{{ review.review_text|truncate(120) }}"</p>
@@ -432,7 +443,7 @@
                         {% if stats.total_reviews > 6 %}
                         <div class="pt-4 mt-4 border-t border-outline-variant/10 text-center">
                             <button class="text-primary font-bold text-sm hover:underline flex items-center gap-1 mx-auto">
-                                View All {{ stats.total_reviews }} Reviews
+                                {{ t('View All') }} {{ stats.total_reviews }} {{ t('Reviews') }}
                                 <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </button>
                         </div>
@@ -444,10 +455,10 @@
                                 <span class="material-symbols-outlined text-on-surface-variant/30 text-4xl">edit_note</span>
                             </div>
                             <p class="font-bold text-on-surface-variant/40 text-sm mb-2">{{ t('No reviews yet') }}</p>
-                            <p class="text-xs text-on-surface-variant/30">Start reviewing books to share your thoughts with the community.</p>
+                            <p class="text-xs text-on-surface-variant/30">{{ t('Start reviewing books to share your thoughts with the community.') }}</p>
                             <a href="{{ url_for('public.list_books') }}" class="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-primary/10 text-primary rounded-full text-sm font-bold hover:bg-primary/20 transition-all">
                                 <span class="material-symbols-outlined text-sm">explore</span>
-                                Explore Books
+                                {{ t('Explore Books') }}
                             </a>
                         </div>
                         {% endif %}
@@ -470,9 +481,9 @@
                                     <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">menu_book</span>
                                 </div>
                                 <p class="text-2xl font-black text-on-surface font-headline">{{ stats.total_books }}</p>
-                                <p class="text-xs font-semibold text-on-surface-variant mt-1">Books in Library</p>
+                                <p class="text-xs font-semibold text-on-surface-variant mt-1">{{ t('Books in Library') }}</p>
                                 {% if stats.total_books >= 10 %}
-                                <span class="absolute -top-2 -right-2 bg-primary text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">🏆 Collector</span>
+                                <span class="absolute -top-2 -right-2 bg-primary text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">{{ t('🏆 Collector') }}</span>
                                 {% endif %}
                             </div>
                             
@@ -482,9 +493,9 @@
                                     <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">star</span>
                                 </div>
                                 <p class="text-2xl font-black text-on-surface font-headline">{{ stats.avg_rating or '—' }}</p>
-                                <p class="text-xs font-semibold text-on-surface-variant mt-1">Avg Rating Given</p>
+                                <p class="text-xs font-semibold text-on-surface-variant mt-1">{{ t('Average Rating Given') }}</p>
                                 {% if stats.total_reviews >= 5 %}
-                                <span class="absolute -top-2 -right-2 bg-secondary text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">✍️ Critic</span>
+                                <span class="absolute -top-2 -right-2 bg-secondary text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">{{ t('✍️ Critic') }}</span>
                                 {% endif %}
                             </div>
                             
@@ -494,9 +505,9 @@
                                     <span class="material-symbols-outlined text-blue-500 text-2xl" style="font-variation-settings: 'FILL' 1;">explore</span>
                                 </div>
                                 <p class="text-2xl font-black text-on-surface font-headline">{{ stats.total_views }}</p>
-                                <p class="text-xs font-semibold text-on-surface-variant mt-1">Books Explored</p>
+                                <p class="text-xs font-semibold text-on-surface-variant mt-1">{{ t('Books Explored') }}</p>
                                 {% if stats.total_views >= 20 %}
-                                <span class="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">🧭 Explorer</span>
+                                <span class="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">{{ t('🧭 Explorer') }}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -510,10 +521,10 @@
                             <span class="material-symbols-outlined text-primary group-hover:text-white text-2xl" style="font-variation-settings: 'FILL' 1;">library_books</span>
                         </div>
                         <div>
-                            <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">My Library</h4>
-                            <p class="text-xs text-on-surface-variant">Manage your book collection</p>
+                            <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">{{ t('My Library') }}</h4>
+                            <p class="text-xs text-on-surface-variant">{{ t('Manage your book collection') }}</p>
                         </div>
-                        <span class="material-symbols-outlined text-on-surface-variant/30 ml-auto group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                        <span class="material-symbols-outlined text-on-surface-variant/30 ms-auto group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
                     </a>
                     
                     <a href="{{ url_for('public.list_books') }}" class="bg-white rounded-2xl p-6 shadow-lg border border-outline-variant/10 flex items-center gap-5 group hover:shadow-xl hover:-translate-y-0.5 transition-all">
@@ -521,10 +532,10 @@
                             <span class="material-symbols-outlined text-secondary group-hover:text-white text-2xl" style="font-variation-settings: 'FILL' 1;">explore</span>
                         </div>
                         <div>
-                            <h4 class="font-bold text-on-surface group-hover:text-secondary transition-colors">Discover Books</h4>
-                            <p class="text-xs text-on-surface-variant">Explore millions of books</p>
+                            <h4 class="font-bold text-on-surface group-hover:text-secondary transition-colors">{{ t('Discover Books') }}</h4>
+                            <p class="text-xs text-on-surface-variant">{{ t('Explore millions of books') }}</p>
                         </div>
-                        <span class="material-symbols-outlined text-on-surface-variant/30 ml-auto group-hover:text-secondary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                        <span class="material-symbols-outlined text-on-surface-variant/30 ms-auto group-hover:text-secondary group-hover:translate-x-1 transition-all">arrow_forward</span>
                     </a>
                 </div>
 

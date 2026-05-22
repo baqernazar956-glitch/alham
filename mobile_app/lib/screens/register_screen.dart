@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../config/translations.dart';
 import 'onboarding_screen.dart';
 import 'login_screen.dart';
 
@@ -43,7 +44,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.error ?? 'Registration failed'),
+          content: Text(authProvider.error ?? context.t('registration_failed')),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -80,12 +81,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               const SizedBox(height: 20),
               Text(
-                'Create Account',
+                context.t('create_account'),
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'Join our community of readers',
+                context.t('join_community_desc'),
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 48),
@@ -95,13 +96,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.person_outline),
+                      decoration: InputDecoration(
+                        labelText: context.t('full_name'),
+                        prefixIcon: const Icon(Icons.person_outline),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
+                          return context.t('enter_name');
                         }
                         return null;
                       },
@@ -110,16 +111,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
+                      decoration: InputDecoration(
+                        labelText: context.t('email'),
+                        prefixIcon: const Icon(Icons.email_outlined),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return context.t('enter_email');
                         }
                         if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                          return context.t('valid_email');
                         }
                         return null;
                       },
@@ -128,16 +129,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock_outline),
+                      decoration: InputDecoration(
+                        labelText: context.t('password'),
+                        prefixIcon: const Icon(Icons.lock_outline),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
+                          return context.t('enter_password_reg');
                         }
                         if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
+                          return context.t('password_too_short');
                         }
                         return null;
                       },
@@ -150,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onPressed: _isLoading ? null : _register,
                         child: _isLoading
                             ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Sign Up'),
+                            : Text(context.t('sign_up')),
                       ),
                     ),
                   ],

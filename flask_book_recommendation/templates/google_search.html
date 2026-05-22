@@ -1,29 +1,29 @@
 {% extends "base.html" %}
 
-{% block title %}Google Archives | The Digital Curator{% endblock %}
+{% block title %}{{ t('Google Archives') if lang != 'ar' else 'أرشيفات جوجل' }} | {{ t('The Digital Curator') if lang != 'ar' else 'المنسق الرقمي' }}{% endblock %}
 
 {% block content %}
-<main class="min-h-screen pt-32 bg-surface">
+<main class="min-h-screen pt-32 bg-surface" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
     <div class="max-w-screen-2xl mx-auto px-8 lg:px-24 pb-24 space-y-24">
         
         <!-- Google Search Header -->
-        <header class="bg-on-surface p-12 lg:p-20 relative overflow-hidden group">
-            <div class="absolute -right-32 -top-32 w-80 h-80 bg-primary opacity-10 rounded-full blur-3xl group-hover:bg-secondary transition-colors duration-1000"></div>
+        <header class="bg-on-surface p-12 lg:p-20 relative overflow-hidden group text-start">
+            <div class="absolute {{ '-left-32' if lang == 'ar' else '-right-32' }} -top-32 w-80 h-80 bg-primary opacity-10 rounded-full blur-3xl group-hover:bg-secondary transition-colors duration-1000"></div>
             
             <div class="relative z-10 flex flex-col md:flex-row items-end justify-between gap-12">
                 <div class="space-y-4 max-w-xl">
-                    <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">External Registry</span>
-                    <h1 class="font-headline text-6xl font-black text-white tracking-tighter leading-none">Google Archives</h1>
-                    <p class="font-body text-xl text-white/50 leading-relaxed italic">Synchronizing with the global digital repository to integrate external volumes into your local curation.</p>
+                    <span class="font-label text-xs uppercase tracking-[0.6em] text-primary">{{ t('External Registry') if lang != 'ar' else 'السجل الخارجي' }}</span>
+                    <h1 class="font-headline text-6xl font-black text-white tracking-tighter leading-none">{{ t('Google Archives') if lang != 'ar' else 'أرشيفات جوجل' }}</h1>
+                    <p class="font-body text-xl text-white/50 leading-relaxed italic">{{ t('Synchronizing with the global digital repository to integrate external volumes into your local curation.') if lang != 'ar' else 'المزامنة مع المستودع الرقمي العالمي لدمج المجلدات الخارجية في مجموعتك المحلية.' }}</p>
                 </div>
                 
                 <div class="w-full md:w-1/2 max-w-lg">
                     <form method="get" action="{{ url_for('google.search') }}" class="flex bg-white/5 backdrop-blur-xl border border-white/10 p-2 gap-2 group-within:border-primary/50 transition-all">
                         <div class="flex-1 relative flex items-center">
-                            <span class="material-symbols-outlined text-white/20 absolute left-6">search</span>
-                            <input type="text" name="q" value="{{ q or '' }}" class="w-full bg-transparent border-none focus:ring-0 text-white pl-16 pr-6 py-5 placeholder:text-white/20 font-headline font-black text-lg" placeholder="Identify Volume (Title, Author, ISBN)" required>
+                            <span class="material-symbols-outlined text-white/20 absolute {{ 'right-6' if lang == 'ar' else 'left-6' }}">search</span>
+                            <input type="text" name="q" value="{{ q or '' }}" class="w-full bg-transparent border-none focus:ring-0 text-white {{ 'pr-16 pl-6' if lang == 'ar' else 'pl-16 pr-6' }} py-5 placeholder:text-white/20 font-headline font-black text-lg" placeholder="{{ t('Identify Volume (Title, Author, ISBN)') if lang != 'ar' else 'تحديد المجلد (العنوان، المؤلف، الرقم الدولي للكتاب)' }}" required>
                         </div>
-                        <button type="submit" class="bg-primary hover:bg-white hover:text-primary text-white px-10 py-5 font-headline font-black text-xs uppercase tracking-widest transition-all shadow-2xl">Query</button>
+                        <button type="submit" class="bg-primary hover:bg-white hover:text-primary text-white px-10 py-5 font-headline font-black text-xs uppercase tracking-widest transition-all shadow-2xl">{{ t('Query') if lang != 'ar' else 'استعلام' }}</button>
                     </form>
                 </div>
             </div>
@@ -31,10 +31,10 @@
 
         <!-- Results Architecture -->
         {% if items %}
-        <div class="space-y-16">
+        <div class="space-y-16 text-start">
             <div class="flex items-center justify-between pb-8 border-b border-on-surface/10">
-                <h2 class="font-headline text-4xl font-black tracking-tight text-on-surface">Query Results: <span class="text-primary">{{ q }}</span></h2>
-                <span class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">{{ items|length }} Signal Detected</span>
+                <h2 class="font-headline text-4xl font-black tracking-tight text-on-surface">{{ t('Query Results:') if lang != 'ar' else 'نتائج الاستعلام:' }} <span class="text-primary">{{ q }}</span></h2>
+                <span class="font-label text-[10px] uppercase font-bold text-on-surface/30 tracking-widest">{{ items|length }} {{ t('Signals Detected') if lang != 'ar' else 'إشارات تم رصدها' }}</span>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-12 gap-y-24">
@@ -52,15 +52,15 @@
                                 {% for k,v in it.items() %}
                                 <input type="hidden" name="{{k}}" value="{{ v }}">
                                 {% endfor %}
-                                <button type="submit" class="w-full bg-primary text-white py-5 font-headline font-black text-[10px] uppercase tracking-widest hover:bg-secondary transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">Integrate Folio</button>
+                                <button type="submit" class="w-full bg-primary text-white py-5 font-headline font-black text-[10px] uppercase tracking-widest hover:bg-secondary transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">{{ t('Integrate Folio') if lang != 'ar' else 'دمج المجلد' }}</button>
                             </form>
-                            <a href="{{ url_for('public.book_detail', gid=it.id) }}" class="w-full border border-white/20 text-white py-5 font-headline font-black text-[10px] uppercase tracking-widest text-center hover:bg-white/10 transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75">Full Analysis</a>
+                            <a href="{{ url_for('public.book_detail', gid=it.id) }}" class="w-full border border-white/20 text-white py-5 font-headline font-black text-[10px] uppercase tracking-widest text-center hover:bg-white/10 transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75">{{ t('Full Analysis') if lang != 'ar' else 'تحليل كامل' }}</a>
                         </div>
                     </div>
                     
                     <div class="space-y-2">
                         <h3 class="font-headline font-black text-lg text-on-surface line-clamp-2 leading-tight group-hover:text-primary transition-colors" title="{{ it.title }}">{{ it.title }}</h3>
-                        <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate">{{ it.author or 'Unidentified Unit' }}</p>
+                        <p class="font-label text-[10px] uppercase font-bold text-secondary tracking-widest truncate">{{ it.author or (t('Unidentified Unit') if lang != 'ar' else 'وحدة غير معروفة') }}</p>
                         {% if it.rating %}
                         <div class="flex items-center gap-1 text-primary">
                             <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -79,8 +79,8 @@
                 <span class="material-symbols-outlined text-6xl text-on-surface/5">travel_explore</span>
             </div>
             <div class="space-y-4">
-                <h2 class="font-headline font-black text-4xl">Access Global Repositories</h2>
-                <p class="font-body text-on-surface-variant max-w-lg mx-auto italic">Initiate a formal query to extract bibliographic data from the global network and integrate new folios into your curatorial system.</p>
+                <h2 class="font-headline font-black text-4xl">{{ t('Access Global Repositories') if lang != 'ar' else 'الوصول إلى المستودعات العالمية' }}</h2>
+                <p class="font-body text-on-surface-variant max-w-lg mx-auto italic">{{ t('Initiate a formal query to extract bibliographic data from the global network and integrate new folios into your curatorial system.') if lang != 'ar' else 'ابدأ استعلاماً رسمياً لاستخراج البيانات البيبليوغرافية من الشبكة العالمية ودمج مجلدات جديدة في نظام التنسيق الخاص بك.' }}</p>
             </div>
         </div>
         {% endif %}
